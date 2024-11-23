@@ -1,21 +1,18 @@
 using Spectre.Console;
+using Console.CodingTracker.MenuSelections;
 
 namespace Console.CodingTracker;
 
 internal class UserInterfaceSelection : UserInterface
 {
-    public string DisplayUI(string title, List<string> options)
+    public string DisplayUI(string title, Type options)
     {
         string userOption = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
-        .Title("What's your [green]favorite fruit[/]?")
-        .PageSize(10)
-        .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]")
-        .AddChoices(new[] {
-            "Apple", "Apricot", "Avocado", 
-            "Banana", "Blackcurrant", "Blueberry",
-            "Cherry", "Cloudberry", "Cocunut",
-        }));
+        .Title(title)
+        .PageSize(3)
+        .MoreChoicesText("Move up and down to reveal more options.")
+        .AddChoices(Enum.GetNames(options)));
 
     return userOption;
     }

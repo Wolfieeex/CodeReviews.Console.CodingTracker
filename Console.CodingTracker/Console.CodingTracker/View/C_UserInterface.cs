@@ -1,6 +1,8 @@
-namespace Console.CodingTracker;
+using Spectre.Console;
 
-internal interface UserInterface
+namespace Console.CodingTracker.View;
+
+internal abstract class UserInterface
 {
-    public string? DisplayUI(string title, Type options);   
+    public abstract int? DisplayUI(string title, Type options, Color highlightcolor);   
 }

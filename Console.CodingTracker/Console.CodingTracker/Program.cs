@@ -1,13 +1,11 @@
-﻿using Console.CodingTracker;
-using Console.CodingTracker.MenuSelections;
-using Spectre.Console;
+﻿using Console.CodingTracker.Controller;
 
-System.Console.Clear();
-AnsiConsole.Write(
-    new FigletText("Coding Tracker")
-        .Centered()
-        .Color(Color.Red));
-
-UserInterfaceSelection UI = new UserInterfaceSelection();
-UI.DisplayUI("Please select one of the [red]functions[/] below", typeof(MainMenu));
-System.Console.WriteLine(Enum.GetName(typeof(MainMenu), 0));
+try
+{
+    ScreenController.S_Mainmenu();
+}
+catch (Exception ex)
+{
+    System.Console.Clear();
+    System.Console.WriteLine(ex.Message);
+}

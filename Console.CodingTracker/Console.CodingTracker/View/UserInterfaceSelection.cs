@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.View;
 
-internal class UserInterfaceSelection : UserInterface
+internal class UserInterfaceSelection : C_UserInterface
 {
     public override int? DisplayUI(string title, Type options, Color highlightcolor)
     {

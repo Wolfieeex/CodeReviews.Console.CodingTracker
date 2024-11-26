@@ -21,6 +21,12 @@ internal class CRUDController
 
             UserInterfaceSelection UI = new();
             UI.DisplayUI("Track your [violet]new session[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1);
+            
+            UserInterfaceText UIT = new();
+            System.Console.WriteLine(" d");
+            System.Console.ReadKey();
+            int? userOptionT = UIT.DisplayUI("[red]Functtion[/] selection:", typeof(MenuSelections.MainMenu), Color.IndianRed1_1);
+       
         }
     }
 

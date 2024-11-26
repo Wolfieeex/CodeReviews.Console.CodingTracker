@@ -2,7 +2,7 @@ using Spectre.Console;
 
 namespace Console.CodingTracker.View;
 
-internal abstract class UserInterface
+internal abstract class C_UserInterface
 {
     public abstract int? DisplayUI(string title, Type options, Color highlightcolor);   
 }

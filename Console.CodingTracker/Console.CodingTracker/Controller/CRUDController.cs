@@ -29,32 +29,43 @@ internal class CRUDController
                 { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)4), comments }
             };
 
-            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic);
-
-            switch (userOption)
+            int? userOption = null;
+            try
             {
-                case 0:
-                    throw new NotImplementedException();
-                    break;
-                case 1:
-                    start = UserInterface.DisplayTextUI("Please insert [DarkBlue]the start of the session[/]", TextUIOptions.Any);
-                    break;
-                case 2:
-                    end = UserInterface.DisplayTextUI("Please insert [DarkBlue]the end of the session[/]", TextUIOptions.Any);
-                    break;
-                case 3:
-                    string l = UserInterface.DisplayTextUI("Please insert [DarkBlue]number of lines you produced[/] during your session", TextUIOptions.NumbersOnlyOptional);
-                    if (l != null && l != "")
-                    {
-                        l.Trim();
-                        lines = int.Parse(l);
-                    }
-                    break;
-                case 4:
-                    comments = UserInterface.DisplayTextUI("Please insert [DarkBlue]any comments[/] you want to add", TextUIOptions.Optional);
-                    break;
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic);
             }
-                   
+            catch (Exception ex)
+            {
+                System.Console.WriteLine(@"Dictionary that is passed to DisplaySelectionUIWithUserInputs method does not implement all Enum selections.
+Please add more keys to the dictionary to utilise this functionality.");
+                System.Console.ReadKey();
+            }
+            finally
+            {
+                switch (userOption)
+                {
+                    case 0:
+                        throw new NotImplementedException();
+                        break;
+                    case 1:
+                        start = UserInterface.DisplayTextUI("Please insert [DarkBlue]the start of the session[/]", TextUIOptions.Any);
+                        break;
+                    case 2:
+                        end = UserInterface.DisplayTextUI("Please insert [DarkBlue]the end of the session[/]", TextUIOptions.Any);
+                        break;
+                    case 3:
+                        string l = UserInterface.DisplayTextUI("Please insert [DarkBlue]number of lines you produced[/] during your session", TextUIOptions.NumbersOnlyOptional);
+                        if (l != null && l != "")
+                        {
+                            l.Trim();
+                            lines = int.Parse(l);
+                        }
+                        break;
+                    case 4:
+                        comments = UserInterface.DisplayTextUI("Please insert [DarkBlue]any comments[/] you want to add", TextUIOptions.Optional);
+                        break;
+                }
+            }
         }
     }
 

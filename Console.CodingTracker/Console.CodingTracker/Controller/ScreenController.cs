@@ -17,8 +17,7 @@ internal class ScreenController
                     .Centered()
                     .Color(Color.Red));
 
-            UserInterfaceSelection UI = new();
-            int? userOption = UI.DisplayUI("[red]Functtion[/] selection:", typeof(MenuSelections.MainMenu), Color.IndianRed1_1);
+            int? userOption = UserInterface.DisplaySelectionUI("[red]Functtion[/] selection:", typeof(MenuSelections.MainMenu), Color.IndianRed1_1);
             switch (userOption)
             {
                 case 0:

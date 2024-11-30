@@ -2,7 +2,8 @@ namespace Console.CodingTracker.MenuSelections;
 
 internal enum MainMenu
 {
-    TrackNewSession,
+    AddRecordManually,
+    StartTrackingNewSession,
     SetGoals,
     ViewPreviousSessions,
     UpdateSessionDetails,
@@ -12,9 +13,9 @@ internal enum MainMenu
 
 internal enum TrackNewSession
 {
-    StartTrackingNow,
     AddSessionStart,
     AddSessionEnd,
     OptionalAddSessionNumberOfLines,
     OptionalAddSessionComments,
+    ReturnToMainMenu
 }

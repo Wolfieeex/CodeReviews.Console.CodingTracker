@@ -8,7 +8,7 @@ namespace Console.CodingTracker.Controller;
 
 internal class CRUDController
 {
-    internal static void TrackNewSession()
+    internal static void AddNewSessionManually()
     {
         string? start = null;
         string? end = null;
@@ -22,22 +22,20 @@ internal class CRUDController
 
             Dictionary<string, string> dic = new()
             {
-                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)0), null},
-                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)1), start },
-                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)2), end },
-                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)3), lines == null ? null : lines.ToString() },
-                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)4), comments }
+                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)0), start },
+                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)1), end },
+                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)2), lines == null ? null : lines.ToString() },
+                { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)3), comments }
             };
 
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic);
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[\\]");
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(@"Dictionary that is passed to DisplaySelectionUIWithUserInputs method does not implement all Enum selections.
-Please add more keys to the dictionary to utilise this functionality.");
+                System.Console.WriteLine(@"DisplaySelectionUIWithUserInputs method failed: " + ex.Message);
                 System.Console.ReadKey();
             }
             finally
@@ -45,29 +43,40 @@ Please add more keys to the dictionary to utilise this functionality.");
                 switch (userOption)
                 {
                     case 0:
-                        throw new NotImplementedException();
+                        start = UserInterface.DisplayTextUI("Please insert [Blue]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnly);
+                        start.Trim();
                         break;
                     case 1:
-                        start = UserInterface.DisplayTextUI("Please insert [DarkBlue]the start of the session[/]", TextUIOptions.Any);
+                        end = UserInterface.DisplayTextUI("Please insert [Blue]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnly);
+                        end.Trim();
                         break;
                     case 2:
-                        end = UserInterface.DisplayTextUI("Please insert [DarkBlue]the end of the session[/]", TextUIOptions.Any);
-                        break;
-                    case 3:
-                        string l = UserInterface.DisplayTextUI("Please insert [DarkBlue]number of lines you produced[/] during your session", TextUIOptions.NumbersOnlyOptional);
+                        string l = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session: ", TextUIOptions.NumbersOnlyOptional);
                         if (l != null && l != "")
                         {
                             l.Trim();
                             lines = int.Parse(l);
                         }
                         break;
+                    case 3:
+                        comments = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add: ", TextUIOptions.Optional);
+                        comments = string.IsNullOrEmpty(comments) ? comments : comments.Trim();
+                        break;
                     case 4:
-                        comments = UserInterface.DisplayTextUI("Please insert [DarkBlue]any comments[/] you want to add", TextUIOptions.Optional);
+                        trackNewSessionLoop = false;
+                        break;
+                    case -1:
+                        SQLCommands.InjectRecord();
                         break;
                 }
             }
         }
     }
+    internal static void TrackNewSession()
+    {
+        throw new NotImplementedException();
+    }
+
 
     internal static void ViewPreviousSessions()
     {

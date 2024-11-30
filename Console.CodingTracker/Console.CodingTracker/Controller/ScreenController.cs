@@ -21,21 +21,24 @@ internal class ScreenController
             switch (userOption)
             {
                 case 0:
-                    CRUDController.TrackNewSession();
+                    CRUDController.AddNewSessionManually();
                     break;
                 case 1:
-                    GoalSetter.SetNewGoals();
+                    CRUDController.TrackNewSession();
                     break;
                 case 2:
-                    CRUDController.ViewPreviousSessions();
+                    GoalSetter.SetNewGoals();
                     break;
                 case 3:
-                    CRUDController.UpdateSessionDetails();
+                    CRUDController.ViewPreviousSessions();
                     break;
                 case 4:
-                    CRUDController.DeleteSession();
+                    CRUDController.UpdateSessionDetails();
                     break;
                 case 5:
+                    CRUDController.DeleteSession();
+                    break;
+                case 6:
                     System.Console.Clear();
                     AnsiConsole.Write(new Markup("You have exited the app and you will return to the main desktop\n[lightGreen]See you soon![/]").Centered());
                     menuLoop = false;

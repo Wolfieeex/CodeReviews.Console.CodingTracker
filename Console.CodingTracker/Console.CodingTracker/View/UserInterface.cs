@@ -36,37 +36,53 @@ internal class UserInterface
         return enumCardinal;
     }
 
-    public static int? DisplaySelectionUIWithUserInputs(string title, Type options, Color highlightcolor, Dictionary<string, string> dic, string finalOptionName)
+    /// <summary>
+    /// This UI is used to assign multiple string selections that are required for the next screen, for example, while creating a new record for a database.
+    /// </summary>
+    /// /// <param name="title">Message that appears on the top of the selection screen.</param>
+    /// <param name="options">Enum that represents selection options to appear.</param>
+    /// <param name="highlightcolor">Highlight color of currently selected option.</param>
+    /// /// <param name="typeDictionary">Key: Enum element from selected type in string. Value: variable in string format which user is assigning enum element to.</param>
+    /// /// <param name="finalOptionName">If all non-optional parameters are inserted by the user, display additional selection option on the top with this title.</param>
+    /// /// <param name="blockFinalOption">If true, it will block final option from appearing, even if all non-optional parameters have been inserted by the user.</param>
+    /// /// /// <param name="blockingMessage">Message that will be displayed instead of title if final option is blocked.</param>
+    /// <returns>Returns selected option for enumerator's type in int format.</returns>
+    public static int? DisplaySelectionUIWithUserInputs(string title, Type options, Color highlightcolor, Dictionary<string, string> typeDictionary, string finalOptionName, bool blockFinalOption, string blockingMessage = null)
     {
         SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
         List<string> rawOptions = Enum.GetNames(options).ToList();
 
+        if (string.IsNullOrEmpty(blockingMessage))
+        {
+            blockingMessage = title;
+        }
+
         bool finalChoiceAvailabe = true;
         foreach (string s in rawOptions)
         {
-            if (!s.Contains("Optional") && dic.ContainsKey(s))
+            if (!s.Contains("Optional") && typeDictionary.ContainsKey(s))
             {
-                if (string.IsNullOrEmpty(dic[s]))
+                if (string.IsNullOrEmpty(typeDictionary[s]))
                 {
                     finalChoiceAvailabe = false;
                     break;
                 }
             }
         }
-        if (finalChoiceAvailabe)
+        if (finalChoiceAvailabe && !blockFinalOption)
         {
             selectionPrompt.AddChoice(finalOptionName);
         }
 
         selectionPrompt
-        .Title(title)
+        .Title(blockFinalOption ? blockingMessage : title)
         .HighlightStyle(new Style()
             .Foreground(highlightcolor)
             .Decoration(Decoration.RapidBlink))
         .EnableSearch()
         .PageSize(10)
         .MoreChoicesText("[grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[grey]〚$1〛[/]") + (dic.ContainsKey(n) ? (dic[n] == null ? "" : ": [Blue]" + dic[n] + "[/]") : ""))
+        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
         .AddChoices((rawOptions));
 
         string userOption = AnsiConsole.Prompt(selectionPrompt);
@@ -90,9 +106,9 @@ internal class UserInterface
         {
             prompt.Validate((s) => s switch
             {
-                "" => ValidationResult.Success(),
-                string when int.TryParse(s, out _) => ValidationResult.Success(),
-                _ => ValidationResult.Error("Your insert needs to represent an integer."),
+                ("") => ValidationResult.Success(),
+                string when (int.TryParse(s, out _)) => ValidationResult.Success(),
+                (_) => ValidationResult.Error("Your insert needs to represent an integer."),
             });
         }
         if (UIOptions == TextUIOptions.DateOnly || UIOptions == TextUIOptions.DateOnlyOptional)
@@ -107,5 +123,17 @@ internal class UserInterface
 
 
         return AnsiConsole.Prompt(prompt);
+    }
+
+    public static bool DisplayConfirmationSelection(string title, string positive, string negative)
+    {
+        System.Console.Clear();
+        bool addAnotherRecord = AnsiConsole.Prompt(
+            new TextPrompt<bool>(title)
+            .AddChoice(true)
+            .AddChoice(false)
+            .DefaultValue(false)
+            .WithConverter(choice => choice ? positive : negative));
+        return false;
     }
 }

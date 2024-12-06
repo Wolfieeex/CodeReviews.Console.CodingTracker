@@ -28,11 +28,23 @@ internal class CRUDController
                 { Enum.GetName(typeof(MenuSelections.TrackNewSession), (MenuSelections.TrackNewSession)3), comments }
             };
 
+            bool blockEndOption = false;
+            if (!string.IsNullOrEmpty(start) && !string.IsNullOrEmpty(end))
+            {
+                DateTime startInDate = DateTime.Parse(start);
+                DateTime endInDate = DateTime.Parse(end);
+                if (startInDate > endInDate)
+                {
+                    blockEndOption = true;
+                }
+            }
+
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[\\]");
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[/]", blockEndOption, "[red]The start date of your session must be lower than the end date of your session:[/]");
             }
+
             catch (Exception ex)
             {
                 System.Console.WriteLine(@"DisplaySelectionUIWithUserInputs method failed: " + ex.Message);
@@ -66,7 +78,19 @@ internal class CRUDController
                         trackNewSessionLoop = false;
                         break;
                     case -1:
-                        SQLCommands.InjectRecord();
+                        string duration = SQLCommands.InjectRecord(start, end, lines, comments);
+                        duration = duration.Replace(".", " days, ");
+                        duration += " hours";
+                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelection($"Coding session of duration [Pink1]{duration} has been added![/]\nWould you like to [Pink1]add another record[/], or [Pink1]return to the main menu[/]?:\n", "Add", "Return");
+
+                        start = null;
+                        end = null;
+                        lines = null;
+                        comments = null;
+
+                        if (!addAnotherRecord)
+                            trackNewSessionLoop = false;
+
                         break;
                 }
             }

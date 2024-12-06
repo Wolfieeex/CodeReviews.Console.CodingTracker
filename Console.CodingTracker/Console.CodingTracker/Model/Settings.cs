@@ -2,10 +2,11 @@ namespace Console.CodingTracker.Model;
 
 internal class Settings
 {
-    public enum TextPromptOptions
+    internal static string ConnectionString
     {
-        NonEmpty,
-        StringOnly,
-        NumberOnly
-    }
+        get; private set;
+    } =
+    "Data Source=C:\\Users\\aleks\\Desktop\\CSharpProjects\\CodeReviews.Console.CodingTracker\\Console.CodingTracker\\Databases\\Coding Tracker Database.db";
+
+    internal static string DatabaseName { get; private set; } = "Tracking";
 }

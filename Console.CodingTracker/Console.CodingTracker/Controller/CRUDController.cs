@@ -1,8 +1,5 @@
-﻿using Console.CodingTracker.Model;
-using Console.CodingTracker.View;
-using Microsoft.VisualBasic.FileIO;
+﻿using Console.CodingTracker.View;
 using Spectre.Console;
-using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.Controller;
 
@@ -42,7 +39,7 @@ internal class CRUDController
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[/]", blockEndOption, "[red]The start date of your session must be lower than the end date of your session:[/]");
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[/]", blockEndOption, "[red]The start date of your session must be before the end date of your session:[/]");
             }
 
             catch (Exception ex)
@@ -104,7 +101,15 @@ internal class CRUDController
 
     internal static void ViewPreviousSessions()
     {
-        throw new NotImplementedException(); 
+        try
+        {
+            FilterRecords();
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine(ex.Message);
+            System.Console.ReadKey();
+        }
     }
 
     internal static void UpdateSessionDetails()
@@ -115,5 +120,85 @@ internal class CRUDController
     internal static void DeleteSession()
     {
         throw new NotImplementedException();
+    }
+
+    internal static void FilterRecords()
+    {
+        string start = null;
+        string end = null;
+        string linesMin = null;
+        string linesMax = null;
+        string comments = null;
+        string durationMin = null;
+        string durationMax = null;
+
+        Dictionary<string, string> dic = new Dictionary<string, string>()
+        {
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)0), start},
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), end},
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), linesMin},
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), linesMax},
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), comments},
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), durationMin},
+            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), durationMax}
+        };
+
+        bool runFilterMenuLoop = true;
+        while (runFilterMenuLoop)
+        {
+            System.Console.Clear();
+
+            bool shouldBlock = false;
+            if (!String.IsNullOrEmpty(start) && !String.IsNullOrEmpty(end))
+            {
+                DateTime dateStart = DateTime.Parse(start);
+                DateTime dateEnd = DateTime.Parse(end);
+
+                if (dateEnd < dateStart)
+                {
+                    shouldBlock = true;
+                }
+            }    
+
+            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs("Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, "[red]The start date of your session must be before the end date of your session:[/]");
+
+            switch (userOption)
+            {
+                case -1:
+                    throw new NotImplementedException();
+                break;
+                case 0:
+                    start = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnlyOptional);
+                    start = string.IsNullOrEmpty(start) ? start : start.Trim();
+                break;
+                case 1:
+                    end = UserInterface.DisplayTextUI("Please insert [Blue]the date to which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnlyOptional);
+                    end = string.IsNullOrEmpty(end) ? end : end.Trim();
+                break;
+                case 2:
+                    linesMin = UserInterface.DisplayTextUI("Please insert [Blue]the minimal number of lines[/] for searched sessions: ", TextUIOptions.NumbersOnlyOptional);
+                    linesMin = string.IsNullOrEmpty(linesMin) ? linesMin : linesMin.Trim();
+                break;
+                case 3:
+                    linesMax = UserInterface.DisplayTextUI("Please insert [Blue]the maximal number of lines[/] for searched sessions: ", TextUIOptions.NumbersOnlyOptional);
+                    linesMax = string.IsNullOrEmpty(linesMax) ? linesMax : linesMax.Trim();
+                break;
+                case 4:
+                    comments = UserInterface.DisplayTextUI("Please insert [Blue]part of the comment[/] you want to search for: ", TextUIOptions.Optional);
+                    comments = string.IsNullOrEmpty(comments) ? comments : comments.Trim();
+                break;
+                case 5:
+                    durationMin = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d-hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
+                    durationMin = string.IsNullOrEmpty(durationMin) ? durationMin : durationMin.Trim();
+                break;
+                case 6:
+                    durationMax = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d-hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
+                    durationMax = string.IsNullOrEmpty(durationMax) ? durationMax : durationMax.Trim();
+                break;
+                case 7:
+                    runFilterMenuLoop = false;
+                break;
+            }
+        }
     }
 }

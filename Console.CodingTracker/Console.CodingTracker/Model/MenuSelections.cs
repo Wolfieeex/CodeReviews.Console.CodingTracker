@@ -19,3 +19,15 @@ internal enum TrackNewSession
     OptionalAddSessionComments,
     ReturnToMainMenu
 }
+
+internal enum FilterRecords
+{
+    OptionalFromDate,
+    OptionalToDate,
+    OptionalMinimalNumberOfLines,
+    OptionalMaximalNumberOfLines,
+    OptionalComment,
+    OptionalMinimalDuration,
+    OptionalMaximalDuration,
+    ReturnToMainMenu
+}

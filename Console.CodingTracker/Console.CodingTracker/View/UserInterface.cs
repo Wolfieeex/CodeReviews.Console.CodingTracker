@@ -8,6 +8,8 @@ public enum TextUIOptions
 {
     DateOnly,
     DateOnlyOptional,
+    TimeSpanOnly,
+    TimeSpanOnlyOptional,
     NumbersOnly,
     NumbersOnlyOptional,
     Optional,
@@ -27,8 +29,8 @@ internal class UserInterface
                                    .Decoration(Decoration.RapidBlink))
         .EnableSearch()
         .PageSize(10)
-        .MoreChoicesText("[grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[grey]($1)[/]"))
+        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]"))
         .AddChoices((rawOptions)));
 
         int enumCardinal = (int)Enum.Parse(options, userOption);
@@ -79,10 +81,11 @@ internal class UserInterface
         .HighlightStyle(new Style()
             .Foreground(highlightcolor)
             .Decoration(Decoration.RapidBlink))
+        
         .EnableSearch()
         .PageSize(10)
-        .MoreChoicesText("[grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
+        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
         .AddChoices((rawOptions));
 
         string userOption = AnsiConsole.Prompt(selectionPrompt);
@@ -97,7 +100,7 @@ internal class UserInterface
     {
         TextPrompt<string> prompt = new(title);
 
-        if (UIOptions == TextUIOptions.Optional || UIOptions == TextUIOptions.NumbersOnlyOptional || UIOptions == TextUIOptions.DateOnlyOptional)
+        if (UIOptions == TextUIOptions.Optional || UIOptions == TextUIOptions.NumbersOnlyOptional || UIOptions == TextUIOptions.DateOnlyOptional || UIOptions == TextUIOptions.TimeSpanOnlyOptional)
         {
             prompt.AllowEmpty();
         }
@@ -120,7 +123,15 @@ internal class UserInterface
                 _ => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
             });
         }
-
+        if (UIOptions == TextUIOptions.TimeSpanOnly || UIOptions == TextUIOptions.TimeSpanOnlyOptional)
+        {
+            prompt.Validate((s) => s switch
+            {
+                "" => ValidationResult.Success(),
+                string when TimeSpan.TryParseExact(s,@"d\-hh\:mm",new CultureInfo("en-GB"), TimeSpanStyles.None, out _) => ValidationResult.Success(),
+                _ => ValidationResult.Error("The time span you have given is not in \"d-hh:mm\" format. Please try again."),
+            });
+        }
 
         return AnsiConsole.Prompt(prompt);
     }

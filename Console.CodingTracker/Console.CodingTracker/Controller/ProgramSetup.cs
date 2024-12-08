@@ -13,6 +13,8 @@ internal class ProgramSetup
 
             string commString = $@"CREATE TABLE IF NOT EXISTS '{Settings.DatabaseName}' (
                                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                'Creation date' TEXT,
+                                'Last update date' TEXT,
                                 'Start date' TEXT,
                                 'End date' TEXT,
                                 Duration TEXT,

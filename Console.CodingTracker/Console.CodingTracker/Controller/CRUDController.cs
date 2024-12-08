@@ -1,5 +1,7 @@
 ﻿using Console.CodingTracker.View;
+using Console.CodingTracker.Model;
 using Spectre.Console;
+using Microsoft.Data.Sqlite;
 
 namespace Console.CodingTracker.Controller;
 
@@ -101,14 +103,20 @@ internal class CRUDController
 
     internal static void ViewPreviousSessions()
     {
+        FilterDetails Filter = null;
         try
         {
-            FilterRecords();
+            Filter = FilterRecords();
         }
         catch (Exception ex)
         {
             System.Console.WriteLine(ex.Message);
             System.Console.ReadKey();
+        }
+
+        if (Filter != null)
+        {
+            SqliteDataReader reader = SQLCommands.GetRecords(Filter);
         }
     }
 
@@ -122,7 +130,7 @@ internal class CRUDController
         throw new NotImplementedException();
     }
 
-    internal static void FilterRecords()
+    internal static FilterDetails FilterRecords()
     {
         string start = null;
         string end = null;
@@ -132,20 +140,20 @@ internal class CRUDController
         string durationMin = null;
         string durationMax = null;
 
-        Dictionary<string, string> dic = new Dictionary<string, string>()
-        {
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)0), start},
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), end},
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), linesMin},
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), linesMax},
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), comments},
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), durationMin},
-            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), durationMax}
-        };
-
         bool runFilterMenuLoop = true;
         while (runFilterMenuLoop)
         {
+            Dictionary<string, string> dic = new Dictionary<string, string>()
+            {
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)0), start},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), end},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), linesMin},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), linesMax},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), comments},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), durationMin},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), durationMax}
+            };
+
             System.Console.Clear();
 
             bool shouldBlock = false;
@@ -165,8 +173,16 @@ internal class CRUDController
             switch (userOption)
             {
                 case -1:
-                    throw new NotImplementedException();
-                break;
+                    return new FilterDetails()
+                    {
+                        FromDate = start,
+                        ToDate = end,
+                        MinLines = linesMin,
+                        MaxLines = linesMax,
+                        Comment = comments,
+                        MinDuration = durationMin,
+                        MaxDuration = durationMax
+                    };
                 case 0:
                     start = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnlyOptional);
                     start = string.IsNullOrEmpty(start) ? start : start.Trim();
@@ -188,11 +204,11 @@ internal class CRUDController
                     comments = string.IsNullOrEmpty(comments) ? comments : comments.Trim();
                 break;
                 case 5:
-                    durationMin = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d-hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
+                    durationMin = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
                     durationMin = string.IsNullOrEmpty(durationMin) ? durationMin : durationMin.Trim();
                 break;
                 case 6:
-                    durationMax = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d-hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
+                    durationMax = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
                     durationMax = string.IsNullOrEmpty(durationMax) ? durationMax : durationMax.Trim();
                 break;
                 case 7:
@@ -200,5 +216,6 @@ internal class CRUDController
                 break;
             }
         }
+        return null;
     }
 }

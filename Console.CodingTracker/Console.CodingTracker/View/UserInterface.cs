@@ -128,8 +128,8 @@ internal class UserInterface
             prompt.Validate((s) => s switch
             {
                 "" => ValidationResult.Success(),
-                string when TimeSpan.TryParseExact(s,@"d\-hh\:mm",new CultureInfo("en-GB"), TimeSpanStyles.None, out _) => ValidationResult.Success(),
-                _ => ValidationResult.Error("The time span you have given is not in \"d-hh:mm\" format. Please try again."),
+                string when TimeSpan.TryParseExact(s,@"d\ hh\:mm",new CultureInfo("en-GB"), TimeSpanStyles.None, out _) => ValidationResult.Success(),
+                _ => ValidationResult.Error("The time span you have given is not in \"d hh:mm\" format. Please try again."),
             });
         }
 

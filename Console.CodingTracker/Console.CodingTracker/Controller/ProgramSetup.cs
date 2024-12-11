@@ -37,5 +37,16 @@ internal class ProgramSetup
 
     }
 
+    internal static int NonUniformValueInRange(int min, int max, double lambda)
+    {
+        if (lambda <= 0)
+        {
+            throw new ArgumentException();
+        }
+
+        Random rand = new Random();
+        double x = rand.NextDouble();
+
+    }
 
 }

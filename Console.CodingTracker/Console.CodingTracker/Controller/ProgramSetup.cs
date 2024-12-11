@@ -26,4 +26,16 @@ internal class ProgramSetup
             conn.Close();
         }
     }
+
+    internal static void CreateMockTablebase()
+    {
+        int minYear = Settings.MockTableBaseMinYear;
+        int numOfLines = Settings.MockTableBaseNumberOfLines;
+        double minSessionTime = Settings.MockTableBaseMinTime.TotalMinutes;
+        double maxSessionTime = Settings.MockTableBaseMaxTime.TotalMinutes;
+
+
+    }
+
+
 }

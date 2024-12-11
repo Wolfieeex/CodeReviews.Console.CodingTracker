@@ -38,6 +38,7 @@ internal class SQLCommands
         string whereInject = "";
         if (filter != null)
         {
+            
             if (!String.IsNullOrEmpty(filter.FromDate))
             {
                 whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";

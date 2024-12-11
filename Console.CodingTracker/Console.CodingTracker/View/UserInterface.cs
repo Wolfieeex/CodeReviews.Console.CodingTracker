@@ -1,6 +1,8 @@
 ﻿using Spectre.Console;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Reflection;
+using Console.CodingTracker.Model;
 
 namespace Console.CodingTracker.View;
 
@@ -138,13 +140,70 @@ internal class UserInterface
 
     public static bool DisplayConfirmationSelection(string title, string positive, string negative)
     {
+        positive = positive.ToLower();
+        negative = negative.ToLower();
+
         System.Console.Clear();
         bool addAnotherRecord = AnsiConsole.Prompt(
             new TextPrompt<bool>(title)
             .AddChoice(true)
             .AddChoice(false)
             .DefaultValue(false)
-            .WithConverter(choice => choice ? positive : negative));
-        return false;
+            .WithConverter(choice => choice ? positive : negative));     
+        return addAnotherRecord;
+    }
+
+    public static void DrawDatatable(List<Session> list, bool[] viewSettings, bool automaticalDataFormatting = true)
+    {
+        Type type = list[0].GetType();
+
+        Table table = new Table();
+
+        FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        string[] names = Array.ConvertAll(fields, f => f.Name);
+        for (int i = 0; i < names.Length; i++)
+        {
+            names[i] = Regex.Match(names[i], @"(?<=<)[A-Za-z0-9]*(?=>)").Value;
+            names[i] = Regex.Replace(names[i], @"(?<=.+)([A-Z])", @" $1");
+        }
+
+        int interval = 0;
+        foreach (string n in names)
+        {
+            if (viewSettings.Length > interval)
+            {
+                if (viewSettings[interval] == true)
+                {
+                    table.AddColumn(n);
+                }
+            }
+            else
+            {
+                table.AddColumn(n);
+            }
+            interval++;
+        }
+
+        foreach (Session line in list)
+        {
+            List<string> newRow = new();
+            for (int i = 0; i < fields.Length; i++)
+            {
+                if (viewSettings[i] == true)
+                {
+                    string rowValue = fields[i].GetValue(line).ToString();
+                    if (automaticalDataFormatting)
+                    {
+                        rowValue = Regex.Replace(rowValue, @"(?<=^[0-9]*)\.+(?=\d{2}:\d{2}:\d{2}$)", @" days, ");
+                        rowValue = rowValue == "-1" ? "-" : rowValue;
+                    }
+                    newRow.Add(rowValue);
+                }
+            }
+            string[] rowToAdd = newRow.ToArray();
+            table.AddRow(rowToAdd);
+        }
+
+        AnsiConsole.Write(table);
     }
 }

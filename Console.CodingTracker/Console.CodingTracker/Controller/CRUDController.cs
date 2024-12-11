@@ -114,10 +114,14 @@ internal class CRUDController
             System.Console.ReadKey();
         }
 
-        if (Filter != null)
+        List<Session> sessions = SQLCommands.GetRecords(Filter);
+        if (sessions != null && sessions.Any())
         {
-            SqliteDataReader reader = SQLCommands.GetRecords(Filter);
+            bool[] tableFieldSettings = { false, false, true, true, true, true, true, false };
+            UserInterface.DrawDatatable(sessions, tableFieldSettings);
+            System.Console.ReadKey();
         }
+
     }
 
     internal static void UpdateSessionDetails()

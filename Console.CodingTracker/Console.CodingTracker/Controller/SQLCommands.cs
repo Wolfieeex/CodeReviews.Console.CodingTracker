@@ -8,18 +8,18 @@ namespace Console.CodingTracker.Controller;
 internal class SQLCommands
 {
     public static List<Session> CurrentSessions { get; private set; } = new List<Session>();
-    internal static string InjectRecord(string startDate, string endDate, int? lines, string comments)
+    internal static string InjectRecord(Session session)
     {
-        TimeSpan codingSpan = CalculateDuration(startDate, endDate);
+        TimeSpan codingSpan = CalculateDuration(session.StartDate, session.EndDate);
         string stringCodingSpan = codingSpan.ToString();
 
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
             string commString = @$"INSERT INTO '{Settings.DatabaseName}' 
-                                ('Creation date', 'Last update date', 'Start date', 'End date', Duration, 'Lines of code', Comments)
-                                VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments)";
-            var newRow = new { Creation = DateTime.Now, Update = DateTime.Now, Start = startDate, End = endDate, Duration = stringCodingSpan, Lines = lines.HasValue ? lines : -1, Comments = String.IsNullOrEmpty(comments) ? "" : comments };
+                                ('Creation date', 'Last update date', 'Start date', 'End date', Duration, 'Lines of code', Comments, 'Was Timer Tracked')
+                                VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments, @Timer)";
+            var newRow = new { Creation = session.CreationDate, Update = session.LastUpdateData, Start = session.StartDate, End = session.EndDate, Duration = session.Duration, Lines = session.NumberOfLines.HasValue ? session.NumberOfLines : -1, Comments = String.IsNullOrEmpty(session.Comments) ? "" : session.Comments, Timer = session.WasTimerTracked ? 1 : 0 };
             conn.Execute(commString, newRow);
             conn.Close();
         }

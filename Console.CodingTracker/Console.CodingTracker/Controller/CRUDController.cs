@@ -2,6 +2,7 @@
 using Console.CodingTracker.Model;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
+using SQLitePCL;
 
 namespace Console.CodingTracker.Controller;
 
@@ -77,7 +78,14 @@ internal class CRUDController
                         trackNewSessionLoop = false;
                         break;
                     case -1:
-                        string duration = SQLCommands.InjectRecord(start, end, lines, comments);
+                        string duration = SQLCommands.InjectRecord(new Session(DateTime.Now.ToString($"dd/MM/yyyy, hh:mm"), 
+                                                                               DateTime.Now.ToString($"dd/MM/yyyy, hh:mm"), 
+                                                                               start,
+                                                                               end,
+                                                                               SQLCommands.CalculateDuration(start, end).ToString(),
+                                                                               lines,
+                                                                               comments,
+                                                                               false));
                         duration = duration.Replace(".", " days, ");
                         duration += " hours";
                         bool addAnotherRecord = UserInterface.DisplayConfirmationSelection($"Coding session of duration [Pink1]{duration} has been added![/]\nWould you like to [Pink1]add another record[/], or [Pink1]return to the main menu[/]?:\n", "Add", "Return");

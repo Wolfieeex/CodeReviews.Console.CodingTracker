@@ -19,11 +19,17 @@ internal class ProgramSetup
                                 'End date' TEXT,
                                 Duration TEXT,
                                 'Lines of code' INT,
-                                Comments TEXT
+                                Comments TEXT,
+                                'Was Timer Tracked' TEXT
                                 )";
             new SqliteCommand(commString, conn).ExecuteNonQuery();
 
             conn.Close();
+        }
+
+        if (Settings.CreateMockTablebase)
+        {
+            CreateMockTablebase();
         }
     }
 
@@ -43,24 +49,24 @@ internal class ProgramSetup
         double chanceThatWasCommented = 0.9;
         double chanceThatWasTimerTracked = 0.95;
 
-        long minYearTicks = new DateTime(minYear, 0, 0, 0, 0, 0).Ticks;
+        long minYearTicks = new DateTime(minYear, 1, 1, 0, 0, 0).Ticks;
         long maxYearTicks = DateTime.Now.Subtract(Settings.MockTableBaseMaxTime).Ticks;
 
         for (int i = 0; i < Settings.MockTableBaseNumberOfLines; i++)
         {
             string CreationDate = "";
-            string LastUpdateData = "";
+            string LastUpdateDate = "";
             string StartDate = "";
             string EndDate = "";
             string Duration = "";
-            int? NmberOfLines;
+            int? NumberOfLines;
             string Comments = "";
             bool WasTimerTracked = false;
 
-            int creationTick = RandomExponentialValueInRange((int)minYearTicks, (int)maxYearTicks, 0.35);
+            long creationTick = RandomExponentialValueInRange(minYearTicks, maxYearTicks, 0.35);
             
-            int duration = RandomExponentialValueInRange((int)minSessionTime, (int)maxSessionTime, 0.15);
-            TimeSpan timeSpanduration = new TimeSpan(0, 0, duration);
+            long duration = RandomExponentialValueInRange(minSessionTime, maxSessionTime, 0.15);
+            TimeSpan timeSpanduration = new TimeSpan(0, 0, (int)duration);
 
             DateTime start = new DateTime(creationTick);
             DateTime end = start.Add(timeSpanduration);
@@ -69,12 +75,12 @@ internal class ProgramSetup
 
             if (PercentageChanceGenerator(chanceThatWasUpdated))
             { 
-                int updateVariation = RandomExponentialValueInRange((int)minUpdateVariation, (int)maxUpdateVariation, 0.1);
+                int updateVariation = (int)RandomExponentialValueInRange((long)minUpdateVariation, (long)maxUpdateVariation, 0.1);
                 TimeSpan timeSpanUpdateVariation = new TimeSpan(0, 0, updateVariation);
 
                 if (PercentageChanceGenerator(0.5))
                 {
-                    int endTimeVariation = RandomExponentialValueInRange((int)minEndTimeVariation, (int)maxEndTimeVariation, 0.4);
+                    int endTimeVariation = (int)RandomExponentialValueInRange((long)minEndTimeVariation, (long)maxEndTimeVariation, 0.4);
                     TimeSpan timeSpanEndTimeVariation = new TimeSpan(0, 0, endTimeVariation);
 
                     end = end.Add(timeSpanEndTimeVariation);
@@ -84,7 +90,7 @@ internal class ProgramSetup
                     bool timeSpanIsNegative = true;
                     while (timeSpanIsNegative)
                     {
-                        int endTimeVariation = RandomExponentialValueInRange((int)minEndTimeVariation, (int)maxEndTimeVariation, 0.4);
+                        int endTimeVariation = (int)RandomExponentialValueInRange((long)minEndTimeVariation, (long)maxEndTimeVariation, 0.4);
                         TimeSpan timeSpanEndTimeVariation = new TimeSpan(0, 0, endTimeVariation);
                         DateTime temptEnd = end;
 
@@ -104,17 +110,29 @@ internal class ProgramSetup
                 update = end;
             }
 
-            // CreationDate = actual creation srring. Same for the rest of the dates, then duration. Rest should be easy peasy.
-            // Issue with pushing changes (not stached changes on the home PC?).
+            CreationDate = creation.ToString($"dd/MM/yyyy, hh:MM");
+            LastUpdateDate = update.ToString($"dd/MM/yyyy, hh:MM");
+            StartDate = start.ToString($"dd/MM/yyyy, hh:MM");
+            EndDate = end.ToString($"dd/MM/yyyy, hh:MM");
+            // Problem here! DateTime in not recognised format: Duration = (start - end).ToString();
+            NumberOfLines = (int)RandomExponentialValueInRange(0, (long)numOfLines, 0.9);
+            Random ran = new Random();
+            double ifCommentRoll  = ran.NextDouble();
+            if (ifCommentRoll < chanceThatWasCommented)
+            {
+                int commentRoll = ran.Next(0, Session.ProgrammingComments.Length);
+                Comments = Session.ProgrammingComments[commentRoll];
+            }
+            double TimerRoll = ran.NextDouble();
+            WasTimerTracked = TimerRoll > chanceThatWasTimerTracked ? false : true;
 
-
-
-
-            string Creation = new DateTime().ToString();
+            Session session = new Session(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines, Comments, WasTimerTracked);
+            
+            SQLCommands.InjectRecord(session);
         }
     }
 
-    internal static int RandomExponentialValueInRange(int min, int max, double lambda)
+    internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {
         if (lambda < 0 || lambda > 1)
         {
@@ -124,7 +142,7 @@ internal class ProgramSetup
         Random ran = new Random();
         double roll = ran.NextDouble();
 
-        return min + (max - min) * (int)Math.Round(Math.Pow(roll, lambda));
+        return min + (long)Math.Round((max - min) * Math.Pow(roll, lambda));
     }
 
     internal static bool PercentageChanceGenerator(double num)

@@ -10,4 +10,5 @@ catch (Exception ex)
 {
     System.Console.Clear();
     System.Console.WriteLine(ex.Message);
+    System.Console.WriteLine(ex.StackTrace);
 }

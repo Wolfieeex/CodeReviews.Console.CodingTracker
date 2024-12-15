@@ -104,7 +104,8 @@ internal class ProgramSetup
                 update = end;
             }
 
-            //CreationDate = actual creation srring. Same for the rest of the dates, then duration. Rest should be easy peasy.
+            // CreationDate = actual creation srring. Same for the rest of the dates, then duration. Rest should be easy peasy.
+            // Issue with pushing changes (not stached changes on the home PC?).
 
 
 

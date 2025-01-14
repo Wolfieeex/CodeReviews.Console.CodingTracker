@@ -1,7 +1,7 @@
 ﻿using Console.CodingTracker.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
-using System.Data;
+using Spectre.Console;
 
 namespace Console.CodingTracker.Controller;
 
@@ -36,36 +36,38 @@ internal class SQLCommands
         List<Session> records = new List<Session>();
 
         string whereInject = "";
+        Dictionary<string, object> parameters = new Dictionary<string, object>();
         if (filter != null)
         {
             
             if (!String.IsNullOrEmpty(filter.FromDate))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' <=  substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 '";
+                parameters.Add("@FromDate", DateTimeSqliteStringConvert(filter.FromDate));
             }
             if (!String.IsNullOrEmpty(filter.ToDate))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' => substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 '";
             }
             if (!String.IsNullOrEmpty(filter.MinDuration))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND ";
             }
             if (!String.IsNullOrEmpty(filter.MaxDuration))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND ";
             }
             if (!String.IsNullOrEmpty(filter.MinLines))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND ""Lines of code"" >= {filter.MinLines}";
             }
             if (!String.IsNullOrEmpty(filter.MaxLines))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND ""Lines of code"" <= {filter.MaxLines}";
             }
             if (!String.IsNullOrEmpty(filter.Comment))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' >  substr('Start date', 7, 4) || '-' || substr('Start date', 4, 2) || '-' || substr('Start date', 1, 2) || ' ' || substr('Start date', 13, 5) || ':00 '";
+                whereInject += $@"AND Comments LIKE '%{filter.Comment}%'";
             }
 
             if (whereInject.Contains("AND"))
@@ -78,12 +80,25 @@ internal class SQLCommands
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
-            string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
+            string commandString = @$"SELECT IIF(instr(Duration, '.') = 0, substr(Duration, 0, instr(Duration, '.') - 1), '8') || ' ' || substr(Duration, instr(Duration, ':') - 2, 2) || ' ' || substr(Duration, instr(Duration, ':') + 1, 2) || ' ' || substr(Duration, instr(Duration, ':') + 4, 2) FROM {Settings.DatabaseName}";
 
-            System.Data.IDataReader reader = conn.ExecuteReader(commandString);
+            //24 * (substr(Duration, 0, instr(Duration, '.') - 1) + substr(Duration, len(Duration) - 8, 2)
+            // !! string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
+            System.Data.IDataReader reader;
+            if (parameters.Count != 0)
+            {
+                DynamicParameters dynamicParameters = new DynamicParameters(parameters);
+                reader = conn.ExecuteReader(commandString, dynamicParameters);
+            }
+            else
+            {
+                reader = conn.ExecuteReader(commandString);
+            }
+
             while (reader.Read())
             {
-                records.Add(new Session(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), false));
+                System.Console.WriteLine(reader.GetString(0));
+                // !! records.Add(new Session(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), false));
             }
 
             conn.Close();
@@ -101,4 +116,11 @@ internal class SQLCommands
         returnDate += datetime.Substring(12, 2) + ":" + datetime.Substring(15, 2) + ":" + "00";
         return returnDate;
     }
+
+    /*internal static string TimeSpanSqliteStringConvert(string timespan)
+    {
+
+
+        return;
+    }*/
 }

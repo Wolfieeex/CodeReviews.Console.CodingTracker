@@ -1,5 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using Console.CodingTracker.Model;
+using Dapper;
+using System.Data;
 
 namespace Console.CodingTracker.Controller;
 
@@ -24,12 +26,21 @@ internal class ProgramSetup
                                 )";
             new SqliteCommand(commString, conn).ExecuteNonQuery();
 
-            conn.Close();
-        }
+            commString = $"SELECT * FROM '{Settings.DatabaseName}'";
+            System.Data.IDataReader reader = conn.ExecuteReader(commString);
 
-        if (Settings.CreateMockTablebase)
-        {
-            CreateMockTablebase();
+            bool isDbNull = false;
+            if (!reader.Read())
+            {
+                isDbNull = true;
+            }
+
+            conn.Close();
+
+            if (Settings.CreateMockTablebase && isDbNull)
+            {
+                CreateMockTablebase();
+            }
         }
     }
 
@@ -63,9 +74,9 @@ internal class ProgramSetup
             string Comments = "";
             bool WasTimerTracked = false;
 
-            long creationTick = RandomExponentialValueInRange(minYearTicks, maxYearTicks, 0.35);
+            long creationTick = RandomExponentialValueInRange(minYearTicks, maxYearTicks, 0.85);
             
-            long duration = RandomExponentialValueInRange(minSessionTime, maxSessionTime, 0.15);
+            long duration = RandomExponentialValueInRange(minSessionTime, maxSessionTime, 1);
             TimeSpan timeSpanduration = new TimeSpan(0, 0, (int)duration);
 
             DateTime start = new DateTime(creationTick);
@@ -110,11 +121,11 @@ internal class ProgramSetup
                 update = end;
             }
 
-            CreationDate = creation.ToString($"dd/MM/yyyy, hh:MM");
-            LastUpdateDate = update.ToString($"dd/MM/yyyy, hh:MM");
-            StartDate = start.ToString($"dd/MM/yyyy, hh:MM");
-            EndDate = end.ToString($"dd/MM/yyyy, hh:MM");
-            // Problem here! DateTime in not recognised format: Duration = (start - end).ToString();
+            CreationDate = creation.ToString($"dd/MM/yyyy, HH:MM");
+            LastUpdateDate = update.ToString($"dd/MM/yyyy, HH:MM");
+            StartDate = start.ToString($"dd/MM/yyyy, HH:MM");
+            EndDate = end.ToString($"dd/MM/yyyy, HH:MM");
+            Duration = (end - start).ToString();
             NumberOfLines = (int)RandomExponentialValueInRange(0, (long)numOfLines, 0.9);
             Random ran = new Random();
             double ifCommentRoll  = ran.NextDouble();
@@ -134,9 +145,9 @@ internal class ProgramSetup
 
     internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {
-        if (lambda < 0 || lambda > 1)
+        if (lambda < -1 || lambda > 1)
         {
-            throw new ArgumentException("Lambda value has to be in range of 0 and 1.");
+            throw new ArgumentException("Lambda value has to be in range of -1 and 1.");
         }
 
         Random ran = new Random();

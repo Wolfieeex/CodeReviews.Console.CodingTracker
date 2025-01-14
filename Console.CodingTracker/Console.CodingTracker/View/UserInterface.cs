@@ -105,12 +105,13 @@ internal class UserInterface
         if (UIOptions == TextUIOptions.Optional || UIOptions == TextUIOptions.NumbersOnlyOptional || UIOptions == TextUIOptions.DateOnlyOptional || UIOptions == TextUIOptions.TimeSpanOnlyOptional)
         {
             prompt.AllowEmpty();
+            // Optional titles allow escape with null ("") value
         }
 
         if (UIOptions == TextUIOptions.NumbersOnly || UIOptions == TextUIOptions.NumbersOnlyOptional)
         {
             prompt.Validate((s) => s switch
-            {
+            { 
                 ("") => ValidationResult.Success(),
                 string when (int.TryParse(s, out _)) => ValidationResult.Success(),
                 (_) => ValidationResult.Error("Your insert needs to represent an integer."),
@@ -159,12 +160,15 @@ internal class UserInterface
 
         Table table = new Table();
 
+
         FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         string[] names = Array.ConvertAll(fields, f => f.Name);
         for (int i = 0; i < names.Length; i++)
         {
             names[i] = Regex.Match(names[i], @"(?<=<)[A-Za-z0-9]*(?=>)").Value;
             names[i] = Regex.Replace(names[i], @"(?<=.+)([A-Z])", @" $1");
+            names[i] = names[i].Insert(0, "[yellow]");
+            names[i] += "[/]";
         }
 
         int interval = 0;
@@ -194,7 +198,15 @@ internal class UserInterface
                     string rowValue = fields[i].GetValue(line).ToString();
                     if (automaticalDataFormatting)
                     {
-                        rowValue = Regex.Replace(rowValue, @"(?<=^[0-9]*)\.+(?=\d{2}:\d{2}:\d{2}$)", @" days, ");
+                        bool isMatch = Regex.IsMatch(rowValue, @"(?<=^1)\.+(?=\d{2}:\d{2}:\d{2}$)");
+                        if (isMatch)
+                        {
+                            rowValue = Regex.Replace(rowValue, @"(?<=^1)\.+(?=\d{2}:\d{2}:\d{2}$)", @" day, ");
+                        }
+                        else
+                        {
+                            rowValue = Regex.Replace(rowValue, @"(?<=^[0-9]*)\.+(?=\d{2}:\d{2}:\d{2}$)", @" days, ");
+                        }
                         rowValue = rowValue == "-1" ? "-" : rowValue;
                     }
                     newRow.Add(rowValue);
@@ -203,7 +215,11 @@ internal class UserInterface
             string[] rowToAdd = newRow.ToArray();
             table.AddRow(rowToAdd);
         }
-
+        table.Title("View previous records:", new Style().Foreground(Color.LightPink3));
+        table.Expand();
+        table.Border = TableBorder.DoubleEdge;
+        table.ShowRowSeparators();
+        table.BorderColor(Color.SteelBlue3);
         AnsiConsole.Write(table);
     }
 }

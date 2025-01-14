@@ -3,6 +3,7 @@ using Console.CodingTracker.Model;
 
 try
 {
+    TemporaryData.InitializeLastFilter();
     ProgramSetup.InstantiateDatabase();
     ScreenController.S_Mainmenu();
 }

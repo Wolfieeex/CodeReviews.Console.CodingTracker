@@ -22,6 +22,7 @@ internal enum TrackNewSession
 
 internal enum FilterRecords
 {
+    ClearFilters,
     OptionalFromDate,
     OptionalToDate,
     OptionalMinimalNumberOfLines,

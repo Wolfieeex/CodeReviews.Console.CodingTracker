@@ -241,13 +241,16 @@ internal class CRUDController
                     TemporaryData.lastFilter = finalFilter;
                     return finalFilter;
                 case 0:
-                    start = null;
-                    end = null;
-                    linesMin = null;
-                    linesMax = null;
-                    comments = null;
-                    durationMin = null;
-                    durationMax = null;
+                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to remove all your previous filters?", "Yes", "No"))
+                    {
+                        start = null;
+                        end = null;
+                        linesMin = null;
+                        linesMax = null;
+                        comments = null;
+                        durationMin = null;
+                        durationMax = null;
+                    }
                     break;
                 case 1:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);

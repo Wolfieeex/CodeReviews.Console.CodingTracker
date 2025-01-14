@@ -171,6 +171,7 @@ internal class UserInterface
         }
 
         int interval = 0;
+        table.AddColumn("[yellow]Index[/]");
         foreach (string n in names)
         {
             if (viewSettings.Length > interval)
@@ -187,9 +188,12 @@ internal class UserInterface
             interval++;
         }
 
+        interval = 0;
         foreach (Session line in list)
         {
+            interval++;
             List<string> newRow = new();
+            newRow.Add(interval.ToString());
             for (int i = 0; i < fields.Length; i++)
             {
                 if (viewSettings[i] == true)

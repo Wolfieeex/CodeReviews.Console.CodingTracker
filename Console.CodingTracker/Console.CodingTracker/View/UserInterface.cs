@@ -100,37 +100,36 @@ internal class UserInterface
 
     public static string? DisplayTextUI(string title, TextUIOptions UIOptions)
     {
-        TextPrompt<string> prompt = new(title);
+        TextPrompt<string> prompt = new(title + "[red]Leave this space blank[/] to clear the previous insert or [red]input \"E\"[/] to go back to filter menu: ");
+        prompt.AllowEmpty();
 
-        if (UIOptions == TextUIOptions.Optional || UIOptions == TextUIOptions.NumbersOnlyOptional || UIOptions == TextUIOptions.DateOnlyOptional || UIOptions == TextUIOptions.TimeSpanOnlyOptional)
-        {
-            prompt.AllowEmpty();
-            // Optional titles allow escape with null ("") value
-        }
 
         if (UIOptions == TextUIOptions.NumbersOnly || UIOptions == TextUIOptions.NumbersOnlyOptional)
         {
-            prompt.Validate((s) => s switch
+            prompt.Validate((s) => s.ToLower() switch
             { 
                 ("") => ValidationResult.Success(),
+                ("e") => ValidationResult.Success(),
                 string when (int.TryParse(s, out _)) => ValidationResult.Success(),
                 (_) => ValidationResult.Error("Your insert needs to represent an integer."),
             });
         }
         if (UIOptions == TextUIOptions.DateOnly || UIOptions == TextUIOptions.DateOnlyOptional)
         {
-            prompt.Validate((s) => s switch
+            prompt.Validate((s) => s.ToLower() switch
             {
                 "" => ValidationResult.Success(),
+                ("e") => ValidationResult.Success(),
                 string when DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out _) => ValidationResult.Success(),
                 _ => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
             });
         }
         if (UIOptions == TextUIOptions.TimeSpanOnly || UIOptions == TextUIOptions.TimeSpanOnlyOptional)
         {
-            prompt.Validate((s) => s switch
+            prompt.Validate((s) => s.ToLower() switch
             {
                 "" => ValidationResult.Success(),
+                ("e") => ValidationResult.Success(),
                 string when TimeSpan.TryParseExact(s,@"d\ hh\:mm",new CultureInfo("en-GB"), TimeSpanStyles.None, out _) => ValidationResult.Success(),
                 _ => ValidationResult.Error("The time span you have given is not in \"d hh:mm\" format. Please try again."),
             });

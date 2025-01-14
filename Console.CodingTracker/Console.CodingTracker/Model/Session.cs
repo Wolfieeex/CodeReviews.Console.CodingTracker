@@ -2,6 +2,7 @@
 
 internal class Session
 {
+    // AI generated
     internal static string[] ProgrammingComments { get; private set; } = 
         {
             "Great job on that function!",

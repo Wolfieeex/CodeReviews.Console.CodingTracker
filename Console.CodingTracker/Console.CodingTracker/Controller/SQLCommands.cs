@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Spectre.Console;
+using System;
 
 namespace Console.CodingTracker.Controller;
 
@@ -42,32 +43,32 @@ internal class SQLCommands
             
             if (!String.IsNullOrEmpty(filter.FromDate))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' <=  substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 '";
+                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' <=  substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 ' ";
                 parameters.Add("@FromDate", DateTimeSqliteStringConvert(filter.FromDate));
             }
             if (!String.IsNullOrEmpty(filter.ToDate))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' => substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 '";
+                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' => substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 ' ";
             }
             if (!String.IsNullOrEmpty(filter.MinDuration))
             {
-                whereInject += $@"AND ";
+                whereInject += $@"AND {TimeSpanSqliteStringConvert(filter.MinDuration)} <= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) ";
             }
             if (!String.IsNullOrEmpty(filter.MaxDuration))
             {
-                whereInject += $@"AND ";
+                whereInject += $@"AND {TimeSpanSqliteStringConvert(filter.MaxDuration)} >= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) ";
             }
             if (!String.IsNullOrEmpty(filter.MinLines))
             {
-                whereInject += $@"AND ""Lines of code"" >= {filter.MinLines}";
+                whereInject += $@"AND ""Lines of code"" >= {filter.MinLines} ";
             }
             if (!String.IsNullOrEmpty(filter.MaxLines))
             {
-                whereInject += $@"AND ""Lines of code"" <= {filter.MaxLines}";
+                whereInject += $@"AND ""Lines of code"" <= {filter.MaxLines} ";
             }
             if (!String.IsNullOrEmpty(filter.Comment))
             {
-                whereInject += $@"AND Comments LIKE '%{filter.Comment}%'";
+                whereInject += $@"AND Comments LIKE '%{filter.Comment}%' ";
             }
 
             if (whereInject.Contains("AND"))
@@ -80,10 +81,10 @@ internal class SQLCommands
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
-            string commandString = @$"SELECT IIF(instr(Duration, '.') = 0, substr(Duration, 0, instr(Duration, '.') - 1), '8') || ' ' || substr(Duration, instr(Duration, ':') - 2, 2) || ' ' || substr(Duration, instr(Duration, ':') + 1, 2) || ' ' || substr(Duration, instr(Duration, ':') + 4, 2) FROM {Settings.DatabaseName}";
+            //string commandString = @$"SELECT IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) FROM {Settings.DatabaseName}";
 
-            //24 * (substr(Duration, 0, instr(Duration, '.') - 1) + substr(Duration, len(Duration) - 8, 2)
-            // !! string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
+            //'{TimeSpanSqliteStringConvert(filter.MinDuration)}' >= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2)"
+            string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
             System.Data.IDataReader reader;
             if (parameters.Count != 0)
             {
@@ -95,10 +96,10 @@ internal class SQLCommands
                 reader = conn.ExecuteReader(commandString);
             }
 
+            int counter = 0;
             while (reader.Read())
             {
-                System.Console.WriteLine(reader.GetString(0));
-                // !! records.Add(new Session(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), false));
+                records.Add(new Session(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), false));
             }
 
             conn.Close();
@@ -117,10 +118,15 @@ internal class SQLCommands
         return returnDate;
     }
 
-    /*internal static string TimeSpanSqliteStringConvert(string timespan)
+    internal static string TimeSpanSqliteStringConvert(string timespan)
     {
+        int timespanCalculated = 0;
+        int spacePosition = timespan.IndexOf(' ');
+        int ColonPosition = timespan.IndexOf(':');
+        timespanCalculated += spacePosition == -1 ? 0 : Int32.Parse(timespan.Substring(0, spacePosition)) * 24 * 3600;
+        timespanCalculated += Int32.Parse(timespan.Substring(ColonPosition - 2, 2)) * 3600;
+        timespanCalculated += Int32.Parse(timespan.Substring(ColonPosition + 1, 2)) * 60;
 
-
-        return;
-    }*/
+        return timespanCalculated.ToString();
+    }
 }

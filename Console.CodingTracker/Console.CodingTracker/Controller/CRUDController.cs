@@ -52,27 +52,51 @@ internal class CRUDController
             }
             finally
             {
+                string temp = "";
                 switch (userOption)
                 {
                     case 0:
-                        start = UserInterface.DisplayTextUI("Please insert [Blue]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnly);
+                        temp = UserInterface.DisplayTextUI("Please insert [Blue]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                        if (temp.ToLower() == "e")
+                        {
+                            break;
+                        }
+                        start = temp;
                         start.Trim();
                         break;
                     case 1:
-                        end = UserInterface.DisplayTextUI("Please insert [Blue]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnly);
+                        temp = UserInterface.DisplayTextUI("Please insert [Blue]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                        if (temp.ToLower() == "e")
+                        {
+                            break;
+                        }
+                        end = temp;
                         end.Trim();
                         break;
                     case 2:
-                        string l = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session: ", TextUIOptions.NumbersOnlyOptional);
-                        if (l != null && l != "")
+                        temp = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional);
+                        if (temp.ToLower() == "e")
                         {
-                            l.Trim();
-                            lines = int.Parse(l);
+                            break;
+                        }
+                        if (temp != null && temp != "")
+                        {
+                            temp.Trim();
+                            lines = int.Parse(temp);
+                        }
+                        else
+                        {
+                            lines = null;
                         }
                         break;
                     case 3:
-                        comments = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add: ", TextUIOptions.Optional);
-                        comments = string.IsNullOrEmpty(comments) ? comments : comments.Trim();
+                        temp = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add. ", TextUIOptions.Optional);
+                        if (temp.ToLower() == "e")
+                        {
+                            break;
+                        }
+                        temp = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
+                        comments = temp;
                         break;
                     case 4:
                         trackNewSessionLoop = false;
@@ -200,6 +224,7 @@ internal class CRUDController
 
             int? userOption = UserInterface.DisplaySelectionUIWithUserInputs("Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, "[red]The start date of your session must be before the end date of your session:[/]");
 
+            string temp = "";
             switch (userOption)
             {
                 case -1:
@@ -225,32 +250,60 @@ internal class CRUDController
                     durationMax = null;
                     break;
                 case 1:
-                    start = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnlyOptional);
-                    start = string.IsNullOrEmpty(start) ? start : start.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    start = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 2:
-                    end = UserInterface.DisplayTextUI("Please insert [Blue]the date to which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format: ", TextUIOptions.DateOnlyOptional);
-                    end = string.IsNullOrEmpty(end) ? end : end.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the date to which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    end = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 3:
-                    linesMin = UserInterface.DisplayTextUI("Please insert [Blue]the minimal number of lines[/] for searched sessions: ", TextUIOptions.NumbersOnlyOptional);
-                    linesMin = string.IsNullOrEmpty(linesMin) ? linesMin : linesMin.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the minimal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    linesMin = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 4:
-                    linesMax = UserInterface.DisplayTextUI("Please insert [Blue]the maximal number of lines[/] for searched sessions: ", TextUIOptions.NumbersOnlyOptional);
-                    linesMax = string.IsNullOrEmpty(linesMax) ? linesMax : linesMax.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the maximal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    linesMax = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 5:
-                    comments = UserInterface.DisplayTextUI("Please insert [Blue]part of the comment[/] you want to search for: ", TextUIOptions.Optional);
-                    comments = string.IsNullOrEmpty(comments) ? comments : comments.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]part of the comment[/] you want to search for. ", TextUIOptions.Optional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    comments = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 6:
-                    durationMin = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
-                    durationMin = string.IsNullOrEmpty(durationMin) ? durationMin : durationMin.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    durationMin = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 7:
-                    durationMax = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d hh:mm\" format: ", TextUIOptions.TimeSpanOnlyOptional);
-                    durationMax = string.IsNullOrEmpty(durationMax) ? durationMax : durationMax.Trim();
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
+                    if (temp == "e")
+                    {
+                        break;
+                    }
+                    durationMax = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
                 case 8:
                     returnToMenu = true;

@@ -32,3 +32,23 @@ internal enum FilterRecords
     OptionalMaximalDuration,
     ReturnToMainMenu
 }
+
+internal enum RecordSessionStartMenu
+{
+    StartTrackingNow,
+    ReturnToMainMenu
+}
+
+internal enum RecordSessionRecording
+{
+    Pause,
+    Discard,
+    Finish
+}
+
+internal enum RecordSessionPause
+{
+    Unpause,
+    Discard,
+    Finish
+}

@@ -1,8 +1,8 @@
 ﻿using Console.CodingTracker.View;
 using Console.CodingTracker.Model;
 using Spectre.Console;
-using Microsoft.Data.Sqlite;
-using SQLitePCL;
+using System.Timers;
+using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.Controller;
 
@@ -129,7 +129,84 @@ internal class CRUDController
     }
     internal static void TrackNewSession()
     {
-        throw new NotImplementedException();
+        int? option = UserInterface.DisplaySelectionUI("Start tracking your [yellow2]new session[/]:", typeof(MenuSelections.RecordSessionStartMenu), Color.GreenYellow);
+
+        if (option == 1)
+        {
+            return;
+        }
+        System.Console.Clear();
+        int secondsPassed = 0;
+        DisplayTimer(secondsPassed);
+
+        DateTime sessionStart = DateTime.Now;
+           
+        System.Timers.Timer timer = new System.Timers.Timer(1000);
+        timer.Elapsed += TimerEvent;
+        timer.AutoReset = true;
+        timer.Enabled = true;
+
+        bool trackerOn = true;
+        while (trackerOn)
+        {
+            option = UserInterface.DisplaySelectionUI(timer.Enabled ? "[blue]Your session is in progress:[/]" : "[blue]Your session is paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), Color.LightSteelBlue);
+
+            switch (option)
+            {
+                case 0:
+                    timer.Enabled = !timer.Enabled;
+                    break;
+                case 1:
+                    timer.Stop();
+                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                    {
+                        timer.Close();
+                        trackerOn = false;
+                        break;
+                    }
+                    System.Console.Clear();
+                    DisplayTimer(secondsPassed);
+                    timer.Start();
+                    break;
+                case 2:
+                    timer.Stop();
+                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
+                    {
+                        timer.Close();
+                        trackerOn = false;
+
+                        string input = AnsiConsole.Prompt(
+                            new TextPrompt<string>("Please insert the number of lines produced."
+                            .
+                            );
+
+                        break;
+                    }
+                    System.Console.Clear();
+                    DisplayTimer(secondsPassed);
+                    timer.Start();
+                    break;
+            }
+        }
+
+        void TimerEvent(Object source, ElapsedEventArgs e)
+        {
+            secondsPassed++;
+            DisplayTimer(secondsPassed);
+        }
+
+        void DisplayTimer(int seconds)
+        {
+            TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+
+            bool isMatch = Regex.IsMatch(timeSpan.ToString(), @"(?<=^1)\.");
+
+            System.Console.Clear();
+            AnsiConsole.Write(
+            new FigletText(Regex.Replace(timeSpan.ToString(), @"\.", isMatch ? " day, " : " days, "))
+                .Centered()
+                .Color(Color.SteelBlue1_1));
+        }
     }
 
 

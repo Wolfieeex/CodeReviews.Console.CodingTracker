@@ -27,6 +27,7 @@ internal class UserInterface
         string userOption = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
         .Title(title)
+        .WrapAround(true)
         .HighlightStyle(new Style().Foreground(highlightcolor)
                                    .Decoration(Decoration.RapidBlink))
         .EnableSearch()
@@ -80,6 +81,7 @@ internal class UserInterface
 
         selectionPrompt
         .Title(blockFinalOption ? blockingMessage : title)
+        .WrapAround(true)
         .HighlightStyle(new Style()
             .Foreground(highlightcolor)
             .Decoration(Decoration.RapidBlink))

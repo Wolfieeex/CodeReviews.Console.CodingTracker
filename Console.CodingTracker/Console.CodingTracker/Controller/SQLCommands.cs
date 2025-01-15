@@ -81,9 +81,7 @@ internal class SQLCommands
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
-            //string commandString = @$"SELECT IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) FROM {Settings.DatabaseName}";
 
-            //'{TimeSpanSqliteStringConvert(filter.MinDuration)}' >= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2)"
             string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
             System.Data.IDataReader reader;
             if (parameters.Count != 0)

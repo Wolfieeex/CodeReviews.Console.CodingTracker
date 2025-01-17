@@ -102,8 +102,8 @@ internal class CRUDController
                         trackNewSessionLoop = false;
                         break;
                     case -1:
-                        string duration = SQLCommands.InjectRecord(new Session(DateTime.Now.ToString($"dd/MM/yyyy, hh:mm"), 
-                                                                               DateTime.Now.ToString($"dd/MM/yyyy, hh:mm"), 
+                        string duration = SQLCommands.InjectRecord(new Session(DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
+                                                                               DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
                                                                                start,
                                                                                end,
                                                                                SQLCommands.CalculateDuration(start, end).ToString(),
@@ -129,70 +129,155 @@ internal class CRUDController
     }
     internal static void TrackNewSession()
     {
-        int? option = UserInterface.DisplaySelectionUI("Start tracking your [yellow2]new session[/]:", typeof(MenuSelections.RecordSessionStartMenu), Color.GreenYellow);
-
-        if (option == 1)
-        {
-            return;
-        }
         System.Console.Clear();
-        int secondsPassed = 0;
-        DisplayTimer(secondsPassed);
-
-        DateTime sessionStart = DateTime.Now;
-           
-        System.Timers.Timer timer = new System.Timers.Timer(1000);
-        timer.Elapsed += TimerEvent;
-        timer.AutoReset = true;
-        timer.Enabled = true;
-
-        bool trackerOn = true;
-        while (trackerOn)
+        bool trackNewSessionLoop = true;
+        while (trackNewSessionLoop)
         {
-            option = UserInterface.DisplaySelectionUI(timer.Enabled ? "[blue]Your session is in progress:[/]" : "[blue]Your session is paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), Color.LightSteelBlue);
+            int? option = UserInterface.DisplaySelectionUI("Start tracking your [yellow2]new session[/]:", typeof(MenuSelections.RecordSessionStartMenu), Color.GreenYellow);
 
-            switch (option)
+            if (option == 1)
             {
-                case 0:
-                    timer.Enabled = !timer.Enabled;
-                    break;
-                case 1:
-                    timer.Stop();
-                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
-                    {
-                        timer.Close();
-                        trackerOn = false;
-                        break;
-                    }
-                    System.Console.Clear();
-                    DisplayTimer(secondsPassed);
-                    timer.Start();
-                    break;
-                case 2:
-                    timer.Stop();
-                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
-                    {
-                        timer.Close();
-                        trackerOn = false;
-
-                        string input = AnsiConsole.Prompt(
-                            new TextPrompt<string>("Please insert the number of lines produced."
-                            .
-                            );
-
-                        break;
-                    }
-                    System.Console.Clear();
-                    DisplayTimer(secondsPassed);
-                    timer.Start();
-                    break;
+                return;
             }
-        }
-
-        void TimerEvent(Object source, ElapsedEventArgs e)
-        {
-            secondsPassed++;
+            System.Console.Clear();
+            int secondsPassed = 0;
             DisplayTimer(secondsPassed);
+
+            DateTime sessionStart = DateTime.Now;
+
+            System.Timers.Timer timer = new System.Timers.Timer(1000);
+            timer.Elapsed += TimerEvent;
+            timer.AutoReset = true;
+            timer.Enabled = true;
+
+            bool trackerOn = true;
+            while (trackerOn)
+            {
+                bool sessionDiscarted = false;
+                option = UserInterface.DisplaySelectionUI(timer.Enabled ? "[blue]Your session is in progress:[/]" : "[blue]Your session is[/] [red]paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), Color.LightSteelBlue);
+
+                switch (option)
+                {
+                    case 0:
+                        timer.Enabled = !timer.Enabled;
+                        break;
+                    case 1:
+                        timer.Stop();
+                        if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                        {
+                            timer.Close();
+                            trackerOn = false;
+                            System.Console.Clear();
+                            break;
+                        }
+                        System.Console.Clear();
+                        DisplayTimer(secondsPassed);
+                        timer.Start();
+                        break;
+                    case 2:
+                        timer.Stop();
+                        System.Console.Clear();
+                        if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
+                        {
+                            
+
+                            System.Console.Clear();
+                            string input = AnsiConsole.Prompt(
+                                new TextPrompt<string>("Please [blue]insert the number of lines produced[/]. If you changed your mind and want to [red]discard this timer[/], insert [red]\"D\"[/]. If you want to [green]continue tracking[/], insert [green]\"R\"[/]: ")
+                                .Validate((s) => s.ToLower() switch
+                                {
+                                    ("r") => ValidationResult.Success(),
+                                    ("d") => ValidationResult.Success(),
+                                    string when Int32.TryParse(s, out _) && Int32.Parse(s) > 0 => ValidationResult.Success(),
+                                    _ => ValidationResult.Error("Please [green]enter \"R\" to resume[/], [red]\"D\" to discard[/], or [blue]valid number to continue[/]: ")
+                                })
+                                );
+                            switch (input.ToLower())
+                            {
+                                case "r":
+                                    break;
+                                case "d":
+                                    System.Console.Clear();
+                                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                                    {
+                                        sessionDiscarted = true;
+                                        timer.Stop();
+                                        timer.Close();
+                                        trackerOn = false;
+                                        System.Console.Clear();
+                                    }
+                                    break;
+                                default:
+                                    int numberOfLines = int.Parse(input);
+
+                                    System.Console.Clear();
+                                    input = AnsiConsole.Prompt(
+                                    new TextPrompt<string>("Please [blue]insert any comments you want to add[/]. If you changed your mind and want to [red]discard this timer[/], insert [red]\"D\"[/]. If you want to [green]continue tracking[/], insert [green]\"R\"[/]: ")
+                                    .Validate((s) => s.ToLower() switch
+                                    {
+                                        ("r") => ValidationResult.Success(),
+                                        ("d") => ValidationResult.Success(),
+                                        string => ValidationResult.Success(),
+                                        _ => ValidationResult.Error("Please enter [green]\"R\" to resume[/], [red]\"D\" to discard[/], or a [blue]comment to continue[/]: ")
+                                    })
+                                    );
+
+                                    switch (input.ToLower())
+                                    {
+                                        case "r":
+                                            break;
+                                        case "d":
+                                            System.Console.Clear();
+                                            if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                                            {
+                                                sessionDiscarted = true;
+                                                timer.Close();
+                                                trackerOn = false;
+                                                System.Console.Clear();
+                                                break;
+                                            }
+                                            break;
+                                        default:
+                                            SQLCommands.InjectRecord(new Session((sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                                                                (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                                                                sessionStart.ToString($"dd/MM/yyyy, HH:mm"),
+                                                                                (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                                                                TimeSpan.FromSeconds(secondsPassed).ToString(),
+                                                                                numberOfLines,
+                                                                                input,
+                                                                                true));
+                                            System.Console.Clear();
+                                            if (!UserInterface.DisplayConfirmationSelection($"Coding session of duration [Pink1]{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/]\nWould you like to [Pink1]start another session[/], or [Pink1]return to the main menu[/]?:\n", "Start", "Return"))
+                                            {
+                                                sessionDiscarted = true;
+                                                timer.Close();
+                                                trackerOn = false;
+                                                System.Console.Clear();
+                                                return;
+                                            }
+                                            secondsPassed = 0; 
+                                            System.Console.Clear();
+                                            break;
+
+                                    }
+                                    break;
+                            }
+                        }
+                        if (!sessionDiscarted) 
+                        {
+                            System.Console.Clear();
+                            DisplayTimer(secondsPassed);
+                            timer.Start();
+                        }
+                        break;
+                }
+            }
+
+            void TimerEvent(Object source, ElapsedEventArgs e)
+            {
+                secondsPassed++;
+                DisplayTimer(secondsPassed);
+            }
         }
 
         void DisplayTimer(int seconds)
@@ -208,8 +293,6 @@ internal class CRUDController
                 .Color(Color.SteelBlue1_1));
         }
     }
-
-
     internal static void ViewPreviousSessions()
     {
         FilterDetails Filter = null;
@@ -236,15 +319,15 @@ internal class CRUDController
             {
                 bool[] tableFieldSettings = { false, false, true, true, true, true, true, false };
                 UserInterface.DrawDatatable(sessions, tableFieldSettings);
-                AnsiConsole.Write(new Markup("\n[green]Press any key[/] to return to the main menu:"));
+                AnsiConsole.Write(new Markup("\n[green]Press any key[/] to return to previous menu:"));
             }
             else if (Filter == null)
             {
-                AnsiConsole.Write(new Markup("[red]No records found[/]. [green]Press any key[/] to return to the main menu:"));
+                AnsiConsole.Write(new Markup("[red]No records found[/]. [green]Press any key[/] to return to previous menu:"));
             }
             else
             {
-                AnsiConsole.Write(new Markup("[red]No records found with selected filters[/]. [green]Press any key[/] to return to the main menu:"));
+                AnsiConsole.Write(new Markup("[red]No records found with selected filters[/]. [green]Press any key[/] to return to previous menu:"));
             }
             System.Console.ReadKey();
         }
@@ -392,5 +475,10 @@ internal class CRUDController
             }
         }
         return null;
+    }
+
+    internal static void GenerateReport()
+    {
+        throw new NotImplementedException();
     }
 }

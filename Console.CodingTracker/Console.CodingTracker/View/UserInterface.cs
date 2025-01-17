@@ -143,6 +143,7 @@ internal class UserInterface
     public static bool DisplayConfirmationSelection(string title, string positive, string negative)
     {
         positive = positive.ToLower();
+
         negative = negative.ToLower();
 
         System.Console.Clear();

@@ -17,7 +17,7 @@ internal class ScreenController
                     .Centered()
                     .Color(Color.Red));
 
-            int? userOption = UserInterface.DisplaySelectionUI("[red]Functtion[/] selection:", typeof(MenuSelections.MainMenu), Color.IndianRed1_1);
+            int? userOption = UserInterface.DisplaySelectionUI("[red]Function[/] selection:", typeof(MenuSelections.MainMenu), Color.IndianRed1_1);
             switch (userOption)
             {
                 case 0:
@@ -33,21 +33,20 @@ internal class ScreenController
                     CRUDController.ViewPreviousSessions();
                     break;
                 case 4:
-                    CRUDController.UpdateSessionDetails();
+                    CRUDController.GenerateReport();
                     break;
                 case 5:
-                    CRUDController.DeleteSession();
+                    CRUDController.UpdateSessionDetails();
                     break;
                 case 6:
+                    CRUDController.DeleteSession();
+                    break;
+                case 7:
                     System.Console.Clear();
                     AnsiConsole.Write(new Markup("You have exited the app and you will return to the main desktop\n[lightGreen]See you soon![/]").Centered());
                     menuLoop = false;
                     break;
             }
         }
-    }
-    internal static void S_FilterMenu()
-    {
-        throw new NotImplementedException();
     }
 }

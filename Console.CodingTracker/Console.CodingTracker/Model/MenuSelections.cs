@@ -6,6 +6,7 @@ internal enum MainMenu
     StartTrackingNewSession,
     SetGoals,
     ViewPreviousSessions,
+    GenerateReport,
     UpdateSessionDetails,
     DeleteSession,
     ExitApp

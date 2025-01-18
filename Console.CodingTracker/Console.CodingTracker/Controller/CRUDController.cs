@@ -3,6 +3,7 @@ using Console.CodingTracker.Model;
 using Spectre.Console;
 using System.Timers;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace Console.CodingTracker.Controller;
 
@@ -83,6 +84,7 @@ internal class CRUDController
                         {
                             temp.Trim();
                             lines = int.Parse(temp);
+                            lines = lines < 1 ? 1 : lines;
                         }
                         else
                         {
@@ -335,7 +337,67 @@ internal class CRUDController
 
     internal static void UpdateSessionDetails()
     {
-        throw new NotImplementedException();
+        bool updateMenuRun = true;
+        while (updateMenuRun)
+        {
+            System.Console.Clear();
+
+            bool quitMenu = false;
+            FilterDetails filters = FilterRecords(ref quitMenu);
+            if (quitMenu) 
+            { 
+                break; 
+            }
+            List<Session> sessions = SQLCommands.GetRecords(filters);
+
+            if (sessions == null || !sessions.Any())
+            {
+                System.Console.Clear();
+                AnsiConsole.Markup("No records to update with given filters. Press any [blue]key to go back to filter menu[/]: ");
+                System.Console.ReadKey();
+                continue;
+            }
+
+            bool[] viewOptions = { true, true, true, true, true, true, true, false };
+            UserInterface.DrawDatatable(sessions, viewOptions);
+            System.Console.WriteLine();
+            int reason = 0;
+
+            string userInput = AnsiConsole.Prompt(
+                new TextPrompt<string>("\nPlese [blue]select record(s) you would like to update by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, f.ex.  [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
+                .Validate((s) => s.ToLower() switch
+                {
+                    ("e") => ValidationResult.Success(),
+                    string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? "You can only [blue]input index numbers you want to update separated by commas[/] or [red]\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
+                    (_) => ValidationResult.Success()
+                })
+            );
+
+            if (userInput.ToLower() == "e")
+            {
+                continue;                
+            }
+        }
+
+        bool IndexCheck(string index, int sessionsLength, ref int reason)
+        {
+            if (!Regex.IsMatch(index, @"^(\s*[0-9]+\s*)(,\s*[0-9]+\s*)*$"))
+            {
+                reason = 0;
+                return false;
+            }
+
+            string[] indexArray = index.Split(',');
+            foreach (string s in indexArray)
+            {
+                if (Int32.Parse(s) > sessionsLength || Int32.Parse(s) < 0)
+                {
+                    reason = 1;
+                    return false; 
+                }
+            }
+            return true;
+        }
     }
 
     internal static void DeleteSession()
@@ -345,6 +407,7 @@ internal class CRUDController
 
     internal static FilterDetails FilterRecords(ref bool returnToMenu)
     {
+        SortingDetails sortingDetails = TemporaryData.lastFilter.sortingDetails;
         string start = TemporaryData.lastFilter.FromDate;
         string end = TemporaryData.lastFilter.ToDate;
         string linesMin = TemporaryData.lastFilter.MinLines;
@@ -353,23 +416,26 @@ internal class CRUDController
         string durationMin = TemporaryData.lastFilter.MinDuration;
         string durationMax = TemporaryData.lastFilter.MaxDuration;
         
+        string sortingDetailsString = sortingDetails == null ? null : sortingDetails.Option.ToString() + ", " + sortingDetails.Order.ToString();
 
         bool runFilterMenuLoop = true;
         while (runFilterMenuLoop)
         {
             Dictionary<string, string> dic = new Dictionary<string, string>()
             {
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), start},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), end},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), linesMin},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), linesMax},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), comments},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), durationMin},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), durationMax}
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), sortingDetailsString},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), start},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), end},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), linesMin},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), linesMax},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), comments},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), durationMin},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), durationMax}
             };
 
             System.Console.Clear();
 
+            string reason = "";
             bool shouldBlock = false;
             if (!String.IsNullOrEmpty(start) && !String.IsNullOrEmpty(end))
             {
@@ -378,11 +444,29 @@ internal class CRUDController
 
                 if (dateEnd < dateStart)
                 {
+                    reason += "[red]The start date of your session must be before the end date of your session.[/]\n";
                     shouldBlock = true;
                 }
-            }    
+            }
+            if (!String.IsNullOrEmpty(linesMax) && !String.IsNullOrEmpty(linesMin))
+            {
 
-            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs("Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, "[red]The start date of your session must be before the end date of your session:[/]");
+                if (Int32.Parse(linesMax) < Int32.Parse(linesMin))
+                {
+                    reason += "[red]Minimal number of lines cannot exceed maximal lines search.[/]\n";
+                    shouldBlock = true;
+                }
+            }
+            if (!String.IsNullOrEmpty(durationMax) && !String.IsNullOrEmpty(durationMin))
+            {
+                if (TimeSpan.ParseExact(durationMax, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(durationMin, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
+                {
+                    reason += "[red]Your maximal session time needs to be longer than the minimal session time.[/]\n";
+                    shouldBlock = true;
+                }
+            }
+
+            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs("Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, reason);
 
             string temp = "";
             switch (userOption)
@@ -390,6 +474,7 @@ internal class CRUDController
                 case -1:
                     FilterDetails finalFilter = new FilterDetails()
                     {
+                        sortingDetails = sortingDetails,
                         FromDate = start,
                         ToDate = end,
                         MinLines = linesMin,
@@ -403,6 +488,7 @@ internal class CRUDController
                 case 0:
                     if (UserInterface.DisplayConfirmationSelection("Are you sure you want to remove all your previous filters?", "Yes", "No"))
                     {
+                        sortingDetails = null;
                         start = null;
                         end = null;
                         linesMin = null;
@@ -413,6 +499,9 @@ internal class CRUDController
                     }
                     break;
                 case 1:
+                    sortingDetails = SortingMenu(sortingDetails);
+                    break;
+                case 2:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
                     if (temp == "e")
                     {
@@ -420,7 +509,7 @@ internal class CRUDController
                     }
                     start = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 2:
+                case 3:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the date to which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
                     if (temp == "e")
                     {
@@ -428,23 +517,23 @@ internal class CRUDController
                     }
                     end = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 3:
+                case 4:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the minimal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
                     if (temp == "e")
                     {
                         break;
                     }
-                    linesMin = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
+                    linesMin = string.IsNullOrEmpty(temp) || temp == "" ? temp : (Int32.Parse(temp) < 1 ? "1" : temp.Trim());
                 break;
-                case 4:
+                case 5:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the maximal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
                     if (temp == "e")
                     {
                         break;
                     }
-                    linesMax = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
+                    linesMax = string.IsNullOrEmpty(temp) || temp == "" ? temp : (Int32.Parse(temp) < 1 ? "1" : temp.Trim());
                 break;
-                case 5:
+                case 6:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]part of the comment[/] you want to search for. ", TextUIOptions.Optional);
                     if (temp == "e")
                     {
@@ -452,7 +541,7 @@ internal class CRUDController
                     }
                     comments = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 6:
+                case 7:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
                     if (temp == "e")
                     {
@@ -460,7 +549,7 @@ internal class CRUDController
                     }
                     durationMin = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 7:
+                case 8:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
                     if (temp == "e")
                     {
@@ -468,11 +557,21 @@ internal class CRUDController
                     }
                     durationMax = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 8:
+                case 9:
                     returnToMenu = true;
                     runFilterMenuLoop = false;
                 break;
             }
+        }
+        return null;
+    }
+
+    internal static SortingDetails SortingMenu(SortingDetails previousDetails)
+    {
+        bool inSortingMenu = true;
+        while (inSortingMenu)
+        {
+            //UserInterface.DisplaySelectionUIWithUserInputs("Please [purple]select your sorting options:[/]", typeof(MenuSelections.FilteringOrderOption), Color.Purple4_1,)
         }
         return null;
     }

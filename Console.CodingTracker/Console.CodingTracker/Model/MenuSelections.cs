@@ -24,6 +24,7 @@ internal enum TrackNewSession
 internal enum FilterRecords
 {
     ClearFilters,
+    OptionalSorting,
     OptionalFromDate,
     OptionalToDate,
     OptionalMinimalNumberOfLines,
@@ -32,6 +33,27 @@ internal enum FilterRecords
     OptionalMinimalDuration,
     OptionalMaximalDuration,
     ReturnToMainMenu
+}
+
+internal enum FilteringOrder
+{
+    Ascending,
+    Descending
+}
+
+internal enum FilteringOrderOption
+{
+    Execute,
+    Clear,
+    Order,
+    CreationDate,
+    UpdateDate,
+    StartDate,
+    EndDate,
+    Duration,
+    Line,
+    Comment,
+    ReturnToFilterMenu
 }
 
 internal enum RecordSessionStartMenu
@@ -52,4 +74,15 @@ internal enum RecordSessionPause
     Unpause,
     Discard,
     Finish
+}
+
+internal enum UpdateMenu
+{
+    OptionalUpdateStartDate,
+    OptionalUpdateEndDate,
+    OptionalUpdateNumberOfLines,
+    OptionalUpdateComments,
+    BackToRecordSelection,
+    BackToFilterMenu,
+    BackToMainMenu,
 }

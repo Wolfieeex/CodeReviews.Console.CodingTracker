@@ -101,6 +101,7 @@ internal class SQLCommands
             }
 
             conn.Close();
+            
         }
 
         CurrentSessions = records;

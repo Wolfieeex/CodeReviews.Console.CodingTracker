@@ -10,6 +10,7 @@ internal class TemporaryData
     {
         lastFilter = new FilterDetails()
         {
+            sortingDetails = null,
             FromDate = null,
             ToDate = null,
             MinLines = null,

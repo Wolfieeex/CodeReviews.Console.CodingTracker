@@ -363,6 +363,7 @@ internal class CRUDController
             System.Console.WriteLine();
             int reason = 0;
 
+            // This to be transferred into UserInterface class- this is not a controller, this belongs to View Model
             string userInput = AnsiConsole.Prompt(
                 new TextPrompt<string>("\nPlese [blue]select record(s) you would like to update by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, f.ex.  [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
                 .Validate((s) => s.ToLower() switch
@@ -390,7 +391,7 @@ internal class CRUDController
             string[] indexArray = index.Split(',');
             foreach (string s in indexArray)
             {
-                if (Int32.Parse(s) > sessionsLength || Int32.Parse(s) < 0)
+                if (int.Parse(s) > sessionsLength || int.Parse(s) < 0)
                 {
                     reason = 1;
                     return false; 
@@ -399,12 +400,10 @@ internal class CRUDController
             return true;
         }
     }
-
     internal static void DeleteSession()
     {
         throw new NotImplementedException();
     }
-
     internal static FilterDetails FilterRecords(ref bool returnToMenu)
     {
         SortingDetails sortingDetails = TemporaryData.lastFilter.sortingDetails;
@@ -568,7 +567,6 @@ internal class CRUDController
         }
         return null;
     }
-
     internal static SortingDetails SortingMenu(SortingDetails previousDetails)
     {
         bool inSortingMenu = true;
@@ -616,7 +614,6 @@ internal class CRUDController
         }
         return null;
     }
-
     internal static void GenerateReport()
     {
         throw new NotImplementedException();

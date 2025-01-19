@@ -43,32 +43,38 @@ internal class SQLCommands
             
             if (!String.IsNullOrEmpty(filter.FromDate))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' <=  substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 ' ";
+                whereInject += $@"AND @FromDate <=  substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 ' ";
                 parameters.Add("@FromDate", DateTimeSqliteStringConvert(filter.FromDate));
             }
             if (!String.IsNullOrEmpty(filter.ToDate))
             {
-                whereInject += $@"AND '{DateTimeSqliteStringConvert(filter.FromDate)}' => substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 ' ";
+                whereInject += $@"AND @ToDate => substr(""End date"", 7, 4) || '-' || substr(""End date"", 4, 2) || '-' || substr(""End date"", 1, 2) || ' ' || substr(""End date"", 13, 5) || ':00 ' ";
+                parameters.Add("@ToDate", DateTimeSqliteStringConvert(filter.ToDate));
             }
             if (!String.IsNullOrEmpty(filter.MinDuration))
             {
-                whereInject += $@"AND {TimeSpanSqliteStringConvert(filter.MinDuration)} <= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) ";
+                whereInject += $@"AND @MinDuration <= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) ";
+                parameters.Add("@MinDuration", TimeSpanSqliteStringConvert(filter.MinDuration));
             }
             if (!String.IsNullOrEmpty(filter.MaxDuration))
             {
-                whereInject += $@"AND {TimeSpanSqliteStringConvert(filter.MaxDuration)} >= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) ";
+                whereInject += $@"AND @MaxDuration >= IIF(instr(Duration, '.') == 0, '', substr(Duration, 0, instr(Duration, '.'))) * 24 * 3600 + 3600 * substr(Duration, instr(Duration, ':') - 2, 2) + 60 * substr(Duration, instr(Duration, ':') + 1, 2) + substr(Duration, instr(Duration, ':') + 4, 2) ";
+                parameters.Add("@MaxDuration", TimeSpanSqliteStringConvert(filter.MaxDuration));
             }
             if (!String.IsNullOrEmpty(filter.MinLines))
             {
-                whereInject += $@"AND ""Lines of code"" >= {filter.MinLines} ";
+                whereInject += $@"AND ""Lines of code"" >= @MinLines ";
+                parameters.Add("@MinLines", filter.MinLines);
             }
             if (!String.IsNullOrEmpty(filter.MaxLines))
             {
-                whereInject += $@"AND ""Lines of code"" <= {filter.MaxLines} ";
+                whereInject += $@"AND ""Lines of code"" <= @MaxLines ";
+                parameters.Add("@MaxLines", filter.MaxLines);
             }
             if (!String.IsNullOrEmpty(filter.Comment))
             {
-                whereInject += $@"AND Comments LIKE '%{filter.Comment}%' ";
+                whereInject += $@"AND Comments LIKE '%@Comment%' ";
+                parameters.Add("@Comment", filter.Comment);
             }
 
             if (whereInject.Contains("AND"))
@@ -101,8 +107,9 @@ internal class SQLCommands
             }
 
             conn.Close();
-            
         }
+
+
 
         CurrentSessions = records;
 

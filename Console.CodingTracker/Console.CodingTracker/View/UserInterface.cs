@@ -85,11 +85,10 @@ internal class UserInterface
         .HighlightStyle(new Style()
             .Foreground(highlightcolor)
             .Decoration(Decoration.RapidBlink))
-        
         .EnableSearch()
         .PageSize(10)
         .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
+        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null || typeDictionary[n] == "" ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
         .AddChoices((rawOptions));
 
         string userOption = AnsiConsole.Prompt(selectionPrompt);
@@ -155,9 +154,35 @@ internal class UserInterface
             .WithConverter(choice => choice ? positive : negative));     
         return addAnotherRecord;
     }
+    public static dynamic EnumSelection(string title, Type options, Color color)
+    {
+        SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
+        List<string> rawOptions = Enum.GetNames(options).ToList();
 
+        selectionPrompt
+        .Title(title)
+        .WrapAround(true)
+        .HighlightStyle(new Style()
+            .Foreground(color)
+            .Decoration(Decoration.RapidBlink))
+
+        .EnableSearch()
+        .PageSize(10)
+        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .AddChoices("Cancel")
+        .AddChoices(rawOptions)
+        .UseConverter(n => Regex.Replace(n, @"(?<=[A-Za-z])([A-Z])", @" $1"));
+
+        string userOption = AnsiConsole.Prompt(selectionPrompt);
+
+        dynamic enumCardinal;
+        bool parseSuccessful = Enum.TryParse(options, userOption, out enumCardinal);
+
+        return parseSuccessful ? enumCardinal : -1;
+    }
     public static void DrawDatatable(List<Session> list, bool[] viewSettings, bool automaticalDataFormatting = true)
     {
+
         Type type = list[0].GetType();
 
         Table table = new Table();

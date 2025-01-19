@@ -14,6 +14,6 @@ internal class FilterDetails
 
 internal class SortingDetails
 {
-    public MenuSelections.FilteringOrderOption? Option { get; set; }
-    public MenuSelections.FilteringOrder? Order { get; set; }
+    public MenuSelections.SortingBy? SortBy { get; set; }
+    public MenuSelections.SortingOrder? SortOrder { get; set; }
 }

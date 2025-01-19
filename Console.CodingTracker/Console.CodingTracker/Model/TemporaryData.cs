@@ -10,7 +10,11 @@ internal class TemporaryData
     {
         lastFilter = new FilterDetails()
         {
-            sortingDetails = null,
+            sortingDetails = new SortingDetails()
+            {
+                SortBy = null,
+                SortOrder = MenuSelections.SortingOrder.Ascending
+            },
             FromDate = null,
             ToDate = null,
             MinLines = null,

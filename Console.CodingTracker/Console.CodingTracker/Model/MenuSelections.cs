@@ -35,17 +35,14 @@ internal enum FilterRecords
     ReturnToMainMenu
 }
 
-internal enum FilteringOrder
+internal enum SortingOrder
 {
     Ascending,
     Descending
 }
 
-internal enum FilteringOrderOption
+internal enum SortingBy
 {
-    Execute,
-    Clear,
-    Order,
     CreationDate,
     UpdateDate,
     StartDate,
@@ -53,29 +50,32 @@ internal enum FilteringOrderOption
     Duration,
     Line,
     Comment,
-    ReturnToFilterMenu
 }
 
+internal enum SortingMenu
+{
+    Clear,
+    SortingOrder,
+    SortingBy,
+    Cancel
+}
 internal enum RecordSessionStartMenu
 {
     StartTrackingNow,
     ReturnToMainMenu
 }
-
 internal enum RecordSessionRecording
 {
     Pause,
     Discard,
     Finish
 }
-
 internal enum RecordSessionPause
 {
     Unpause,
     Discard,
     Finish
 }
-
 internal enum UpdateMenu
 {
     OptionalUpdateStartDate,

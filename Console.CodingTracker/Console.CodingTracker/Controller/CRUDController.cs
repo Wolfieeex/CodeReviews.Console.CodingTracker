@@ -416,11 +416,10 @@ internal class CRUDController
         string durationMin = TemporaryData.lastFilter.MinDuration;
         string durationMax = TemporaryData.lastFilter.MaxDuration;
         
-        string sortingDetailsString = sortingDetails == null ? null : sortingDetails.Option.ToString() + ", " + sortingDetails.Order.ToString();
-
         bool runFilterMenuLoop = true;
         while (runFilterMenuLoop)
         {
+            string sortingDetailsString = sortingDetails.SortBy == null || sortingDetails.SortOrder == null ? null : sortingDetails.SortOrder.ToString() + ", " + Regex.Replace(sortingDetails.SortBy.ToString(), @"(?<=[A-Za-z])([A-Z])", @" $1");
             Dictionary<string, string> dic = new Dictionary<string, string>()
             {
                 { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), sortingDetailsString},
@@ -488,7 +487,11 @@ internal class CRUDController
                 case 0:
                     if (UserInterface.DisplayConfirmationSelection("Are you sure you want to remove all your previous filters?", "Yes", "No"))
                     {
-                        sortingDetails = null;
+                        sortingDetails = new SortingDetails()
+                        {
+                            SortBy = null,
+                            SortOrder = null
+                        };
                         start = null;
                         end = null;
                         linesMin = null;
@@ -569,9 +572,47 @@ internal class CRUDController
     internal static SortingDetails SortingMenu(SortingDetails previousDetails)
     {
         bool inSortingMenu = true;
+        SortingDetails sortingDetails = TemporaryData.lastFilter.sortingDetails;
+
         while (inSortingMenu)
         {
-            //UserInterface.DisplaySelectionUIWithUserInputs("Please [purple]select your sorting options:[/]", typeof(MenuSelections.FilteringOrderOption), Color.Purple4_1,)
+            Dictionary<string, string> filteringSelections = new Dictionary<string, string>()
+            {
+                { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)1), sortingDetails.SortOrder == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortOrder.GetType(), sortingDetails.SortOrder), @"(?<=[A-Za-z])([A-Z])", @" $1")},
+                { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)2), sortingDetails.SortBy == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortBy.GetType(), sortingDetails.SortBy), @"(?<=[A-Za-z])([A-Z])", @" $1")},
+            };
+            int? userSelection = UserInterface.DisplaySelectionUIWithUserInputs("Please [purple]select your sorting options:[/]", typeof(MenuSelections.SortingMenu), Color.LightSeaGreen, filteringSelections, "[green]Execute[/]", false);
+
+            switch (userSelection)
+            {
+                case -1:
+                    TemporaryData.lastFilter.sortingDetails = sortingDetails;
+                    return sortingDetails;
+                case 0:
+                    sortingDetails.SortBy = null;
+                    sortingDetails.SortOrder = null;
+                    break;
+                case 1:
+                    dynamic resultSortingOrder = UserInterface.EnumSelection("Please select your sorting order: ", typeof(MenuSelections.SortingOrder), Color.LightSeaGreen);
+                    if (!(resultSortingOrder is int))
+                    {
+                        sortingDetails.SortOrder = resultSortingOrder;
+                    }
+                    break;
+                case 2:
+                    dynamic resultSortingBy = UserInterface.EnumSelection("Please select your sorting option: ", typeof(MenuSelections.SortingBy), Color.LightSeaGreen);
+                    if (!(resultSortingBy is int))
+                    {
+                        sortingDetails.SortBy = resultSortingBy;
+                    }
+                    break;
+                case 3:
+                    return new SortingDetails()
+                    {
+                        SortBy = null,
+                        SortOrder = null
+                    };
+            }
         }
         return null;
     }

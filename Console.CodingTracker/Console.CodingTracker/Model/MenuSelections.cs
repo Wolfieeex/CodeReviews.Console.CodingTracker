@@ -39,8 +39,7 @@ internal enum SortingOrder
 {
     Ascending,
     Descending
-}
-
+}  
 internal enum SortingBy
 {
     CreationDate,
@@ -48,10 +47,9 @@ internal enum SortingBy
     StartDate,
     EndDate,
     Duration,
-    Line,
+    NumberOfLines,
     Comment,
 }
-
 internal enum SortingMenu
 {
     Clear,
@@ -78,11 +76,14 @@ internal enum RecordSessionPause
 }
 internal enum UpdateMenu
 {
-    OptionalUpdateStartDate,
-    OptionalUpdateEndDate,
-    OptionalUpdateNumberOfLines,
-    OptionalUpdateComments,
-    BackToRecordSelection,
+    UpdateStartDate,
+    UpdateEndDate,
+    UpdateNumberOfLines,
+    UpdateComments,
     BackToFilterMenu,
     BackToMainMenu,
+}
+internal enum ViewOptionsMenu
+{
+    
 }

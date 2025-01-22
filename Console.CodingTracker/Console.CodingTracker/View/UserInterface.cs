@@ -190,6 +190,7 @@ internal class UserInterface
 
         FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         string[] names = Array.ConvertAll(fields, f => f.Name);
+        names = names.Skip(1).ToArray();
         for (int i = 0; i < names.Length; i++)
         {
             names[i] = Regex.Match(names[i], @"(?<=<)[A-Za-z0-9]*(?=>)").Value;
@@ -222,11 +223,11 @@ internal class UserInterface
             interval++;
             List<string> newRow = new();
             newRow.Add(interval.ToString());
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 1; i < fields.Length; i++)
             {
-                if (viewSettings[i] == true)
+                if (viewSettings[i - 1] == true)
                 {
-                    string rowValue = fields[i].GetValue(line).ToString();
+                    string rowValue = fields[i].GetValue(line) == null ? "" : fields[i].GetValue(line).ToString();
                     if (automaticalDataFormatting)
                     {
                         bool isMatch = Regex.IsMatch(rowValue, @"(?<=^1)\.+(?=\d{2}:\d{2}:\d{2}$)");

@@ -10,6 +10,7 @@ internal class TemporaryData
     {
         lastFilter = new FilterDetails()
         {
+            viewOptions = null,
             sortingDetails = new SortingDetails()
             {
                 SortBy = null,

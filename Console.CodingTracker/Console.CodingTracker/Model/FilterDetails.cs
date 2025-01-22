@@ -3,6 +3,7 @@ namespace Console.CodingTracker.Model;
 internal class FilterDetails
 {
     public SortingDetails sortingDetails { get; set; }
+    public bool[] viewOptions { get; set; }
     public string? FromDate { get; set; }
     public string? ToDate { get; set; }
     public string? MinLines { get; set; }

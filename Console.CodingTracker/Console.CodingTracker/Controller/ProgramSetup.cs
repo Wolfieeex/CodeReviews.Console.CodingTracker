@@ -142,7 +142,10 @@ internal class ProgramSetup
             SQLCommands.InjectRecord(session);
         }
     }
+    internal static void ConsoleSizeSetup()
+    {
 
+    }
     internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {
         if (lambda < -1 || lambda > 1)
@@ -155,7 +158,6 @@ internal class ProgramSetup
 
         return min + (long)Math.Round((max - min) * Math.Pow(roll, lambda));
     }
-
     internal static bool PercentageChanceGenerator(double num)
     {
         if (num < 0 || num > 1)

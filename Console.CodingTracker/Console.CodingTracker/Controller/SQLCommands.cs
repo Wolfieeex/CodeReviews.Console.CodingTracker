@@ -26,12 +26,42 @@ internal class SQLCommands
         }
         return stringCodingSpan;
     }
-
-    public static TimeSpan CalculateDuration(string s, string e)
+    internal static void UpdateRecords(List<int> indexNumbers, string newData, MenuSelections.UpdateMenu updateSegment)
     {
-        return (DateTime.Parse(e) - DateTime.Parse(s));
-    }
+        string columnUpdateName = "";
+        switch (updateSegment)
+        {
+            case MenuSelections.UpdateMenu.UpdateStartDate:
+                columnUpdateName = "Creation date";
+                break;
+            case MenuSelections.UpdateMenu.UpdateEndDate:
+                columnUpdateName = "End date";
+                break;
+            case MenuSelections.UpdateMenu.UpdateNumberOfLines:
+                columnUpdateName = "Lines of code";
+                break;
+            case MenuSelections.UpdateMenu.UpdateComments:
+                columnUpdateName = "Comments";
+                break;
+        }
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            string stringDateNow = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
+            string updateDateCommand = $@"Update '{Settings.DatabaseName}' SET 'Last update date' = @stringDate WHERE Id = @id";
+            string updateDurationCommand = $@"Update '{Settings.DatabaseName}' SET Duration = @duration WHERE Id = @id";
+            string updateCommand = $@"Update '{Settings.DatabaseName}' SET '{columnUpdateName}' = @updateValue WHERE Id = @id";
 
+            // Update duration segment
+            string duration = CalculateDuration()
+
+            for (int i = 0; i < indexNumbers.Count; i++)
+            {
+                conn.Execute(updateDateCommand, new { stringDate = stringDateNow, id = indexNumbers[i] });
+                //conn.Execute(updateDurationCommand, new { duration = stringDateNow, id = indexNumbers[i] });
+                conn.Execute(updateCommand, new { updateValue = newData, id = indexNumbers[i] });
+            }
+        }
+    }
     internal static List<Session> GetRecords(FilterDetails filter)
     {
         List<Session> records = new List<Session>();
@@ -103,7 +133,7 @@ internal class SQLCommands
             int counter = 0;
             while (reader.Read())
             {
-                records.Add(new Session(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), false));
+                records.Add(new Session(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));
             }
 
             conn.Close();
@@ -167,7 +197,6 @@ internal class SQLCommands
 
         return records;
     }
-
     internal static string SqlDateToSortableDate(string date)
     {
         string returnDate = date.Substring(6, 4);
@@ -176,7 +205,6 @@ internal class SQLCommands
         returnDate += date.Substring(12, 5);
         return returnDate;
     }
-
     internal static string DateTimeSqliteStringConvert(string datetime)
     {
         string returnDate = "";
@@ -184,7 +212,6 @@ internal class SQLCommands
         returnDate += datetime.Substring(12, 2) + ":" + datetime.Substring(15, 2) + ":" + "00";
         return returnDate;
     }
-
     internal static string TimeSpanSqliteStringConvert(string timespan)
     {
         int timespanCalculated = 0;
@@ -195,5 +222,9 @@ internal class SQLCommands
         timespanCalculated += Int32.Parse(timespan.Substring(ColonPosition + 1, 2)) * 60;
 
         return timespanCalculated.ToString();
+    }
+    public static TimeSpan CalculateDuration(string s, string e)
+    {
+        return (DateTime.Parse(e) - DateTime.Parse(s));
     }
 }

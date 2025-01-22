@@ -4,6 +4,7 @@ using Spectre.Console;
 using System.Timers;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Xml.Linq;
 
 namespace Console.CodingTracker.Controller;
 
@@ -334,7 +335,6 @@ internal class CRUDController
             System.Console.ReadKey();
         }
     }
-
     internal static void UpdateSessionDetails()
     {
         bool updateMenuRun = true;
@@ -358,7 +358,7 @@ internal class CRUDController
                 continue;
             }
 
-            bool[] viewOptions = { true, true, true, true, true, true, true, false };
+            bool[] viewOptions = { true, true, true, true, true, true, true, true };
             UserInterface.DrawDatatable(sessions, viewOptions);
             System.Console.WriteLine();
             int reason = 0;
@@ -379,7 +379,15 @@ internal class CRUDController
                 continue;                
             }
 
+            int[] indexNumbers = userInput.Split(',')
+                               .Select(x =>  int.Parse(x)).ToArray();
+            List<Session> selectedSessions = new List<Session>();
+            foreach (int i in indexNumbers)
+            {
+                selectedSessions.Add(sessions[i - 1]);
+            }
 
+            updateMenuRun = UpdateMenu(selectedSessions);
         }
 
         bool IndexCheck(string index, int sessionsLength, ref int reason)  
@@ -402,9 +410,102 @@ internal class CRUDController
             return true;
         }
     }
-    internal static void UpdateMenu()
+    internal static bool UpdateMenu(List<Session> sessions)
     {
-        System.Console.Clear();
+        bool updateWhile = true;
+        while (updateWhile)
+        {
+            System.Console.Clear();
+            UserInterface.DrawDatatable(sessions, new bool[] { true, true, true, true, true, true, true, true });
+            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : "Multi - update([yellow]all selected records will be updated at the same time[/]). ")}[blue]Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), Color.Orange4);
+
+            string temp = "";
+            switch (userOption)
+            {
+                
+                case 0:
+                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                    if (temp.ToLower() == "e")
+                    {
+                        break;
+                    }
+                    if (String.IsNullOrEmpty(temp))
+                    {
+                        break;
+                    }
+                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateStartDate);
+                    foreach (Session s in sessions)
+                    {
+                        s.StartDate = temp.Trim();
+                        s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
+                    }
+                    break;
+
+                case 1:
+                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                    if (temp.ToLower() == "e")
+                    {
+                        break;
+                    }
+                    if (String.IsNullOrEmpty(temp))
+                    {
+                        break;
+                    }
+                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateEndDate);
+                    foreach (Session s in sessions)
+                    {
+                        s.EndDate = temp.Trim();
+                        s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
+                    }
+                    break;
+
+                case 2:
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional);
+                    if (temp.ToLower() == "e")
+                    {
+                        break;
+                    }
+                    if (temp != null && temp != "")
+                    {
+                        temp.Trim();
+                        int lines = int.Parse(temp);
+                        lines = lines < 1 ? 1 : lines;
+                        temp = lines.ToString();
+                    }
+                    else
+                    {
+                        temp = null;
+                    }
+
+                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
+                    foreach (Session s in sessions)
+                    {
+                        s.NumberOfLines = temp == null ? null : int.Parse(temp);
+                        s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
+                    }
+                    break;
+                case 3:
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add. ", TextUIOptions.Optional);
+                    if (temp.ToLower() == "e")
+                    {
+                        break;
+                    }
+                    temp = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
+
+                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateComments);
+                    foreach (Session s in sessions)
+                    {
+                        s.Comments = temp;
+                        s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
+                    }
+                    break;
+                case 4:
+                    return true;
+                case 5:
+                    return false;
+            }
+        }
+        return false;
     }
     internal static void DeleteSession()
     {

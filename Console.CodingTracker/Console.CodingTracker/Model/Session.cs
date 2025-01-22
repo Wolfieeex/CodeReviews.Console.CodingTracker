@@ -3,7 +3,8 @@
 internal class Session
 {
     // AI generated
-    internal static string[] ProgrammingComments { get; private set; } = 
+    internal int Key { get; set;}
+    internal static string[] ProgrammingComments { get; set; } = 
         {
             "Great job on that function!",
             "Consider optimizing this loop for better performance.",
@@ -281,26 +282,30 @@ internal class Session
             "This design is intuitive and easy to understand.",
             "The modular design here improves testability."
         };
-    internal string CreationDate { get; private set; }
-    internal string LastUpdateDate { get; private set; }
-    internal string StartDate { get; private set; }
-    internal string EndDate { get; private set; }
-    internal string Duration { get; private set; }
-    internal int? NumberOfLines { get; private set; }
-    internal string? Comments { get; private set; }
-    internal bool WasTimerTracked { get; private set; }
+    internal string CreationDate { get; set; }
+    internal string LastUpdateDate { get; set; }
+    internal string StartDate { get; set; }
+    internal string EndDate { get; set; }
+    internal string Duration { get; set; }
+    internal int? NumberOfLines { get; set; }
+    internal string? Comments { get; set; }
+    internal bool WasTimerTracked { get; set; }
 
-    public Session(string start, string end, int? lines, string? comments, bool wasTimerTracked = false)
+    public Session(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
     {
+        CreationDate = creation;
+        LastUpdateDate = lastUpdate;
         StartDate = start;
         EndDate = end;
+        Duration = duration;
         NumberOfLines = lines;
         Comments = comments;
         WasTimerTracked = wasTimerTracked;
     }
 
-    public Session(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public Session(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
     {
+        Key = key;
         CreationDate = creation;
         LastUpdateDate = lastUpdate;
         StartDate = start;

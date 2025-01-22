@@ -5,6 +5,7 @@ try
 {
     TemporaryData.InitializeLastFilter();
     ProgramSetup.InstantiateDatabase();
+    ProgramSetup.ConsoleSizeSetup();
     ScreenController.S_Mainmenu();
 }
 catch (Exception ex)

@@ -378,9 +378,11 @@ internal class CRUDController
             {
                 continue;                
             }
+
+
         }
 
-        bool IndexCheck(string index, int sessionsLength, ref int reason)
+        bool IndexCheck(string index, int sessionsLength, ref int reason)  
         {
             if (!Regex.IsMatch(index, @"^(\s*[0-9]+\s*)(,\s*[0-9]+\s*)*$"))
             {
@@ -399,6 +401,10 @@ internal class CRUDController
             }
             return true;
         }
+    }
+    internal static void UpdateMenu()
+    {
+        System.Console.Clear();
     }
     internal static void DeleteSession()
     {

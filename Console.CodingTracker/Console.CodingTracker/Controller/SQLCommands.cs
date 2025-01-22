@@ -20,7 +20,7 @@ internal class SQLCommands
             string commString = @$"INSERT INTO '{Settings.DatabaseName}' 
                                 ('Creation date', 'Last update date', 'Start date', 'End date', Duration, 'Lines of code', Comments, 'Was Timer Tracked')
                                 VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments, @Timer)";
-            var newRow = new { Creation = session.CreationDate, Update = session.LastUpdateData, Start = session.StartDate, End = session.EndDate, Duration = session.Duration, Lines = session.NumberOfLines.HasValue ? session.NumberOfLines : -1, Comments = String.IsNullOrEmpty(session.Comments) ? "" : session.Comments, Timer = session.WasTimerTracked ? 1 : 0 };
+            var newRow = new { Creation = session.CreationDate, Update = session.LastUpdateDate, Start = session.StartDate, End = session.EndDate, Duration = session.Duration, Lines = session.NumberOfLines.HasValue ? session.NumberOfLines : -1, Comments = String.IsNullOrEmpty(session.Comments) ? "" : session.Comments, Timer = session.WasTimerTracked ? 1 : 0 };
             conn.Execute(commString, newRow);
             conn.Close();
         }
@@ -109,11 +109,72 @@ internal class SQLCommands
             conn.Close();
         }
 
+        SortingDetails sortingDetails = filter.sortingDetails;
 
+        if (sortingDetails != null)
+        {
+            MenuSelections.SortingOrder? sortingOrder = sortingDetails.SortOrder;
+            MenuSelections.SortingBy? sortingBy = sortingDetails.SortBy; 
+
+            switch (sortingBy)
+            {
+                case MenuSelections.SortingBy.CreationDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.CreationDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.CreationDate)).ToList();
+                    break;
+                case MenuSelections.SortingBy.UpdateDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.LastUpdateDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.LastUpdateDate)).ToList();
+                        break;
+                case MenuSelections.SortingBy.StartDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.StartDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.StartDate)).ToList();
+                        break;
+                    case MenuSelections.SortingBy.EndDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.EndDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.EndDate)).ToList();
+                        break;
+                case MenuSelections.SortingBy.Duration:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.Duration).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.Duration).ToList();
+                        break;
+                case MenuSelections.SortingBy.Line:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.NumberOfLines).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.NumberOfLines).ToList();
+                        break;
+                case MenuSelections.SortingBy.Comment:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.Comments).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.Comments).ToList();
+                        break;
+            }
+        }
 
         CurrentSessions = records;
 
         return records;
+    }
+
+    internal static string SqlDateToSortableDate(string date)
+    {
+        string returnDate = date.Substring(6, 4);
+        returnDate += date.Substring(3, 2);
+        returnDate += date.Substring(0, 2);
+        returnDate += date.Substring(12, 5);
+        return returnDate;
     }
 
     internal static string DateTimeSqliteStringConvert(string datetime)

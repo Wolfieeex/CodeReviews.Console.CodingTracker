@@ -282,7 +282,7 @@ internal class Session
             "The modular design here improves testability."
         };
     internal string CreationDate { get; private set; }
-    internal string LastUpdateData { get; private set; }
+    internal string LastUpdateDate { get; private set; }
     internal string StartDate { get; private set; }
     internal string EndDate { get; private set; }
     internal string Duration { get; private set; }
@@ -302,7 +302,7 @@ internal class Session
     public Session(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
     {
         CreationDate = creation;
-        LastUpdateData = lastUpdate;
+        LastUpdateDate = lastUpdate;
         StartDate = start;
         EndDate = end;
         Duration = duration;

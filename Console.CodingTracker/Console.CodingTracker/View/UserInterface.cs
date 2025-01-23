@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using Console.CodingTracker.Model;
+using Console.CodingTracker.Controller;
 
 namespace Console.CodingTracker.View;
 
@@ -10,6 +11,8 @@ public enum TextUIOptions
 {
     DateOnly,
     DateOnlyOptional,
+    StartDate,
+    EndDate,
     TimeSpanOnly,
     TimeSpanOnlyOptional,
     NumbersOnly,
@@ -99,7 +102,7 @@ internal class UserInterface
         return parseSuccessful ? (int)enumCardinal : -1;
     }
 
-    public static string? DisplayTextUI(string title, TextUIOptions UIOptions)
+    public static string? DisplayTextUI(string title, TextUIOptions UIOptions, List<int> index = null)
     {
         TextPrompt<string> prompt = new(title + "[red]Leave this space blank[/] to clear the previous insert or [red]input \"E\"[/] to go back to filter menu: ");
         prompt.AllowEmpty();
@@ -124,6 +127,87 @@ internal class UserInterface
                 string when DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out _) => ValidationResult.Success(),
                 _ => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
             });
+        }
+        if (UIOptions == TextUIOptions.StartDate || UIOptions == TextUIOptions.EndDate)
+        {
+            List<string> datesToCheck;
+            DateTime borderlineDate = DateTime.Now;
+            bool firstIteration = true;
+            DateTime userInput = DateTime.Now;
+            try
+            {
+                if (UIOptions == TextUIOptions.StartDate)
+                {
+                    datesToCheck = SQLCommands.GetEndDates(index);
+                    foreach (string d in datesToCheck)
+                    {
+                        if (firstIteration)
+                        {
+                            firstIteration = false;
+                            DateTime.TryParseExact(d, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out borderlineDate);
+                            continue;
+                        }
+                        DateTime currentDate = DateTime.Parse(d, new CultureInfo("en-GB"), DateTimeStyles.None);
+                        if (currentDate < borderlineDate)
+                        {
+                            borderlineDate = currentDate;
+                        }
+                    }
+
+                    prompt.Validate((s) => s.ToLower() switch
+                    {
+                        "" => ValidationResult.Success(),
+                        ("e") => ValidationResult.Success(),
+                        string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
+                        string when userInput > borderlineDate => ValidationResult.Error("One or more session end dates would fall earlier than the newly updated start date. Please try again."),
+                        _ => ValidationResult.Success()
+                    });
+                }
+                else
+                {
+                    if (UIOptions == TextUIOptions.EndDate)
+                    {
+                        datesToCheck = SQLCommands.GetStartDates(index);
+                        foreach (string d in datesToCheck)
+                        {
+                            if (firstIteration)
+                            {
+                                firstIteration = false;
+                                DateTime.TryParseExact(d, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out borderlineDate);
+                                continue;
+                            }
+                            DateTime currentDate = DateTime.Parse(d, new CultureInfo("en-GB"), DateTimeStyles.None);
+                            if (currentDate > borderlineDate)
+                            {
+                                borderlineDate = currentDate;
+                            }
+                        }
+
+                        prompt.Validate((s) => s.ToLower() switch
+                        {
+                            "" => ValidationResult.Success(),
+                            ("e") => ValidationResult.Success(),
+                            string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
+                            string when userInput < borderlineDate => ValidationResult.Error("One or more session start dates would fall later than the newly updated end date. Please try again."),
+                            _ => ValidationResult.Success()
+                        });
+                    }
+                }
+            }
+            catch 
+            {
+                System.Console.WriteLine("DisplayTextUI method with Start or End date selector always need index numbers provided in the parameters field.");
+                System.Console.ReadKey();
+
+                prompt.Validate((s) => s.ToLower() switch
+                {
+                    "" => ValidationResult.Success(),
+                    ("e") => ValidationResult.Success(),
+                    string when DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out _) => ValidationResult.Success(),
+                    _ => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
+                });
+            }
+
         }
         if (UIOptions == TextUIOptions.TimeSpanOnly || UIOptions == TextUIOptions.TimeSpanOnlyOptional)
         {

@@ -32,7 +32,7 @@ internal class SQLCommands
         switch (updateSegment)
         {
             case MenuSelections.UpdateMenu.UpdateStartDate:
-                columnUpdateName = "Creation date";
+                columnUpdateName = "Start date";
                 break;
             case MenuSelections.UpdateMenu.UpdateEndDate:
                 columnUpdateName = "End date";
@@ -46,21 +46,86 @@ internal class SQLCommands
         }
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
+            conn.Open();
             string stringDateNow = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
             string updateDateCommand = $@"Update '{Settings.DatabaseName}' SET 'Last update date' = @stringDate WHERE Id = @id";
-            string updateDurationCommand = $@"Update '{Settings.DatabaseName}' SET Duration = @duration WHERE Id = @id";
             string updateCommand = $@"Update '{Settings.DatabaseName}' SET '{columnUpdateName}' = @updateValue WHERE Id = @id";
-
-            // Update duration segment
-            string duration = CalculateDuration()
 
             for (int i = 0; i < indexNumbers.Count; i++)
             {
                 conn.Execute(updateDateCommand, new { stringDate = stringDateNow, id = indexNumbers[i] });
-                //conn.Execute(updateDurationCommand, new { duration = stringDateNow, id = indexNumbers[i] });
                 conn.Execute(updateCommand, new { updateValue = newData, id = indexNumbers[i] });
+
+                if (columnUpdateName == "Creation date" || columnUpdateName == "End date")
+                {
+                    string updateDurationCommand = $@"Update '{Settings.DatabaseName}' SET Duration = @duration WHERE Id = @id";
+                    string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {Settings.DatabaseName} WHERE Id = @id";
+                    System.Data.IDataReader idr = conn.ExecuteReader(retreiveDatesCommand, new { id = indexNumbers[i] });
+                    idr.Read();
+                    string durationCalculated = CalculateDuration(idr.GetString(0), idr.GetString(1)).ToString();
+                    conn.Execute(updateDurationCommand, new {duration = durationCalculated, id = indexNumbers[i] });
+                    idr.Close();
+                }
             }
+            conn.Close();
         }
+    }
+    internal static List<string> GetStartDates(List<int> index)
+    {
+        List<string> dates = new();
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+            for (int i = 0; i < index.Count; i++)
+            {
+                string commandString = $@"SELECT ""Start date"" FROM {Settings.DatabaseName} WHERE @id = ID";
+                dates.Add(conn.ExecuteScalar(commandString, new
+                {
+                    id = index[i]
+                }).ToString());
+            }
+            conn.Close();
+        }
+        return dates;
+    }
+    internal static List<string> GetEndDates(List<int> index)
+    {
+        List<string> dates = new();
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+            for (int i = 0; i < index.Count; i++)
+            {
+                string commandString = $@"SELECT ""End date"" FROM {Settings.DatabaseName} WHERE @id = ID";
+                dates.Add(conn.ExecuteScalar(commandString, new
+                {
+                    id = index[i]
+                }).ToString());
+            }
+            conn.Close();
+        }
+        return dates;
+    }
+    internal static List<string> GetDurations(List<int> index)
+    {
+        List<string> durations = new();
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+            System.Data.IDataReader idr;
+            for (int i = 0; i < index.Count; i++)
+            {
+                string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {Settings.DatabaseName} WHERE @id = Id";
+                idr = conn.ExecuteReader(retreiveDatesCommand, new
+                {
+                    id = index[i]
+                });
+                idr.Read();
+                durations.Add(CalculateDuration(idr.GetString(0), idr.GetString(1)).ToString());
+            }
+            conn.Close();
+        }
+        return durations;
     }
     internal static List<Session> GetRecords(FilterDetails filter)
     {
@@ -178,7 +243,7 @@ internal class SQLCommands
                     else
                         records = records.OrderByDescending(x => x.Duration).ToList();
                         break;
-                case MenuSelections.SortingBy.Line:
+                case MenuSelections.SortingBy.NumberOfLines:
                     if (sortingOrder == MenuSelections.SortingOrder.Ascending)
                         records = records.OrderBy(x => x.NumberOfLines).ToList();
                     else

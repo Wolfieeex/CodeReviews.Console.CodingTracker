@@ -384,6 +384,8 @@ internal class CRUDController
             List<Session> selectedSessions = new List<Session>();
             foreach (int i in indexNumbers)
             {
+                // If exists no go
+
                 selectedSessions.Add(sessions[i - 1]);
             }
 
@@ -422,9 +424,9 @@ internal class CRUDController
             string temp = "";
             switch (userOption)
             {
-                
+
                 case 0:
-                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.StartDate, sessions.Select(x => x.Key).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -439,10 +441,15 @@ internal class CRUDController
                         s.StartDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
                     }
+                    List<string> durations = SQLCommands.GetDurations(sessions.Select(x => x.Key).ToList());
+                    for (int i = 0; i < sessions.Count; i++)
+                    {
+                        sessions[i].Duration = durations[i];
+                    }
                     break;
 
                 case 1:
-                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.EndDate, sessions.Select(x => x.Key).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -456,6 +463,11 @@ internal class CRUDController
                     {
                         s.EndDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
+                    }
+                    durations = SQLCommands.GetDurations(sessions.Select(x => x.Key).ToList());
+                    for (int i = 0; i < sessions.Count; i++)
+                    {
+                        sessions[i].Duration = durations[i];
                     }
                     break;
 

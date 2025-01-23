@@ -115,7 +115,7 @@ internal class CRUDController
                                                                                false));
                         duration = duration.Replace(".", " days, ");
                         duration += " hours";
-                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelection($"Coding session of duration [Pink1]{duration} has been added![/]\nWould you like to [Pink1]add another record[/], or [Pink1]return to the main menu[/]?:\n", "Add", "Return");
+                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [Pink1]{duration} has been added![/]\nWould you like to [Pink1]add another record[/], or [Pink1]return to the main menu[/]?:\n", "Add", "Return");
 
                         start = null;
                         end = null;
@@ -166,7 +166,7 @@ internal class CRUDController
                         break;
                     case 1:
                         timer.Stop();
-                        if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                        if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
                         {
                             timer.Close();
                             trackerOn = false;
@@ -180,7 +180,7 @@ internal class CRUDController
                     case 2:
                         timer.Stop();
                         System.Console.Clear();
-                        if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
+                        if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
                         {
                             
 
@@ -201,7 +201,7 @@ internal class CRUDController
                                     break;
                                 case "d":
                                     System.Console.Clear();
-                                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                                    if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
                                     {
                                         sessionDiscarted = true;
                                         timer.Stop();
@@ -231,7 +231,7 @@ internal class CRUDController
                                             break;
                                         case "d":
                                             System.Console.Clear();
-                                            if (UserInterface.DisplayConfirmationSelection("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                                            if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
                                             {
                                                 sessionDiscarted = true;
                                                 timer.Close();
@@ -250,7 +250,7 @@ internal class CRUDController
                                                                                 input,
                                                                                 true));
                                             System.Console.Clear();
-                                            if (!UserInterface.DisplayConfirmationSelection($"Coding session of duration [Pink1]{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/]\nWould you like to [Pink1]start another session[/], or [Pink1]return to the main menu[/]?:\n", "Start", "Return"))
+                                            if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [Pink1]{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/]\nWould you like to [Pink1]start another session[/], or [Pink1]return to the main menu[/]?:\n", "Start", "Return"))
                                             {
                                                 sessionDiscarted = true;
                                                 timer.Close();
@@ -305,7 +305,7 @@ internal class CRUDController
         {
             try
             {
-                Filter = FilterRecords(ref returnToMenu);
+                Filter = FilterRecords("You are currently using [green]view previous sessions method[/]. ", ref returnToMenu);
                 if (returnToMenu)
                 {
                     break;
@@ -343,7 +343,7 @@ internal class CRUDController
             System.Console.Clear();
 
             bool quitMenu = false;
-            FilterDetails filters = FilterRecords(ref quitMenu);
+            FilterDetails filters = FilterRecords("You are currently using [green]update record method[/]. ", ref quitMenu);
             if (quitMenu) 
             { 
                 break; 
@@ -365,7 +365,7 @@ internal class CRUDController
 
             // This to be transferred into UserInterface class- this is not a controller, this belongs to View Model
             string userInput = AnsiConsole.Prompt(
-                new TextPrompt<string>("\nPlese [blue]select record(s) you would like to update by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, f.ex.  [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
+                new TextPrompt<string>("\nPlese [blue]select record(s) you would like to update by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, e.g. [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
                 .Validate((s) => s.ToLower() switch
                 {
                     ("e") => ValidationResult.Success(),
@@ -384,9 +384,10 @@ internal class CRUDController
             List<Session> selectedSessions = new List<Session>();
             foreach (int i in indexNumbers)
             {
-                // If exists no go
-
-                selectedSessions.Add(sessions[i - 1]);
+                if (!selectedSessions.Contains(sessions[i - 1]))
+                {
+                    selectedSessions.Add(sessions[i - 1]);
+                }
             }
 
             updateMenuRun = UpdateMenu(selectedSessions);
@@ -523,9 +524,10 @@ internal class CRUDController
     {
         throw new NotImplementedException();
     }
-    internal static FilterDetails FilterRecords(ref bool returnToMenu)
+    internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu)
     {
-        SortingDetails sortingDetails = TemporaryData.lastFilter.sortingDetails;
+        SortingDetails sortingDetails = TemporaryData.lastFilter.SortingDetails;
+        bool[] viewOptions = TemporaryData.lastFilter.ViewOptions;
         string start = TemporaryData.lastFilter.FromDate;
         string end = TemporaryData.lastFilter.ToDate;
         string linesMin = TemporaryData.lastFilter.MinLines;
@@ -533,6 +535,7 @@ internal class CRUDController
         string comments = TemporaryData.lastFilter.Comment;
         string durationMin = TemporaryData.lastFilter.MinDuration;
         string durationMax = TemporaryData.lastFilter.MaxDuration;
+        string wasTimerTracked = TemporaryData.lastFilter.WasTimerTracked;
         
         bool runFilterMenuLoop = true;
         while (runFilterMenuLoop)
@@ -540,14 +543,15 @@ internal class CRUDController
             string sortingDetailsString = sortingDetails.SortBy == null || sortingDetails.SortOrder == null ? null : sortingDetails.SortOrder.ToString() + ", " + Regex.Replace(sortingDetails.SortBy.ToString(), @"(?<=[A-Za-z])([A-Z])", @" $1");
             Dictionary<string, string> dic = new Dictionary<string, string>()
             {
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), sortingDetailsString},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), start},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), end},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), linesMin},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), linesMax},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), comments},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), durationMin},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), durationMax}
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), sortingDetailsString},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), start},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), end},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), linesMin},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), linesMax},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), comments},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), durationMin},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)9), durationMax},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)10), wasTimerTracked}
             };
 
             System.Console.Clear();
@@ -583,7 +587,7 @@ internal class CRUDController
                 }
             }
 
-            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs("Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, reason);
+            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs(preTitle + "Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, reason);
 
             string temp = "";
             switch (userOption)
@@ -591,25 +595,28 @@ internal class CRUDController
                 case -1:
                     FilterDetails finalFilter = new FilterDetails()
                     {
-                        sortingDetails = sortingDetails,
+                        SortingDetails = sortingDetails,
+                        ViewOptions = viewOptions,
                         FromDate = start,
                         ToDate = end,
                         MinLines = linesMin,
                         MaxLines = linesMax,
                         Comment = comments,
                         MinDuration = durationMin,
-                        MaxDuration = durationMax
+                        MaxDuration = durationMax,
+                        WasTimerTracked = wasTimerTracked
                     };
                     TemporaryData.lastFilter = finalFilter;
                     return finalFilter;
                 case 0:
-                    if (UserInterface.DisplayConfirmationSelection("Are you sure you want to remove all your previous filters?", "Yes", "No"))
+                    if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to remove all your previous filters?", "Yes", "No"))
                     {
                         sortingDetails = new SortingDetails()
                         {
                             SortBy = null,
                             SortOrder = null
                         };
+                        viewOptions = new bool[] { false, false, false, false, true, true, true, false };
                         start = null;
                         end = null;
                         linesMin = null;
@@ -617,12 +624,16 @@ internal class CRUDController
                         comments = null;
                         durationMin = null;
                         durationMax = null;
+                        wasTimerTracked = null;
                     }
                     break;
                 case 1:
-                    sortingDetails = SortingMenu(sortingDetails);
+                    UserInterface.DisplayMultiselectionUI("Someting", typeof(MenuSelections.TableViewMenu), ref viewOptions);
                     break;
                 case 2:
+                    sortingDetails = SortingMenu(sortingDetails);
+                    break;
+                case 3:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
                     if (temp == "e")
                     {
@@ -630,7 +641,7 @@ internal class CRUDController
                     }
                     start = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 3:
+                case 4:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the date to which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
                     if (temp == "e")
                     {
@@ -638,7 +649,7 @@ internal class CRUDController
                     }
                     end = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 4:
+                case 5:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the minimal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
                     if (temp == "e")
                     {
@@ -646,7 +657,7 @@ internal class CRUDController
                     }
                     linesMin = string.IsNullOrEmpty(temp) || temp == "" ? temp : (Int32.Parse(temp) < 1 ? "1" : temp.Trim());
                 break;
-                case 5:
+                case 6:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]the maximal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
                     if (temp == "e")
                     {
@@ -654,7 +665,7 @@ internal class CRUDController
                     }
                     linesMax = string.IsNullOrEmpty(temp) || temp == "" ? temp : (Int32.Parse(temp) < 1 ? "1" : temp.Trim());
                 break;
-                case 6:
+                case 7:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]part of the comment[/] you want to search for. ", TextUIOptions.Optional);
                     if (temp == "e")
                     {
@@ -662,7 +673,7 @@ internal class CRUDController
                     }
                     comments = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 7:
+                case 8:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
                     if (temp == "e")
                     {
@@ -670,7 +681,7 @@ internal class CRUDController
                     }
                     durationMin = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 8:
+                case 9:
                     temp = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
                     if (temp == "e")
                     {
@@ -678,7 +689,18 @@ internal class CRUDController
                     }
                     durationMax = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
                 break;
-                case 9:
+                case 10:
+                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Show records that were [purple]timer tracked (true)[/], or were [purple]inserted manually (false)[/]: ", typeof(MenuSelections.TimerTracked), Color.MediumPurple);
+                    if (!(resultSortingOrder is int))
+                    {
+                        wasTimerTracked = Enum.GetName(resultSortingOrder) == "TimerTracked" ? "True" : "False";
+                    }
+                    else
+                    {
+                        wasTimerTracked = null;
+                    }
+                    break;
+                case 11:
                     returnToMenu = true;
                     runFilterMenuLoop = false;
                 break;
@@ -689,7 +711,7 @@ internal class CRUDController
     internal static SortingDetails SortingMenu(SortingDetails previousDetails)
     {
         bool inSortingMenu = true;
-        SortingDetails sortingDetails = TemporaryData.lastFilter.sortingDetails;
+        SortingDetails sortingDetails = TemporaryData.lastFilter.SortingDetails;
 
         while (inSortingMenu)
         {
@@ -703,21 +725,21 @@ internal class CRUDController
             switch (userSelection)
             {
                 case -1:
-                    TemporaryData.lastFilter.sortingDetails = sortingDetails;
+                    TemporaryData.lastFilter.SortingDetails = sortingDetails;
                     return sortingDetails;
                 case 0:
                     sortingDetails.SortBy = null;
                     sortingDetails.SortOrder = null;
                     break;
                 case 1:
-                    dynamic resultSortingOrder = UserInterface.EnumSelection("Please select your sorting order: ", typeof(MenuSelections.SortingOrder), Color.LightSeaGreen);
+                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Please select your sorting order: ", typeof(MenuSelections.SortingOrder), Color.LightSeaGreen);
                     if (!(resultSortingOrder is int))
                     {
                         sortingDetails.SortOrder = resultSortingOrder;
                     }
                     break;
                 case 2:
-                    dynamic resultSortingBy = UserInterface.EnumSelection("Please select your sorting option: ", typeof(MenuSelections.SortingBy), Color.LightSeaGreen);
+                    dynamic resultSortingBy = UserInterface.DisplayEnumSelectionUI("Please select your sorting option: ", typeof(MenuSelections.SortingBy), Color.LightSeaGreen);
                     if (!(resultSortingBy is int))
                     {
                         sortingDetails.SortBy = resultSortingBy;

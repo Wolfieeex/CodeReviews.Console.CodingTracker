@@ -24,6 +24,7 @@ internal enum TrackNewSession
 internal enum FilterRecords
 {
     ClearFilters,
+    TableViewOptions,
     OptionalSorting,
     OptionalFromDate,
     OptionalToDate,
@@ -32,6 +33,7 @@ internal enum FilterRecords
     OptionalComment,
     OptionalMinimalDuration,
     OptionalMaximalDuration,
+    OptionalWasTimerTracked,
     ReturnToMainMenu
 }
 
@@ -49,6 +51,7 @@ internal enum SortingBy
     Duration,
     NumberOfLines,
     Comment,
+    WasTimerTracked
 }
 internal enum SortingMenu
 {
@@ -83,7 +86,20 @@ internal enum UpdateMenu
     BackToFilterMenu,
     BackToMainMenu,
 }
-internal enum ViewOptionsMenu
+internal enum TableViewMenu 
 {
-    
+    DisplayCreationDate,
+    DisplayLastUpdateDate,
+    DisplayStartDate,
+    DisplayEndDate,
+    DisplayDuration,
+    DisplayNumberOfLines,
+    DisplayComments,
+    DisplayIfWasTimerTracked
+}
+
+internal enum TimerTracked
+{
+    TimerTracked,
+    InsertedManually
 }

@@ -34,7 +34,7 @@ internal class UserInterface
         .HighlightStyle(new Style().Foreground(highlightcolor)
                                    .Decoration(Decoration.RapidBlink))
         .EnableSearch()
-        .PageSize(10)
+        .PageSize(15)
         .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
         .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]"))
         .AddChoices((rawOptions)));
@@ -43,7 +43,6 @@ internal class UserInterface
 
         return enumCardinal;
     }
-
     /// <summary>
     /// This UI is used to assign multiple string selections that are required for the next screen, for example, while creating a new record for a database.
     /// </summary>
@@ -89,7 +88,7 @@ internal class UserInterface
             .Foreground(highlightcolor)
             .Decoration(Decoration.RapidBlink))
         .EnableSearch()
-        .PageSize(10)
+        .PageSize(15)
         .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
         .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null || typeDictionary[n] == "" ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
         .AddChoices((rawOptions));
@@ -101,7 +100,6 @@ internal class UserInterface
 
         return parseSuccessful ? (int)enumCardinal : -1;
     }
-
     public static string? DisplayTextUI(string title, TextUIOptions UIOptions, List<int> index = null)
     {
         TextPrompt<string> prompt = new(title + "[red]Leave this space blank[/] to clear the previous insert or [red]input \"E\"[/] to go back to filter menu: ");
@@ -222,8 +220,7 @@ internal class UserInterface
 
         return AnsiConsole.Prompt(prompt);
     }
-
-    public static bool DisplayConfirmationSelection(string title, string positive, string negative)
+    public static bool DisplayConfirmationSelectionUI(string title, string positive, string negative)
     {
         positive = positive.ToLower();
 
@@ -238,7 +235,7 @@ internal class UserInterface
             .WithConverter(choice => choice ? positive : negative));     
         return addAnotherRecord;
     }
-    public static dynamic EnumSelection(string title, Type options, Color color)
+    public static dynamic DisplayEnumSelectionUI(string title, Type options, Color color)
     {
         SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
         List<string> rawOptions = Enum.GetNames(options).ToList();
@@ -251,7 +248,7 @@ internal class UserInterface
             .Decoration(Decoration.RapidBlink))
 
         .EnableSearch()
-        .PageSize(10)
+        .PageSize(15)
         .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
         .AddChoices("Cancel")
         .AddChoices(rawOptions)
@@ -337,5 +334,35 @@ internal class UserInterface
         table.ShowRowSeparators();
         table.BorderColor(Color.SteelBlue3);
         AnsiConsole.Write(table);
+    }
+    public static void DisplayMultiselectionUI(string title, Type options, ref bool[] updateArray)
+    {
+        SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
+
+        List<string> stringOptions = Enum.GetNames(options).ToList();
+
+        if (stringOptions.Count != updateArray.Length)
+        {
+            throw new ArgumentException("For Display Multiselection UI method passed Enum Type needs to have the same length as referenced array of bools.");
+        }
+        for (int i = 0; i < stringOptions.Count; i++)
+        {
+            stringOptions[i] += ":" + updateArray[i].ToString();
+        }
+
+        selectionPrompt
+        .Title(title)
+        .WrapAround(true)
+        .HighlightStyle(new Style()
+            .Foreground(Color.Maroon)
+            .Decoration(Decoration.RapidBlink))
+        .EnableSearch()
+        .PageSize(15)
+        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .UseConverter((string n) => (Regex.Replace(n, @"([A-Z][^:])", @" $1")))
+        .AddChoices(stringOptions);
+
+        string userOption = AnsiConsole.Prompt(selectionPrompt);
+        System.Console.WriteLine(userOption);
     }
 }

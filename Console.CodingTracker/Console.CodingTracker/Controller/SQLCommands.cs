@@ -168,8 +168,13 @@ internal class SQLCommands
             }
             if (!String.IsNullOrEmpty(filter.Comment))
             {
-                whereInject += $@"AND Comments LIKE '%@Comment%' ";
-                parameters.Add("@Comment", filter.Comment);
+                whereInject += $@"AND Comments LIKE lower(@Comment) ";
+                parameters.Add("@Comment", "%" + filter.Comment.ToLower() + "%");
+            }
+            if (!String.IsNullOrEmpty(filter.WasTimerTracked))
+            {
+                whereInject += $@"AND ""Was Timer Tracked"" = @WasTimerTracked";
+                parameters.Add("@WasTimerTracked", filter.WasTimerTracked == "True" ? 1 : 0);
             }
 
             if (whereInject.Contains("AND"))
@@ -204,7 +209,7 @@ internal class SQLCommands
             conn.Close();
         }
 
-        SortingDetails sortingDetails = filter.sortingDetails;
+        SortingDetails sortingDetails = filter.SortingDetails;
 
         if (sortingDetails != null)
         {
@@ -255,6 +260,12 @@ internal class SQLCommands
                     else
                         records = records.OrderByDescending(x => x.Comments).ToList();
                         break;
+                case MenuSelections.SortingBy.WasTimerTracked:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.WasTimerTracked).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.WasTimerTracked).ToList();
+                    break;
             }
         }
 

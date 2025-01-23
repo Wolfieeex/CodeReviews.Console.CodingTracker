@@ -10,8 +10,8 @@ internal class TemporaryData
     {
         lastFilter = new FilterDetails()
         {
-            viewOptions = null,
-            sortingDetails = new SortingDetails()
+            ViewOptions = new bool[]{ false, false, false, false, true, true,  true, false },
+            SortingDetails = new SortingDetails()
             {
                 SortBy = null,
                 SortOrder = MenuSelections.SortingOrder.Ascending
@@ -22,7 +22,8 @@ internal class TemporaryData
             MaxLines = null,
             Comment = null,
             MinDuration = null,
-            MaxDuration = null
+            MaxDuration = null,
+            WasTimerTracked = null
         };
     }
 }

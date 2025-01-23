@@ -2,8 +2,8 @@ namespace Console.CodingTracker.Model;
 
 internal class FilterDetails
 {
-    public SortingDetails sortingDetails { get; set; }
-    public bool[] viewOptions { get; set; }
+    public SortingDetails SortingDetails { get; set; }
+    public bool[] ViewOptions { get; set; }
     public string? FromDate { get; set; }
     public string? ToDate { get; set; }
     public string? MinLines { get; set; }
@@ -11,6 +11,7 @@ internal class FilterDetails
     public string? Comment { get; set; }
     public string? MinDuration { get; set; }
     public string? MaxDuration { get; set; }
+    public string? WasTimerTracked { get; set; }
 }
 
 internal class SortingDetails

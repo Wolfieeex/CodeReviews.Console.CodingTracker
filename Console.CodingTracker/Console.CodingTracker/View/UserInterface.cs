@@ -1,9 +1,10 @@
-﻿using Spectre.Console;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Reflection;
+﻿using Console.CodingTracker.Controller;
 using Console.CodingTracker.Model;
-using Console.CodingTracker.Controller;
+using Spectre.Console;
+using System.Globalization;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.View;
 
@@ -337,32 +338,64 @@ internal class UserInterface
     }
     public static void DisplayMultiselectionUI(string title, Type options, ref bool[] updateArray)
     {
-        SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
-
-        List<string> stringOptions = Enum.GetNames(options).ToList();
-
-        if (stringOptions.Count != updateArray.Length)
+        bool runMenu = true;
+        string originalTitle = title;
+        while (runMenu)
         {
-            throw new ArgumentException("For Display Multiselection UI method passed Enum Type needs to have the same length as referenced array of bools.");
-        }
-        for (int i = 0; i < stringOptions.Count; i++)
-        {
-            stringOptions[i] += ":" + updateArray[i].ToString();
-        }
+            SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
 
-        selectionPrompt
-        .Title(title)
-        .WrapAround(true)
-        .HighlightStyle(new Style()
-            .Foreground(Color.Maroon)
-            .Decoration(Decoration.RapidBlink))
-        .EnableSearch()
-        .PageSize(15)
-        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => (Regex.Replace(n, @"([A-Z][^:])", @" $1")))
-        .AddChoices(stringOptions);
+            List<string> stringOptions = Enum.GetNames(options).ToList();
 
-        string userOption = AnsiConsole.Prompt(selectionPrompt);
-        System.Console.WriteLine(userOption);
+            if (stringOptions.Count != updateArray.Length)
+            {
+                throw new ArgumentException("For Display Multiselection UI method passed Enum Type needs to have the same length as referenced array of bools.");
+            }
+            for (int i = 0; i < stringOptions.Count; i++)
+            {
+                stringOptions[i] += ":" + (updateArray[i] ? "☑ " : "☐ ");
+            }
+
+            selectionPrompt
+            .Title(title)
+            .WrapAround(true)
+            .HighlightStyle(new Style()
+                .Foreground(Color.Olive)
+                .Decoration(Decoration.RapidBlink))
+            .EnableSearch()
+            .PageSize(15)
+            .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+            .UseConverter((string n) => (Regex.Replace(n, @"([A-Z][^:])", @" $1")))
+            .AddChoices("Save and exit")
+            .AddChoices(stringOptions);
+
+
+            string userOption = AnsiConsole.Prompt(selectionPrompt);
+            if (userOption == "Save and exit")
+            {
+                runMenu = false;
+            }
+            else
+            {
+                title = originalTitle;
+                userOption = Regex.Match(userOption, @".*(?=:)").Value;
+                int optionCardinal = (int)Enum.Parse(options, userOption);
+                updateArray[optionCardinal] = !updateArray[optionCardinal];
+                
+                bool allValuesFalse = true;
+                foreach (bool b in updateArray)
+                {
+                    if (b == true)
+                    {
+                        allValuesFalse = false;
+                        break;
+                    }
+                }
+                if (allValuesFalse)
+                {
+                    title = "[red]At least one value must be selected for your table[/]";
+                    updateArray[optionCardinal] = !updateArray[optionCardinal];
+                }
+            }
+        }
     }
 }

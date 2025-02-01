@@ -2,6 +2,7 @@
 using Console.CodingTracker.Model;
 using Dapper;
 using System.Data;
+using System.Text;
 
 namespace Console.CodingTracker.Controller;
 
@@ -142,9 +143,9 @@ internal class ProgramSetup
             SQLCommands.InjectRecord(session);
         }
     }
-    internal static void ConsoleSizeSetup()
+    internal static void ConsoleSettings()
     {
-
+        System.Console.OutputEncoding = Encoding.UTF8;
     }
     internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {

@@ -320,8 +320,7 @@ internal class CRUDController
             List<Session> sessions = SQLCommands.GetRecords(Filter);
             if (sessions != null && sessions.Any())
             {
-                bool[] tableFieldSettings = { false, false, true, true, true, true, true, false };
-                UserInterface.DrawDatatable(sessions, tableFieldSettings);
+                UserInterface.DrawDatatable(sessions, Filter.ViewOptions);
                 AnsiConsole.Write(new Markup("\n[green]Press any key[/] to return to previous menu:"));
             }
             else if (Filter == null)
@@ -358,7 +357,7 @@ internal class CRUDController
                 continue;
             }
 
-            bool[] viewOptions = { true, true, true, true, true, true, true, true };
+            bool[] viewOptions = filters.ViewOptions;
             UserInterface.DrawDatatable(sessions, viewOptions);
             System.Console.WriteLine();
             int reason = 0;
@@ -628,7 +627,7 @@ internal class CRUDController
                     }
                     break;
                 case 1:
-                    UserInterface.DisplayMultiselectionUI("Someting", typeof(MenuSelections.TableViewMenu), ref viewOptions);
+                    UserInterface.DisplayMultiselectionUI("Please [yellow4]toggle select elements you want your datatable to include[/]:", typeof(MenuSelections.TableViewMenu), ref viewOptions);
                     break;
                 case 2:
                     sortingDetails = SortingMenu(sortingDetails);

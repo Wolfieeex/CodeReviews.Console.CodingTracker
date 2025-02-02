@@ -1,4 +1,5 @@
 ﻿using Console.CodingTracker.Controller;
+using Console.CodingTracker.Controller.ScreenMangers;
 using Console.CodingTracker.Model;
 
 try
@@ -6,7 +7,7 @@ try
     TemporaryData.InitializeLastFilter();
     ProgramSetup.InstantiateDatabase();
     ProgramSetup.ConsoleSettings();
-    ScreenController.S_Mainmenu();
+    MainMenuScreenManager.S_Mainmenu();
 }
 catch (Exception ex)
 {

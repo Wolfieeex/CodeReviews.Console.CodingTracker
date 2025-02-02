@@ -11,7 +11,6 @@ internal enum MainMenu
     DeleteSession,
     ExitApp
 }
-
 internal enum TrackNewSession
 {
     AddSessionStart,
@@ -20,7 +19,6 @@ internal enum TrackNewSession
     OptionalAddSessionComments,
     ReturnToMainMenu
 }
-
 internal enum FilterRecords
 {
     ClearFilters,
@@ -36,7 +34,6 @@ internal enum FilterRecords
     OptionalWasTimerTracked,
     ReturnToMainMenu
 }
-
 internal enum SortingOrder
 {
     Ascending,
@@ -86,6 +83,12 @@ internal enum UpdateMenu
     BackToFilterMenu,
     BackToMainMenu,
 }
+internal enum DeletionMenu
+{
+    Delete,
+    BackToFileterMenu,
+    BackToMainMenu
+}
 internal enum TableViewMenu 
 {
     DisplayCreationDate,
@@ -97,9 +100,37 @@ internal enum TableViewMenu
     DisplayComments,
     DisplayIfWasTimerTracked
 }
-
 internal enum TimerTracked
 {
     TimerTracked,
     InsertedManually
+}
+internal enum ReportMenu
+{
+    OptionalApplyFilters,
+    ReportOptions,
+    GenerateByPeriod,
+    ReturnToMainMenu
+}
+internal enum SummationOptions
+{
+    Durations,
+    Lines
+}
+internal enum ReportOptions
+{ 
+    ShowOptions,
+    RecordCount,
+    Sumations,
+    MaximalValues,
+    MinimalValues,
+    MeanValues,
+    MedianValues,
+    ModalValues
+}
+internal enum ReportSortationPeriod
+{
+    Yearly,
+    Weekly,
+    Daily
 }

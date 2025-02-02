@@ -3,13 +3,14 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Spectre.Console;
 using System;
+using System.Data.SqlClient;
 
 namespace Console.CodingTracker.Controller;
 
 internal class SQLCommands
 {
-    public static List<Session> CurrentSessions { get; private set; } = new List<Session>();
-    internal static string InjectRecord(Session session)
+    public static List<CodingSession> CurrentSessions { get; private set; } = new List<CodingSession>();
+    internal static string InjectRecord(CodingSession session)
     {
         TimeSpan codingSpan = CalculateDuration(session.StartDate, session.EndDate);
         string stringCodingSpan = codingSpan.ToString();
@@ -127,9 +128,9 @@ internal class SQLCommands
         }
         return durations;
     }
-    internal static List<Session> GetRecords(FilterDetails filter)
+    internal static List<CodingSession> GetRecords(FilterDetails filter)
     {
-        List<Session> records = new List<Session>();
+        List<CodingSession> records = new List<CodingSession>();
 
         string whereInject = "";
         Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -203,7 +204,7 @@ internal class SQLCommands
             int counter = 0;
             while (reader.Read())
             {
-                records.Add(new Session(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));
+                records.Add(new CodingSession(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));
             }
 
             conn.Close();
@@ -272,6 +273,19 @@ internal class SQLCommands
         CurrentSessions = records;
 
         return records;
+    }
+    internal static void DeleteRecords(List<int> index)
+    {
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+            foreach (int i in index) 
+            {
+                string command = @$"DELETE FROM '{Settings.DatabaseName}' WHERE @id = Id";
+                conn.Execute(command, new { id = i });
+            }
+            conn.Close();
+        }
     }
     internal static string SqlDateToSortableDate(string date)
     {

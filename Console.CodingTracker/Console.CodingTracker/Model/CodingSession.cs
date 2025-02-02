@@ -1,6 +1,6 @@
 ﻿namespace Console.CodingTracker.Model;
 
-internal class Session
+internal class CodingSession
 {
     // AI generated
     internal int Key { get; set;}
@@ -291,7 +291,7 @@ internal class Session
     internal string? Comments { get; set; }
     internal bool WasTimerTracked { get; set; }
 
-    public Session(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
     {
         CreationDate = creation;
         LastUpdateDate = lastUpdate;
@@ -303,7 +303,7 @@ internal class Session
         WasTimerTracked = wasTimerTracked;
     }
 
-    public Session(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
     {
         Key = key;
         CreationDate = creation;

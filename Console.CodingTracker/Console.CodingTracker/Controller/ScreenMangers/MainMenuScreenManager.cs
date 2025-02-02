@@ -1,10 +1,9 @@
 ﻿using Console.CodingTracker.View;
-using Console.CodingTracker.Model;
 using Spectre.Console;
 
-namespace Console.CodingTracker.Controller;
+namespace Console.CodingTracker.Controller.ScreenMangers;
 
-internal class ScreenController
+internal class MainMenuScreenManager
 {
     internal static void S_Mainmenu()
     {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using Console.CodingTracker.Model;
 using Dapper;
-using System.Data;
 using System.Text;
 
 namespace Console.CodingTracker.Controller;
@@ -132,13 +131,13 @@ internal class ProgramSetup
             double ifCommentRoll  = ran.NextDouble();
             if (ifCommentRoll < chanceThatWasCommented)
             {
-                int commentRoll = ran.Next(0, Session.ProgrammingComments.Length);
-                Comments = Session.ProgrammingComments[commentRoll];
+                int commentRoll = ran.Next(0, CodingSession.ProgrammingComments.Length);
+                Comments = CodingSession.ProgrammingComments[commentRoll];
             }
             double TimerRoll = ran.NextDouble();
             WasTimerTracked = TimerRoll > chanceThatWasTimerTracked ? false : true;
 
-            Session session = new Session(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines, Comments, WasTimerTracked);
+            CodingSession session = new CodingSession(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines, Comments, WasTimerTracked);
             
             SQLCommands.InjectRecord(session);
         }
@@ -146,6 +145,7 @@ internal class ProgramSetup
     internal static void ConsoleSettings()
     {
         System.Console.OutputEncoding = Encoding.UTF8;
+        
     }
     internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {

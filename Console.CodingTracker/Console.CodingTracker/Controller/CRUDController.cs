@@ -4,7 +4,7 @@ using Spectre.Console;
 using System.Timers;
 using System.Text.RegularExpressions;
 using System.Globalization;
-using System.Xml.Linq;
+using Console.CodingTracker.Controller.ScreenMangers;
 
 namespace Console.CodingTracker.Controller;
 
@@ -44,7 +44,7 @@ internal class CRUDController
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[/]", blockEndOption, "[red]The start date of your session must be before the end date of your session:[/]");
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs("Track your [violet]new session:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[/]", blockEndOption, "[red]The start date of your session must be earlier than the end date of your session:[/]");
             }
 
             catch (Exception ex)
@@ -105,7 +105,7 @@ internal class CRUDController
                         trackNewSessionLoop = false;
                         break;
                     case -1:
-                        string duration = SQLCommands.InjectRecord(new Session(DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
+                        string duration = SQLCommands.InjectRecord(new CodingSession(DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
                                                                                DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
                                                                                start,
                                                                                end,
@@ -241,7 +241,7 @@ internal class CRUDController
                                             }
                                             break;
                                         default:
-                                            SQLCommands.InjectRecord(new Session((sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                            SQLCommands.InjectRecord(new CodingSession((sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 sessionStart.ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
@@ -317,7 +317,7 @@ internal class CRUDController
                 System.Console.ReadKey();
             }
 
-            List<Session> sessions = SQLCommands.GetRecords(Filter);
+            List<CodingSession> sessions = SQLCommands.GetRecords(Filter);
             if (sessions != null && sessions.Any())
             {
                 UserInterface.DrawDatatable(sessions, Filter.ViewOptions);
@@ -347,7 +347,7 @@ internal class CRUDController
             { 
                 break; 
             }
-            List<Session> sessions = SQLCommands.GetRecords(filters);
+            List<CodingSession> sessions = SQLCommands.GetRecords(filters);
 
             if (sessions == null || !sessions.Any())
             {
@@ -380,7 +380,7 @@ internal class CRUDController
 
             int[] indexNumbers = userInput.Split(',')
                                .Select(x =>  int.Parse(x)).ToArray();
-            List<Session> selectedSessions = new List<Session>();
+            List<CodingSession> selectedSessions = new List<CodingSession>();
             foreach (int i in indexNumbers)
             {
                 if (!selectedSessions.Contains(sessions[i - 1]))
@@ -391,35 +391,15 @@ internal class CRUDController
 
             updateMenuRun = UpdateMenu(selectedSessions);
         }
-
-        bool IndexCheck(string index, int sessionsLength, ref int reason)  
-        {
-            if (!Regex.IsMatch(index, @"^(\s*[0-9]+\s*)(,\s*[0-9]+\s*)*$"))
-            {
-                reason = 0;
-                return false;
-            }
-
-            string[] indexArray = index.Split(',');
-            foreach (string s in indexArray)
-            {
-                if (int.Parse(s) > sessionsLength || int.Parse(s) < 0)
-                {
-                    reason = 1;
-                    return false; 
-                }
-            }
-            return true;
-        }
     }
-    internal static bool UpdateMenu(List<Session> sessions)
+    internal static bool UpdateMenu(List<CodingSession> sessions)
     {
         bool updateWhile = true;
         while (updateWhile)
         {
             System.Console.Clear();
             UserInterface.DrawDatatable(sessions, new bool[] { true, true, true, true, true, true, true, true });
-            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : "Multi - update([yellow]all selected records will be updated at the same time[/]). ")}[blue]Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), Color.Orange4);
+            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : "Multi - update ([yellow]all selected records will be updated at the same time[/]). ")}[blue]Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), Color.Orange4);
 
             string temp = "";
             switch (userOption)
@@ -436,7 +416,7 @@ internal class CRUDController
                         break;
                     }
                     SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateStartDate);
-                    foreach (Session s in sessions)
+                    foreach (CodingSession s in sessions)
                     {
                         s.StartDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
@@ -459,7 +439,7 @@ internal class CRUDController
                         break;
                     }
                     SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateEndDate);
-                    foreach (Session s in sessions)
+                    foreach (CodingSession s in sessions)
                     {
                         s.EndDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
@@ -490,7 +470,7 @@ internal class CRUDController
                     }
 
                     SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
-                    foreach (Session s in sessions)
+                    foreach (CodingSession s in sessions)
                     {
                         s.NumberOfLines = temp == null ? null : int.Parse(temp);
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
@@ -505,7 +485,7 @@ internal class CRUDController
                     temp = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
 
                     SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateComments);
-                    foreach (Session s in sessions)
+                    foreach (CodingSession s in sessions)
                     {
                         s.Comments = temp;
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
@@ -521,20 +501,108 @@ internal class CRUDController
     }
     internal static void DeleteSession()
     {
-        throw new NotImplementedException();
+        bool runDeleteMenu = true;
+        while (runDeleteMenu)
+        {
+            System.Console.Clear();
+
+            bool quitMenu = false;
+            FilterDetails filters = FilterRecords("You are currently using [green]delete record method[/]. ", ref quitMenu);
+            if (quitMenu)
+            {
+                break;
+            }
+            List<CodingSession> sessions = SQLCommands.GetRecords(filters);
+
+            if (sessions == null || !sessions.Any())
+            {
+                System.Console.Clear();
+                AnsiConsole.Markup("No records to update with given filters. Press any [blue]key to go back to filter menu[/]: ");
+                System.Console.ReadKey();
+                continue;
+            }
+
+            bool[] viewOptions = filters.ViewOptions;
+            UserInterface.DrawDatatable(sessions, viewOptions);
+            System.Console.WriteLine();
+            int reason = 0;
+
+            // This to be transferred into UserInterface class- this is not a controller, this belongs to View Model
+            string userInput = AnsiConsole.Prompt(
+                new TextPrompt<string>("\nPlese [blue]select record(s) you would like to delete by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, e.g. [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
+                .Validate((s) => s.ToLower() switch
+                {
+                    ("e") => ValidationResult.Success(),
+                    string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? "You can only [blue]input index numbers you want to update separated by commas[/] or [red]\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
+                    (_) => ValidationResult.Success()
+                })
+            );
+
+            if (userInput.ToLower() == "e")
+            {
+                continue;
+            }
+
+            int[] indexNumbers = userInput.Split(',')
+                               .Select(x => int.Parse(x)).ToArray();
+            List<CodingSession> selectedSessions = new List<CodingSession>();
+            foreach (int i in indexNumbers)
+            {
+                if (!selectedSessions.Contains(sessions[i - 1]))
+                {
+                    selectedSessions.Add(sessions[i - 1]);
+                }
+            }
+
+            runDeleteMenu = DeletionMenu(selectedSessions);
+        }
+    }
+    internal static bool DeletionMenu(List<CodingSession> sessions)
+    {
+        bool deletionWhile = true;
+        while (deletionWhile)
+        {
+            System.Console.Clear();
+            UserInterface.DrawDatatable(sessions, new bool[] { true, true, true, true, true, true, true, true });
+            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : "Multi - deletion ([red]all selected records will be deleted at the same time[/]). ")}[blue]Please make your selection:[/]", typeof(MenuSelections.DeletionMenu), Color.Orange1);
+
+            string demonstrative = sessions.Count > 1 ? "all the selected sessions" : "that session";
+            switch (userOption)
+            {
+                case 0:
+                    bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"[red]Are you sure you want to delete {demonstrative}?[/]", "Yes", "No");
+                    if (confirmation)
+                    {
+                        SQLCommands.DeleteRecords(sessions.Select(x => x.Key).ToList());
+                        AnsiConsole.Markup($"Deletion of {sessions.Count} record{(sessions.Count > 1 ? "s" : "")} completed. [blue]Press any key[/] to return to the previous menu: ");
+                        System.Console.ReadKey();
+                        return true;
+                    }
+                    break;
+                case 1:
+                    return true;
+                case 2:
+                    return false;
+            }
+        }
+        return false;
     }
     internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu)
     {
+        FilterDetails filterDetails = new FilterDetails()
+        {
+            SortingDetails = TemporaryData.lastFilter.SortingDetails,
+            ViewOptions = TemporaryData.lastFilter.ViewOptions,
+            FromDate = TemporaryData.lastFilter.FromDate,
+            ToDate = TemporaryData.lastFilter.ToDate,
+            MinLines = TemporaryData.lastFilter.MinLines,
+            MaxLines = TemporaryData.lastFilter.MaxLines,
+            Comment = TemporaryData.lastFilter.Comment,
+            MinDuration = TemporaryData.lastFilter.MinDuration,
+            MaxDuration = TemporaryData.lastFilter.MaxDuration,
+            WasTimerTracked = TemporaryData.lastFilter.WasTimerTracked
+        };
         SortingDetails sortingDetails = TemporaryData.lastFilter.SortingDetails;
-        bool[] viewOptions = TemporaryData.lastFilter.ViewOptions;
-        string start = TemporaryData.lastFilter.FromDate;
-        string end = TemporaryData.lastFilter.ToDate;
-        string linesMin = TemporaryData.lastFilter.MinLines;
-        string linesMax = TemporaryData.lastFilter.MaxLines;
-        string comments = TemporaryData.lastFilter.Comment;
-        string durationMin = TemporaryData.lastFilter.MinDuration;
-        string durationMax = TemporaryData.lastFilter.MaxDuration;
-        string wasTimerTracked = TemporaryData.lastFilter.WasTimerTracked;
         
         bool runFilterMenuLoop = true;
         while (runFilterMenuLoop)
@@ -543,24 +611,24 @@ internal class CRUDController
             Dictionary<string, string> dic = new Dictionary<string, string>()
             {
                 { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), sortingDetailsString},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), start},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), end},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), linesMin},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), linesMax},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), comments},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), durationMin},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)9), durationMax},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)10), wasTimerTracked}
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), filterDetails.FromDate},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), filterDetails.ToDate},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), filterDetails.MinLines},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), filterDetails.MaxLines},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), filterDetails.Comment},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), filterDetails.MinDuration},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)9), filterDetails.MaxDuration},
+                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)10), filterDetails.WasTimerTracked}
             };
 
             System.Console.Clear();
 
             string reason = "";
             bool shouldBlock = false;
-            if (!String.IsNullOrEmpty(start) && !String.IsNullOrEmpty(end))
+            if (!String.IsNullOrEmpty(filterDetails.FromDate) && !String.IsNullOrEmpty(filterDetails.ToDate))
             {
-                DateTime dateStart = DateTime.Parse(start);
-                DateTime dateEnd = DateTime.Parse(end);
+                DateTime dateStart = DateTime.Parse(filterDetails.FromDate);
+                DateTime dateEnd = DateTime.Parse(filterDetails.ToDate);
 
                 if (dateEnd < dateStart)
                 {
@@ -568,141 +636,28 @@ internal class CRUDController
                     shouldBlock = true;
                 }
             }
-            if (!String.IsNullOrEmpty(linesMax) && !String.IsNullOrEmpty(linesMin))
+            if (!String.IsNullOrEmpty(filterDetails.MaxLines) && !String.IsNullOrEmpty(filterDetails.MinLines))
             {
 
-                if (Int32.Parse(linesMax) < Int32.Parse(linesMin))
+                if (Int32.Parse(filterDetails.MaxLines) < Int32.Parse(filterDetails.MinLines))
                 {
                     reason += "[red]Minimal number of lines cannot exceed maximal lines search.[/]\n";
                     shouldBlock = true;
                 }
             }
-            if (!String.IsNullOrEmpty(durationMax) && !String.IsNullOrEmpty(durationMin))
+            if (!String.IsNullOrEmpty(filterDetails.MaxDuration) && !String.IsNullOrEmpty(filterDetails.MinDuration))
             {
-                if (TimeSpan.ParseExact(durationMax, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(durationMin, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
+                if (TimeSpan.ParseExact(filterDetails.MaxDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(filterDetails.MinDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
                 {
                     reason += "[red]Your maximal session time needs to be longer than the minimal session time.[/]\n";
                     shouldBlock = true;
                 }
             }
 
-            int? userOption = UserInterface.DisplaySelectionUIWithUserInputs(preTitle + "Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, reason);
-
-            string temp = "";
-            switch (userOption)
+            FilterDetails returnValue = FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock);
+            if (returnValue != null)
             {
-                case -1:
-                    FilterDetails finalFilter = new FilterDetails()
-                    {
-                        SortingDetails = sortingDetails,
-                        ViewOptions = viewOptions,
-                        FromDate = start,
-                        ToDate = end,
-                        MinLines = linesMin,
-                        MaxLines = linesMax,
-                        Comment = comments,
-                        MinDuration = durationMin,
-                        MaxDuration = durationMax,
-                        WasTimerTracked = wasTimerTracked
-                    };
-                    TemporaryData.lastFilter = finalFilter;
-                    return finalFilter;
-                case 0:
-                    if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to remove all your previous filters?", "Yes", "No"))
-                    {
-                        sortingDetails = new SortingDetails()
-                        {
-                            SortBy = null,
-                            SortOrder = null
-                        };
-                        viewOptions = new bool[] { false, false, false, false, true, true, true, false };
-                        start = null;
-                        end = null;
-                        linesMin = null;
-                        linesMax = null;
-                        comments = null;
-                        durationMin = null;
-                        durationMax = null;
-                        wasTimerTracked = null;
-                    }
-                    break;
-                case 1:
-                    UserInterface.DisplayMultiselectionUI("Please [yellow4]toggle select elements you want your datatable to include[/]:", typeof(MenuSelections.TableViewMenu), ref viewOptions);
-                    break;
-                case 2:
-                    sortingDetails = SortingMenu(sortingDetails);
-                    break;
-                case 3:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    start = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
-                break;
-                case 4:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the date to which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    end = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
-                break;
-                case 5:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the minimal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    linesMin = string.IsNullOrEmpty(temp) || temp == "" ? temp : (Int32.Parse(temp) < 1 ? "1" : temp.Trim());
-                break;
-                case 6:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]the maximal number of lines[/] for searched sessions. ", TextUIOptions.NumbersOnlyOptional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    linesMax = string.IsNullOrEmpty(temp) || temp == "" ? temp : (Int32.Parse(temp) < 1 ? "1" : temp.Trim());
-                break;
-                case 7:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]part of the comment[/] you want to search for. ", TextUIOptions.Optional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    comments = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
-                break;
-                case 8:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]minimal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    durationMin = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
-                break;
-                case 9:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]maximal duration[/] of the sessions you want to search for in \"d hh:mm\" format. ", TextUIOptions.TimeSpanOnlyOptional);
-                    if (temp == "e")
-                    {
-                        break;
-                    }
-                    durationMax = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
-                break;
-                case 10:
-                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Show records that were [purple]timer tracked (true)[/], or were [purple]inserted manually (false)[/]: ", typeof(MenuSelections.TimerTracked), Color.MediumPurple);
-                    if (!(resultSortingOrder is int))
-                    {
-                        wasTimerTracked = Enum.GetName(resultSortingOrder) == "TimerTracked" ? "True" : "False";
-                    }
-                    else
-                    {
-                        wasTimerTracked = null;
-                    }
-                    break;
-                case 11:
-                    returnToMenu = true;
-                    runFilterMenuLoop = false;
-                break;
+                return returnValue;
             }
         }
         return null;
@@ -756,6 +711,58 @@ internal class CRUDController
     }
     internal static void GenerateReport()
     {
-        throw new NotImplementedException();
+        ReportSettings reportSettings = TemporaryData.reportSettings;
+        FilterDetails filterDetails = new()
+        {
+            FromDate = null,
+            ToDate = null,
+            MinLines = null,
+            MaxLines = null,
+            Comment = null,
+            MinDuration = null,
+            MaxDuration = null,
+            WasTimerTracked = null
+        };
+
+        bool loopReportMenu = true;
+        while (loopReportMenu)
+        {
+            bool wasFilterSelected = true;
+            if (filterDetails.FromDate == null && filterDetails.ToDate == null && filterDetails.MinLines == null && filterDetails.MaxLines == null && filterDetails.Comment == null && filterDetails.MinDuration == null && filterDetails.MaxDuration == null && filterDetails.WasTimerTracked == null)
+            {
+                wasFilterSelected = false;
+            }
+
+            string reportSettingsString = "";
+
+            string reportPeriodSettings = "";
+
+            Dictionary<string, string> dic = new Dictionary<string, string>()
+            {
+                { Enum.GetName((MenuSelections.ReportMenu)0), (wasFilterSelected ? "No filters" : "Filter(s) selected")},
+                { Enum.GetName((MenuSelections.ReportMenu)1), reportSettingsString },
+                { Enum.GetName((MenuSelections.ReportMenu)1), reportPeriodSettings }
+            };
+            UserInterface.DisplaySelectionUIWithUserInputs()
+        }
+    }
+    internal static bool IndexCheck(string index, int sessionsLength, ref int reason)
+    {
+        if (!Regex.IsMatch(index, @"^(\s*[0-9]+\s*)(,\s*[0-9]+\s*)*$"))
+        {
+            reason = 0;
+            return false;
+        }
+
+        string[] indexArray = index.Split(',');
+        foreach (string s in indexArray)
+        {
+            if (int.Parse(s) > sessionsLength || int.Parse(s) < 0)
+            {
+                reason = 1;
+                return false;
+            }
+        }
+        return true;
     }
 }

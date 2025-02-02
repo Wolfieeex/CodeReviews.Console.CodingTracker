@@ -3,7 +3,6 @@ using Console.CodingTracker.Model;
 using Spectre.Console;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.View;
@@ -124,7 +123,7 @@ internal class UserInterface
                 "" => ValidationResult.Success(),
                 ("e") => ValidationResult.Success(),
                 string when DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out _) => ValidationResult.Success(),
-                _ => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
+                _ => ValidationResult.Error("\nThe date and time you have given is not in [red]\"dd/mm/yyyy, hh:mm\" format[/]. Please try again.\n"),
             });
         }
         if (UIOptions == TextUIOptions.StartDate || UIOptions == TextUIOptions.EndDate)
@@ -158,7 +157,7 @@ internal class UserInterface
                         "" => ValidationResult.Success(),
                         ("e") => ValidationResult.Success(),
                         string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
-                        string when userInput > borderlineDate => ValidationResult.Error("One or more session end dates would fall earlier than the newly updated start date. Please try again."),
+                        string when userInput > borderlineDate => ValidationResult.Error("\nOne or more session [red]end dates would fall earlier than the newly updated start date.[/] Please try again.\n"),
                         _ => ValidationResult.Success()
                     });
                 }
@@ -187,7 +186,7 @@ internal class UserInterface
                             "" => ValidationResult.Success(),
                             ("e") => ValidationResult.Success(),
                             string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
-                            string when userInput < borderlineDate => ValidationResult.Error("One or more session start dates would fall later than the newly updated end date. Please try again."),
+                            string when userInput < borderlineDate => ValidationResult.Error("\nOne or more session [red]start dates would fall later than the newly updated end date.[/] Please try again.\n"),
                             _ => ValidationResult.Success()
                         });
                     }
@@ -262,7 +261,7 @@ internal class UserInterface
 
         return parseSuccessful ? enumCardinal : -1;
     }
-    public static void DrawDatatable(List<Session> list, bool[] viewSettings, bool automaticalDataFormatting = true)
+    public static void DrawDatatable(List<CodingSession> list, bool[] viewSettings, bool automaticalDataFormatting = true)
     {
 
         Type type = list[0].GetType();
@@ -300,7 +299,7 @@ internal class UserInterface
         }
 
         interval = 0;
-        foreach (Session line in list)
+        foreach (CodingSession line in list)
         {
             interval++;
             List<string> newRow = new();

@@ -287,6 +287,14 @@ internal class SQLCommands
             conn.Close();
         }
     }
+    internal static int[] ReturnAllRecordedYears()
+    {
+
+    }
+    internal static bool[] ReturnRecordedMonthsForYear(int year)
+    {
+
+    }
     internal static string SqlDateToSortableDate(string date)
     {
         string returnDate = date.Substring(6, 4);

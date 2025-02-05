@@ -625,43 +625,45 @@ internal class CRUDController
 
             string reason = "";
             bool shouldBlock = false;
-            if (!String.IsNullOrEmpty(filterDetails.FromDate) && !String.IsNullOrEmpty(filterDetails.ToDate))
-            {
-                DateTime dateStart = DateTime.Parse(filterDetails.FromDate);
-                DateTime dateEnd = DateTime.Parse(filterDetails.ToDate);
+            CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
 
-                if (dateEnd < dateStart)
-                {
-                    reason += "[red]The start date of your session must be before the end date of your session.[/]\n";
-                    shouldBlock = true;
-                }
-            }
-            if (!String.IsNullOrEmpty(filterDetails.MaxLines) && !String.IsNullOrEmpty(filterDetails.MinLines))
-            {
+            FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock);
+        }
+        return filterDetails;
+    }
 
-                if (Int32.Parse(filterDetails.MaxLines) < Int32.Parse(filterDetails.MinLines))
-                {
-                    reason += "[red]Minimal number of lines cannot exceed maximal lines search.[/]\n";
-                    shouldBlock = true;
-                }
-            }
-            if (!String.IsNullOrEmpty(filterDetails.MaxDuration) && !String.IsNullOrEmpty(filterDetails.MinDuration))
-            {
-                if (TimeSpan.ParseExact(filterDetails.MaxDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(filterDetails.MinDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
-                {
-                    reason += "[red]Your maximal session time needs to be longer than the minimal session time.[/]\n";
-                    shouldBlock = true;
-                }
-            }
+    private static void CheckFilterConditions(FilterDetails filterDetails, ref string reason, ref bool shouldBlock)
+    {
+        if (!String.IsNullOrEmpty(filterDetails.FromDate) && !String.IsNullOrEmpty(filterDetails.ToDate))
+        {
+            DateTime dateStart = DateTime.Parse(filterDetails.FromDate);
+            DateTime dateEnd = DateTime.Parse(filterDetails.ToDate);
 
-            FilterDetails returnValue = FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock);
-            if (returnValue != null)
+            if (dateEnd < dateStart)
             {
-                return returnValue;
+                reason += "[red]The start date of your session must be before the end date of your session.[/]\n";
+                shouldBlock = true;
             }
         }
-        return null;
+        if (!String.IsNullOrEmpty(filterDetails.MaxLines) && !String.IsNullOrEmpty(filterDetails.MinLines))
+        {
+
+            if (Int32.Parse(filterDetails.MaxLines) < Int32.Parse(filterDetails.MinLines))
+            {
+                reason += "[red]Minimal number of lines cannot exceed maximal lines search.[/]\n";
+                shouldBlock = true;
+            }
+        }
+        if (!String.IsNullOrEmpty(filterDetails.MaxDuration) && !String.IsNullOrEmpty(filterDetails.MinDuration))
+        {
+            if (TimeSpan.ParseExact(filterDetails.MaxDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(filterDetails.MinDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
+            {
+                reason += "[red]Your maximal session time needs to be longer than the minimal session time.[/]\n";
+                shouldBlock = true;
+            }
+        }
     }
+
     internal static SortingDetails SortingMenu(SortingDetails previousDetails)
     {
         bool inSortingMenu = true;
@@ -712,17 +714,11 @@ internal class CRUDController
     internal static void GenerateReport()
     {
         ReportSettings reportSettings = TemporaryData.reportSettings;
-        FilterDetails filterDetails = new()
-        {
-            FromDate = null,
-            ToDate = null,
-            MinLines = null,
-            MaxLines = null,
-            Comment = null,
-            MinDuration = null,
-            MaxDuration = null,
-            WasTimerTracked = null
-        };
+        FilterDetails filterDetails = TemporaryData.lastFilter;
+
+        string? reportOptionsString = null;
+        string? dataOptionsString = null;
+        string? PeriodSelectionString = null;
 
         bool loopReportMenu = true;
         while (loopReportMenu)
@@ -732,20 +728,141 @@ internal class CRUDController
             {
                 wasFilterSelected = false;
             }
-
-            string reportSettingsString = "";
-
-            string reportPeriodSettings = "";
-
-            Dictionary<string, string> dic = new Dictionary<string, string>()
+            try
             {
-                { Enum.GetName((MenuSelections.ReportMenu)0), (wasFilterSelected ? "No filters" : "Filter(s) selected")},
-                { Enum.GetName((MenuSelections.ReportMenu)1), reportSettingsString },
-                { Enum.GetName((MenuSelections.ReportMenu)1), reportPeriodSettings }
+                if (Enum.GetNames(typeof(MenuSelections.ReportOptions)).Length != reportSettings.ReportOptions.Length)
+                {
+                    throw new DataMisalignedException("ReportOptions Enum must have the same length as reportSettings.ReportOptions array length.");
+                }
+                if (Enum.GetNames(typeof(MenuSelections.SummationOptions)).Length != reportSettings.DataOptions.Length)
+                {
+                    throw new DataMisalignedException("SummationOptions Enum must have the same length as reportSettings.DataOptions array length.");
+                }
+
+                
+                if (reportSettings.ReportOptions != null)
+                {
+                    reportOptionsString = "";
+                    int counter = 0;
+                    foreach (string s in Enum.GetNames(typeof(MenuSelections.ReportOptions)))
+                    {
+                        if (reportSettings.ReportOptions[counter])
+                        {
+                            reportOptionsString += Regex.Replace(s, @"(?<=[a-z])([A-Z]{1})", " $1");
+                            if (counter != Enum.GetNames(typeof(MenuSelections.ReportOptions)).Length - 1)
+                            {
+                                reportOptionsString += ", ";
+                            }
+                        }
+                        counter++;
+                    }
+                }
+                else
+                {
+                    reportOptionsString = null;
+                }
+                if (reportSettings.DataOptions != null)
+                {
+                    dataOptionsString = "";
+                    int counter = 0;
+                    foreach (string s in Enum.GetNames(typeof(MenuSelections.SummationOptions)))
+                    {
+                        if (reportSettings.DataOptions[counter])
+                        {
+                            dataOptionsString += Regex.Replace(s, @"(?<=[a-z])([A-Z]{1})", " $1");
+                            if (counter != Enum.GetNames(typeof(MenuSelections.SummationOptions)).Length - 1)
+                            {
+                                dataOptionsString += ", ";
+                            }
+                        }
+                        counter++;
+                    }
+                }
+                else
+                {
+                    dataOptionsString = null;
+                }
+
+
+            }
+            catch
+            {
+                System.Console.ReadKey();
+            }
+
+            Dictionary<string, string> reportMenuDic = new Dictionary<string, string>()
+            {
+                { Enum.GetName((MenuSelections.ReportMenu)0), (wasFilterSelected ? "Filter(s) selected" : "No filters")},
+                { Enum.GetName((MenuSelections.ReportMenu)1), reportOptionsString },
+                { Enum.GetName((MenuSelections.ReportMenu)2), dataOptionsString },
+                { Enum.GetName((MenuSelections.ReportMenu)3), PeriodSelectionString }
             };
-            UserInterface.DisplaySelectionUIWithUserInputs()
+
+            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs("\nYou are currently in the [purple]report generation menu[/]. Please [purple]select your report settings: [/]", typeof(MenuSelections.ReportMenu), Color.LightSkyBlue3, reportMenuDic, "Run report", false);
+
+            bool[] tempOptions;
+            switch (userInput)
+            {
+                case -1:
+
+                    break;
+                case 0:
+                    bool runFilterMenu = true;
+                    while (runFilterMenu)
+                    {
+                        Dictionary<string, string> filterDic = new Dictionary<string, string>()
+                        {
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)1), filterDetails.FromDate},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), filterDetails.ToDate},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), filterDetails.MinLines},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), filterDetails.MaxLines},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), filterDetails.Comment},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), filterDetails.MinDuration},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), filterDetails.MaxDuration},
+                            { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), filterDetails.WasTimerTracked}
+                        };
+                        System.Console.Clear();
+                        bool shouldBlock = false;
+                        string reason = "";
+                        CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
+                        FilterScreenManager.ReportFilterMenu("Records used to calculate your report will be [purple]selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock);
+                    }
+                    break;
+                case 1:
+                    tempOptions = reportSettings.ReportOptions;
+                    UserInterface.DisplayMultiselectionUI("Select [purple]data to display for your report[/]:", typeof(MenuSelections.ReportOptions), ref tempOptions);
+                    reportSettings.ReportOptions = tempOptions;
+                    break;
+                case 2:
+                    tempOptions = reportSettings.DataOptions;
+                    UserInterface.DisplayMultiselectionUI("Select [purple]variables by which your report will calculated[/]:", typeof(MenuSelections.SummationOptions), ref tempOptions);
+                    reportSettings.DataOptions = tempOptions;
+                    break;
+                case 3:
+                    PeriodSelectionMenu(ref reportSettings);
+                    break;
+                case 4:
+                    loopReportMenu = false;
+                    break;
+            }
         }
     }
+
+    internal static void PeriodSelectionMenu(ref ReportSettings reportSettings)
+    {
+        bool runPeriodMenu = true;
+        while (runPeriodMenu)
+        {
+            var enumReturn = UserInterface.DisplayEnumSelectionUI("Select by [purple]which period you would like to generate your report:[/]", typeof(MenuSelections.ReportSortationPeriod), Color.Purple4);
+            MenuSelections.ReportSortationPeriod tempPeriod;
+            if (Enum.TryParse(typeof(MenuSelections.ReportSortationPeriod), enumReturn.ToString(), out object _))
+            {
+                //reportSettings.Period = Enum.Parse(typeof(MenuSelections.ReportSortationPeriod), enumReturn.ToString());
+            }
+        }
+        
+    }
+
     internal static bool IndexCheck(string index, int sessionsLength, ref int reason)
     {
         if (!Regex.IsMatch(index, @"^(\s*[0-9]+\s*)(,\s*[0-9]+\s*)*$"))

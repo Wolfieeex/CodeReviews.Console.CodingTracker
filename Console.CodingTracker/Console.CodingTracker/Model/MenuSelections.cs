@@ -34,6 +34,18 @@ internal enum FilterRecords
     OptionalWasTimerTracked,
     ReturnToMainMenu
 }
+internal enum FilterRecordsForReport
+{
+    ClearFilters,
+    OptionalFromDate,
+    OptionalToDate,
+    OptionalMinimalNumberOfLines,
+    OptionalMaximalNumberOfLines,
+    OptionalComment,
+    OptionalMinimalDuration,
+    OptionalMaximalDuration,
+    OptionalWasTimerTracked,
+}
 internal enum SortingOrder
 {
     Ascending,
@@ -109,7 +121,8 @@ internal enum ReportMenu
 {
     OptionalApplyFilters,
     ReportOptions,
-    GenerateByPeriod,
+    DataOptions,
+    PeriodSelection,
     ReturnToMainMenu
 }
 internal enum SummationOptions
@@ -119,18 +132,32 @@ internal enum SummationOptions
 }
 internal enum ReportOptions
 { 
-    ShowOptions,
-    RecordCount,
-    Sumations,
-    MaximalValues,
-    MinimalValues,
-    MeanValues,
-    MedianValues,
-    ModalValues
+    CountRecords,
+    SumRecords,
+    FindMaximalValues,
+    FindMinimalValues,
+    FindMeanValues,
+    FindMedianValues,
+    FindModalValues
 }
 internal enum ReportSortationPeriod
 {
     Yearly,
     Weekly,
     Daily
+}
+internal enum Months
+{
+    January,
+    February,
+    March,
+    April,
+    May,
+    June,
+    July,
+    August,
+    September,
+    October,
+    November,
+    December
 }

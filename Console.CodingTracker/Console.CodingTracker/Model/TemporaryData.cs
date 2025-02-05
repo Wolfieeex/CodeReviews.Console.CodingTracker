@@ -27,7 +27,7 @@ internal class TemporaryData
     }
     internal static ReportSettings reportSettings { get; set; } = new ReportSettings()
     {
-        ReportTableOptions = new bool[] { true, false, false, false, false, false, false },
-        ReportSummationOptions = new bool[] { true, false }
+        ReportOptions = new bool[] { true, false, false, false, false, false, false },
+        DataOptions = new bool[] { true, false }
     };
 }

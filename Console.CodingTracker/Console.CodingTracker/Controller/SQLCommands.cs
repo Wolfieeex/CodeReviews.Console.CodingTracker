@@ -386,6 +386,7 @@ internal class SQLCommands
                     }
                     break;
                 case ReportSortationPeriod.Weekly:
+                    // Not working!
                     periods = ReturnRecordedMonthsForYear(settings.SortationYear != null ? settings.SortationYear.Value : 0).Select(x => x.ToString("00")).ToList();
                     break;
                 case ReportSortationPeriod.Monthly:
@@ -489,8 +490,7 @@ internal class SQLCommands
                             {
                                 totalDuration += TimeSpan.Parse(record.Duration);
                             }
-                            // add it prettier
-                            durationData[per].Add(totalDuration.ToString());
+                            durationData[per].Add(TimeSpanToPresentableString((totalDuration)));
                         }
                         if (settings.ReportOptions[2] == true)
                         {
@@ -502,8 +502,7 @@ internal class SQLCommands
                                     maxDuration = TimeSpan.Parse(record.Duration);
                                 }
                             }
-                            // add it prettier
-                            durationData[per].Add(maxDuration.ToString());
+                            durationData[per].Add(TimeSpanToPresentableString((maxDuration)));
                         }
                         if (settings.ReportOptions[3] == true)
                         {
@@ -515,8 +514,7 @@ internal class SQLCommands
                                     minDuration = TimeSpan.Parse(record.Duration);
                                 }
                             }
-                            // add it prettier
-                            durationData[per].Add(minDuration.ToString());
+                            durationData[per].Add(TimeSpanToPresentableString((minDuration)));
                         }
                         if (settings.ReportOptions[4] == true)
                         {   
@@ -525,35 +523,33 @@ internal class SQLCommands
                             {
                                 totalDuration += TimeSpan.Parse(record.Duration);
                             }
-                            int durationInSeconds = totalDuration.Seconds;
-                            durationInSeconds = durationInSeconds / records.Count;
-                            durationData[per].Add(TimeSpan.FromSeconds(durationInSeconds).ToString());
+                            totalDuration = totalDuration / records.Count;
+                            durationData[per].Add(TimeSpanToPresentableString((totalDuration)));
                         }
                         if (settings.ReportOptions[5] == true)
                         {
                             if (records.Count == 1)
                             {
-                                durationData[per].Add(records[0].Duration);
+                                durationData[per].Add(TimeSpanToPresentableString(TimeSpan.Parse(records[0].Duration)));
                             }
                             else if (records.Count % 2 == 0)
                             {
                                 records = records.OrderByDescending(x => TimeSpan.Parse(x.Duration)).ToList();
                                 TimeSpan firstRecord = TimeSpan.Parse(records[(records.Count - 1) / 2].Duration);
                                 TimeSpan secondRecord = TimeSpan.Parse(records[((records.Count - 1) / 2) + 1].Duration);
-                                string result = ((firstRecord + secondRecord) / 2).ToString();
-                                durationData[per].Add(result);
+                                durationData[per].Add(TimeSpanToPresentableString((firstRecord + secondRecord) / 2));
                             }
                             else
                             {
                                 records = records.OrderBy(x => TimeSpan.Parse(x.Duration).Seconds).ToList();
-                                durationData[per].Add(records[(records.Count - 1) / 2].Duration);
+                                durationData[per].Add(TimeSpanToPresentableString(TimeSpan.Parse(records[(records.Count - 1) / 2].Duration)));
                             }
                         }
                         if (settings.ReportOptions[6] == true)
                         {
                             if (records.Count == 1)
                             {
-                                durationData[per].Add(records[0].Duration);
+                                durationData[per].Add(TimeSpanToPresentableString(TimeSpan.Parse(records[0].Duration)));
                             }
                             else
                             {
@@ -577,7 +573,7 @@ internal class SQLCommands
                                 }
                                 else
                                 {
-                                    durationData[per].Add(ocurrences.ElementAt(0).Key);
+                                    durationData[per].Add(TimeSpanToPresentableString(TimeSpan.Parse(ocurrences.ElementAt(0).Key)));
                                 }
                             }
                         }
@@ -741,8 +737,14 @@ internal class SQLCommands
         DurationTable = null;
         LinesTable = null;
     }
-    internal string TimeSpanToPresentableString(TimeSpan input)
+    internal static string TimeSpanToPresentableString(TimeSpan input)
     {
-        return Regex.Replace(input.ToString(), @"(?<=^[1]{1})(/.)", " day, ");
+        string s = input.ToString();
+        s = Regex.Replace(s, @"(?<=^1{1})\.{1}", " day, ");
+        s = Regex.Replace(s, @"(?<=^[0-9]+)\.{1}", " days, ");
+        s = Regex.Replace(s, @"([0-9]{2}):(?=[0-9]{2}:[0-9]+)", "$1h ");
+        s = Regex.Replace(s, @"([0-9]{2}):(?=[0-9]+)", "$1m ");
+        s = Regex.Replace(s, @"(?<=m )([0-9]{2})(.*)", "$1s");
+        return s;
     }
 }

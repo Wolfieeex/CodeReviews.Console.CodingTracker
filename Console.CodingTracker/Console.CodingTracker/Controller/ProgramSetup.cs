@@ -59,6 +59,7 @@ internal class ProgramSetup
         double chanceThatWasUpdated = 0.02;
         double chanceThatWasCommented = 0.9;
         double chanceThatWasTimerTracked = 0.95;
+        double chanceThatLineWasUpdated = 0.98;
 
         long minYearTicks = new DateTime(minYear, 1, 1, 0, 0, 0).Ticks;
         long maxYearTicks = DateTime.Now.Subtract(Settings.MockTableBaseMaxTime).Ticks;
@@ -126,7 +127,16 @@ internal class ProgramSetup
             StartDate = start.ToString($"dd/MM/yyyy, HH:MM");
             EndDate = end.ToString($"dd/MM/yyyy, HH:MM");
             Duration = (end - start).ToString();
-            NumberOfLines = (int)RandomExponentialValueInRange(0, (long)numOfLines, 0.9);
+
+            if (PercentageChanceGenerator(chanceThatLineWasUpdated))
+            {
+                NumberOfLines = (int)RandomExponentialValueInRange(0, (long)numOfLines, 0.9);
+            }
+            else
+            {
+                NumberOfLines = -1;
+            }
+                
             Random ran = new Random();
             double ifCommentRoll  = ran.NextDouble();
             if (ifCommentRoll < chanceThatWasCommented)
@@ -145,6 +155,7 @@ internal class ProgramSetup
     internal static void ConsoleSettings()
     {
         System.Console.OutputEncoding = Encoding.UTF8;
+        System.Console.SetWindowSize(System.Console.LargestWindowWidth, System.Console.LargestWindowHeight);
     }
     internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {

@@ -8,8 +8,8 @@ namespace Console.CodingTracker.View;
 
 enum ReportTableTitles
 {
-    RecordCount,
-    RecordSum,
+    RecordsCount,
+    RecordsSum,
     MaximalValue,
     MinimalValue,
     Average,
@@ -96,24 +96,19 @@ internal class Tables
 
     public static void DrawReportTable(ReportSettings settings, Dictionary<string, List<string>> DurationTable, Dictionary<string, List<string>> LinesTable)
     {
-        Type type = typeof(ReportTableTitles);
-
         Table table = new Table();
 
-        FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        string[] names = Array.ConvertAll(fields, f => f.Name);
-        names = names.Skip(1).ToArray();
+        string[] names = Enum.GetNames(typeof(ReportTableTitles));
         for (int i = 0; i < names.Length; i++)
         {
-            names[i] = Regex.Match(names[i], @"(?<=<)[A-Za-z0-9]*(?=>)").Value;
             names[i] = Regex.Replace(names[i], @"(?<=.+)([A-Z])", @" $1");
             names[i] = names[i].Insert(0, "[yellow]");
-            names[i] += "[/]";
+            names[i] += ":[/]";
         }
 
         int recordsLength = 0;
         int lineLength = 0;
-        if (DurationTable != null)
+        if (DurationTable.ElementAt(0).Value.Count != 0)
         {
             recordsLength = DurationTable.Count;
             lineLength = DurationTable.ElementAt(0).Value.Count;
@@ -125,7 +120,8 @@ internal class Tables
         }
 
         int interval = 0;
-        table.AddColumn("[yellow]Index[/]");
+        table.AddColumn("[yellow]Index:[/]");
+        table.AddColumn("[yellow]Data type:[/]");
         foreach (string n in names)
         {
             if (settings.ReportOptions.Length > interval)
@@ -150,60 +146,102 @@ internal class Tables
             string linePeriod = "";
             linePeriod += line.ToString() + ") ";
 
+            string data = "";
+            if (settings.DataOptions[0] == true)
+            {
+                AddPeriod(ref linePeriod, settings, DurationTable.ElementAt(i).Key);
+                data += "[blue]Time span -->[/]";
+                if (settings.DataOptions[1] == true)
+                {
+                    data += "\n[green]Lines number -->[/]";
+                }
+            }
+            else
+            {
+                AddPeriod(ref linePeriod, settings, LinesTable.ElementAt(i).Key);
+                data += "[green]Lines number -->[/]";
+            }
+            lines.Add(linePeriod);
+            lines.Add(data);
+
             for (int j = 0; j < lineLength; j++)
             {
+                int padding = 5;
                 string cell = "";
                 if (settings.DataOptions[0] == true)
                 {
-                    AddPeriod(ref cell, settings, DurationTable.ElementAt(j).Key);
-                    lines.Add(cell);
-
-                    DurationTable
+                    cell = DurationTable.ElementAt(i).Value[j];
+                    if (j != 0 || settings.ReportOptions[0] == false)
+                    {
+                        cell = cell.Insert(0, "[blue]");
+                        cell += "[/]";
+                    }
+                    if (settings.DataOptions[1] == true)
+                    {
+                        cell += "\n" + String.Format("{0:0.##}", LinesTable.ElementAt(i).Value[j] != "N/A" ? decimal.Parse(LinesTable.ElementAt(i).Value[j]) : "N/A");
+                        if (j != 0 || settings.ReportOptions[0] == false)
+                        {
+                            cell = cell.Insert(0, "[green]");
+                            cell += "[/]";
+                        }
+                    }
                 }
-                if (settings.DataOptions[1] == true)
+                else
                 {
-                    if (cell != "")
+                    cell = String.Format("{0:0.##}", LinesTable.ElementAt(i).Value[j] != "N/A" ? decimal.Parse(LinesTable.ElementAt(i).Value[j]) : "N/A");
+                    if (j != 0 || settings.ReportOptions[0] == false)
                     {
-                        cell += "/n";
-                    }
-                    else
-                    {
-                        AddPeriod(ref cell, settings, LinesTable.ElementAt(j).Key);
-                        lines.Add(cell);
+                        cell = cell.Insert(0, "[green]");
+                        cell += "[/]";
                     }
                 }
+                lines.Add(cell);
             }
-            
+            table.AddRow(lines.ToArray());
         }
-        table.Title("Report printed:", new Style().Foreground(Color.DeepPink1));
-        table.Expand();
-        table.Border = TableBorder.SimpleHeavy;
+
+        foreach (var col in table.Columns)
+        {
+            col.Width(col.Width + 3);
+            col.RightAligned().Padding(1, 0);
+            col.NoWrap();
+        }
+        table.Columns[0].Width(table.Columns[0].Width + 3).LeftAligned().Padding(1, 0);
+
+        table.Centered();
+        table.Title("Report generation:", new Style().Foreground(Color.DeepPink1));
+        table.Border = TableBorder.Rounded;
         table.ShowRowSeparators();
         table.BorderColor(Color.BlueViolet);
+        System.Console.Clear();
         AnsiConsole.Write(table);
+        string finishingText = "Report printed. Press any button to return to the report menu: ";
+        System.Console.SetCursorPosition((System.Console.WindowWidth - finishingText.Length) / 2, System.Console.CursorTop);
+        AnsiConsole.Markup("Report printed. [green]Press any button to return to the report menu: [/]");
+        System.Console.ReadKey();
+        System.Console.Clear();
     }
 
     private static void AddPeriod(ref string cell, ReportSettings settings, string facePeriod)
     {
-        if (!String.IsNullOrEmpty(settings.SortationYear.ToString()))
+        switch (settings.Period)
         {
-            cell += settings.SortationYear.ToString();
-
-            if (settings.SortationMonth.ToString() != null)
-            {
+            case ReportSortationPeriod.Yearly:
+                cell += facePeriod;
+                break;
+            case ReportSortationPeriod.Monthly:
+                cell += settings.SortationYear.ToString();
+                cell += ", " + (Months)(int.Parse(facePeriod) - 1);
+                break;
+            case ReportSortationPeriod.Weekly:
+                cell += settings.SortationYear.ToString();
+                cell += ", week " + facePeriod;
+                break;
+            case ReportSortationPeriod.Daily:
+                cell += settings.SortationYear.ToString();
                 cell += ", " + Enum.GetName(typeof(Months), settings.SortationMonth);
-                cell += ", " + facePeriod;
-            }
-            else
-            {
-                cell += ", " + facePeriod;
-            }
+                cell += ", day " + facePeriod;
+                break;
         }
-        else
-        {
-            cell += facePeriod;
-        }
-
-        
     }
 }

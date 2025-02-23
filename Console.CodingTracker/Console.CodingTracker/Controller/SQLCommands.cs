@@ -1,9 +1,11 @@
-﻿using Console.CodingTracker.Model;
+﻿using Console.CodingTracker.MenuSelections;
+using Console.CodingTracker.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Spectre.Console;
 using System;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.Controller;
 
@@ -134,17 +136,110 @@ internal class SQLCommands
 
         string whereInject = "";
         Dictionary<string, object> parameters = new Dictionary<string, object>();
+        whereInject = AddQueryFilterParameters(filter, whereInject, parameters);
+
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+
+            string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
+            System.Data.IDataReader reader;
+            if (parameters.Count != 0)
+            {
+                DynamicParameters dynamicParameters = new DynamicParameters(parameters);
+                reader = conn.ExecuteReader(commandString, dynamicParameters);
+            }
+            else
+            {
+                reader = conn.ExecuteReader(commandString);
+            }
+
+            int counter = 0;
+            while (reader.Read())
+            {
+                records.Add(new CodingSession(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));
+            }
+
+            conn.Close();
+        }
+
+        SortingDetails sortingDetails = filter.SortingDetails;
+
+        if (sortingDetails != null)
+        {
+            MenuSelections.SortingOrder? sortingOrder = sortingDetails.SortOrder;
+            MenuSelections.SortingBy? sortingBy = sortingDetails.SortBy;
+
+            switch (sortingBy)
+            {
+                case MenuSelections.SortingBy.CreationDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.CreationDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.CreationDate)).ToList();
+                    break;
+                case MenuSelections.SortingBy.UpdateDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.LastUpdateDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.LastUpdateDate)).ToList();
+                    break;
+                case MenuSelections.SortingBy.StartDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.StartDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.StartDate)).ToList();
+                    break;
+                case MenuSelections.SortingBy.EndDate:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => SqlDateToSortableDate(x.EndDate)).ToList();
+                    else
+                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.EndDate)).ToList();
+                    break;
+                case MenuSelections.SortingBy.Duration:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.Duration).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.Duration).ToList();
+                    break;
+                case MenuSelections.SortingBy.NumberOfLines:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.NumberOfLines).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.NumberOfLines).ToList();
+                    break;
+                case MenuSelections.SortingBy.Comment:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.Comments).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.Comments).ToList();
+                    break;
+                case MenuSelections.SortingBy.WasTimerTracked:
+                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                        records = records.OrderBy(x => x.WasTimerTracked).ToList();
+                    else
+                        records = records.OrderByDescending(x => x.WasTimerTracked).ToList();
+                    break;
+            }
+        }
+
+        CurrentSessions = records;
+
+        return records;
+    }
+    private static string AddQueryFilterParameters(FilterDetails filter, string whereInject, Dictionary<string, object> parameters)
+    {
         if (filter != null)
         {
-            
+
             if (!String.IsNullOrEmpty(filter.FromDate))
             {
-                whereInject += $@"AND @FromDate <=  substr(""Start date"", 7, 4) || '-' || substr(""Start date"", 4, 2) || '-' || substr(""Start date"", 1, 2) || ' ' || substr(""Start date"", 13, 5) || ':00 ' ";
+                whereInject += $@"AND @FromDate <=  substr(""End date"", 7, 4) || '-' || substr(""End date"", 4, 2) || '-' || substr(""End date"", 1, 2) || ' ' || substr(""End date"", 13, 5) || ':00 ' ";
                 parameters.Add("@FromDate", DateTimeSqliteStringConvert(filter.FromDate));
             }
             if (!String.IsNullOrEmpty(filter.ToDate))
             {
-                whereInject += $@"AND @ToDate => substr(""End date"", 7, 4) || '-' || substr(""End date"", 4, 2) || '-' || substr(""End date"", 1, 2) || ' ' || substr(""End date"", 13, 5) || ':00 ' ";
+                whereInject += $@"AND @ToDate >= substr(""End date"", 7, 4) || '-' || substr(""End date"", 4, 2) || '-' || substr(""End date"", 1, 2) || ' ' || substr(""End date"", 13, 5) || ':00 ' ";
                 parameters.Add("@ToDate", DateTimeSqliteStringConvert(filter.ToDate));
             }
             if (!String.IsNullOrEmpty(filter.MinDuration))
@@ -185,94 +280,7 @@ internal class SQLCommands
             }
         }
 
-        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
-        {
-            conn.Open();
-
-            string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
-            System.Data.IDataReader reader;
-            if (parameters.Count != 0)
-            {
-                DynamicParameters dynamicParameters = new DynamicParameters(parameters);
-                reader = conn.ExecuteReader(commandString, dynamicParameters);
-            }
-            else
-            {
-                reader = conn.ExecuteReader(commandString);
-            }
-
-            int counter = 0;
-            while (reader.Read())
-            {
-                records.Add(new CodingSession(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));
-            }
-
-            conn.Close();
-        }
-
-        SortingDetails sortingDetails = filter.SortingDetails;
-
-        if (sortingDetails != null)
-        {
-            MenuSelections.SortingOrder? sortingOrder = sortingDetails.SortOrder;
-            MenuSelections.SortingBy? sortingBy = sortingDetails.SortBy; 
-
-            switch (sortingBy)
-            {
-                case MenuSelections.SortingBy.CreationDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => SqlDateToSortableDate(x.CreationDate)).ToList();
-                    else
-                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.CreationDate)).ToList();
-                    break;
-                case MenuSelections.SortingBy.UpdateDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => SqlDateToSortableDate(x.LastUpdateDate)).ToList();
-                    else
-                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.LastUpdateDate)).ToList();
-                        break;
-                case MenuSelections.SortingBy.StartDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => SqlDateToSortableDate(x.StartDate)).ToList();
-                    else
-                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.StartDate)).ToList();
-                        break;
-                    case MenuSelections.SortingBy.EndDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => SqlDateToSortableDate(x.EndDate)).ToList();
-                    else
-                        records = records.OrderByDescending(x => SqlDateToSortableDate(x.EndDate)).ToList();
-                        break;
-                case MenuSelections.SortingBy.Duration:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => x.Duration).ToList();
-                    else
-                        records = records.OrderByDescending(x => x.Duration).ToList();
-                        break;
-                case MenuSelections.SortingBy.NumberOfLines:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => x.NumberOfLines).ToList();
-                    else
-                        records = records.OrderByDescending(x => x.NumberOfLines).ToList();
-                        break;
-                case MenuSelections.SortingBy.Comment:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => x.Comments).ToList();
-                    else
-                        records = records.OrderByDescending(x => x.Comments).ToList();
-                        break;
-                case MenuSelections.SortingBy.WasTimerTracked:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
-                        records = records.OrderBy(x => x.WasTimerTracked).ToList();
-                    else
-                        records = records.OrderByDescending(x => x.WasTimerTracked).ToList();
-                    break;
-            }
-        }
-
-        CurrentSessions = records;
-
-        return records;
+        return whereInject;
     }
     internal static void DeleteRecords(List<int> index)
     {
@@ -287,13 +295,37 @@ internal class SQLCommands
             conn.Close();
         }
     }
-    internal static int[] ReturnAllRecordedYears()
+    internal static List<string> ReturnAllRecordedYears()
     {
-
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+            string comm = @$"SELECT DISTINCT substr(""End date"", 7, 4) FROM {Settings.DatabaseName} ORDER BY substr(""End date"", 7, 4)";
+            System.Data.IDataReader reader = conn.ExecuteReader(comm);
+            List<string> years = new List<string>();
+            while (reader.Read())
+            {
+                years.Add(reader.GetString(0));
+            }
+            conn.Close();
+            return years;
+        }
     }
-    internal static bool[] ReturnRecordedMonthsForYear(int year)
+    internal static List<int> ReturnRecordedMonthsForYear(int year)
     {
-
+        List<int> monthsList = new List<int>();
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+            string comm = @$"SELECT DISTINCT substr(""End date"", 4, 2) FROM {Settings.DatabaseName} WHERE CAST(substr(""End date"", 7, 4) AS INTEGER) = {year} ORDER BY substr(""End date"", 4, 2)";
+            System.Data.IDataReader reader = conn.ExecuteReader(comm);
+            while (reader.Read())
+            {
+                monthsList.Add(reader.GetInt32(0));   
+            }
+            conn.Close();
+        }
+        return monthsList;
     }
     internal static string SqlDateToSortableDate(string date)
     {
@@ -310,7 +342,7 @@ internal class SQLCommands
         returnDate += datetime.Substring(12, 2) + ":" + datetime.Substring(15, 2) + ":" + "00";
         return returnDate;
     }
-    internal static string TimeSpanSqliteStringConvert(string timespan)
+    internal static int TimeSpanSqliteStringConvert(string timespan)
     {
         int timespanCalculated = 0;
         int spacePosition = timespan.IndexOf(' ');
@@ -319,10 +351,398 @@ internal class SQLCommands
         timespanCalculated += Int32.Parse(timespan.Substring(ColonPosition - 2, 2)) * 3600;
         timespanCalculated += Int32.Parse(timespan.Substring(ColonPosition + 1, 2)) * 60;
 
-        return timespanCalculated.ToString();
+        return timespanCalculated;
     }
     public static TimeSpan CalculateDuration(string s, string e)
     {
         return (DateTime.Parse(e) - DateTime.Parse(s));
+    }
+    public static void CalculateReport(ReportSettings settings, out Dictionary<string, List<string>> DurationTable, out Dictionary<string, List<string>> LinesTable)
+    {
+        List<CodingSession> sessions = GetRecords(settings.FilterDetails);
+        if (sessions.Count == 0)
+        {
+            System.Console.Clear();
+            AnsiConsole.WriteLine("Cannot generate report with selected settings- no records found. [red]Please select different settings and try again.[/]");
+        }
+        else
+        {
+            Dictionary<string, List<string>> durationData = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> linesData = new Dictionary<string, List<string>>();
+
+            string whereFilterInject = "";
+            string whereReportInject = "";
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            whereFilterInject = AddQueryFilterParameters(settings.FilterDetails, whereFilterInject, parameters);
+            
+            List<string> periods = new List<string>();
+            switch (settings.Period)
+            {
+                case ReportSortationPeriod.Daily:
+                    int daysInMonth = DateTime.DaysInMonth(settings.SortationYear.Value, (int)settings.SortationMonth + 1);
+                    for (int i = 1; i <= daysInMonth; i++)
+                    {
+                        periods.Add(i.ToString("00"));
+                    }
+                    break;
+                case ReportSortationPeriod.Weekly:
+                    periods = ReturnRecordedMonthsForYear(settings.SortationYear != null ? settings.SortationYear.Value : 0).Select(x => x.ToString("00")).ToList();
+                    break;
+                case ReportSortationPeriod.Monthly:
+                    periods = ReturnRecordedMonthsForYear(settings.SortationYear != null ? settings.SortationYear.Value : 0).Select(x => x.ToString("00")).ToList();
+                    break;
+                case ReportSortationPeriod.Yearly:
+                    periods = ReturnAllRecordedYears();
+                    break;
+            }
+
+            using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+            {
+                conn.Open();
+
+                foreach (string per in periods)
+                {
+                    durationData.Add(per, new List<string>());
+                    linesData.Add(per, new List<string>());
+                    switch (settings.Period)
+                    {
+                        case ReportSortationPeriod.Daily:
+                            whereReportInject = $@"substr(""End date"", 1, 2) == '{per}'";
+                            break;
+                        case ReportSortationPeriod.Weekly:
+                            whereReportInject = $@"substr(""End date"", 4, 2) == '{per}'";
+                            break;
+                        case ReportSortationPeriod.Monthly:
+                            whereReportInject = $@"substr(""End date"", 4, 2) == '{per}'";
+                            break;
+                        case ReportSortationPeriod.Yearly:
+                            whereReportInject = $@"substr(""End date"", 7, 4) == '{per}'";
+                            break;
+                    }
+                    if (!String.IsNullOrEmpty(whereFilterInject))
+                    {
+                        whereReportInject = whereReportInject.Insert(0, " AND ");
+                    }
+                    else
+                    {
+                        whereReportInject = whereReportInject.Insert(0, " WHERE ");
+                    }
+
+                    string commandString = "";
+                    int recordCount = 0;
+                    commandString = @$"SELECT COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject}";
+                    if (parameters.Count != 0)
+                    {
+                        recordCount = conn.ExecuteScalar<int>(commandString, parameters);
+                    }
+                    else
+                    {
+                        recordCount = conn.ExecuteScalar<int>(commandString);
+                    }
+                    if (recordCount == 0)
+                    {
+                        durationData.Remove(per);
+                        linesData.Remove(per);
+                        continue;
+                    }
+
+                    if (settings.DataOptions[0] == true)
+                    {
+                        if (settings.ReportOptions[0] == true)
+                        {
+                            if (parameters.Count != 0)
+                            {
+                                durationData[per].Add(recordCount.ToString());
+                            }
+                            else
+                            {
+                                durationData[per].Add(recordCount.ToString());
+                            }
+                        }
+
+                        List<CodingSession> records = new List<CodingSession>();
+                        if (settings.ReportOptions[1] == true || settings.ReportOptions[2] == true || settings.ReportOptions[3] == true || settings.ReportOptions[4] == true || settings.ReportOptions[5] == true || settings.ReportOptions[6] == true)
+                        {
+                            commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject}";
+                            System.Data.IDataReader reader;
+                            if (parameters.Count != 0)
+                            {
+                                DynamicParameters dynamicParameters = new DynamicParameters(parameters);
+                                reader = conn.ExecuteReader(commandString, dynamicParameters);
+                            }
+                            else
+                            {
+                                reader = conn.ExecuteReader(commandString);
+                            }
+
+                            while (reader.Read())
+                            {
+                                records.Add(new CodingSession(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));
+                            }
+                            reader.Close();
+                        }
+
+                        if (settings.ReportOptions[1] == true)
+                        {
+                            TimeSpan totalDuration = TimeSpan.FromSeconds(0);
+                            foreach (var record in records)
+                            {
+                                totalDuration += TimeSpan.Parse(record.Duration);
+                            }
+                            // add it prettier
+                            durationData[per].Add(totalDuration.ToString());
+                        }
+                        if (settings.ReportOptions[2] == true)
+                        {
+                            TimeSpan maxDuration = TimeSpan.MinValue;
+                            foreach (var record in records)
+                            {
+                                if (TimeSpan.Parse(record.Duration) > maxDuration)
+                                {
+                                    maxDuration = TimeSpan.Parse(record.Duration);
+                                }
+                            }
+                            // add it prettier
+                            durationData[per].Add(maxDuration.ToString());
+                        }
+                        if (settings.ReportOptions[3] == true)
+                        {
+                            TimeSpan minDuration = TimeSpan.MaxValue;
+                            foreach (var record in records)
+                            {
+                                if (TimeSpan.Parse(record.Duration) < minDuration)
+                                {
+                                    minDuration = TimeSpan.Parse(record.Duration);
+                                }
+                            }
+                            // add it prettier
+                            durationData[per].Add(minDuration.ToString());
+                        }
+                        if (settings.ReportOptions[4] == true)
+                        {   
+                            TimeSpan totalDuration = TimeSpan.FromSeconds(0);
+                            foreach (var record in records)
+                            {
+                                totalDuration += TimeSpan.Parse(record.Duration);
+                            }
+                            int durationInSeconds = totalDuration.Seconds;
+                            durationInSeconds = durationInSeconds / records.Count;
+                            durationData[per].Add(TimeSpan.FromSeconds(durationInSeconds).ToString());
+                        }
+                        if (settings.ReportOptions[5] == true)
+                        {
+                            if (records.Count == 1)
+                            {
+                                durationData[per].Add(records[0].Duration);
+                            }
+                            else if (records.Count % 2 == 0)
+                            {
+                                records = records.OrderByDescending(x => TimeSpan.Parse(x.Duration)).ToList();
+                                TimeSpan firstRecord = TimeSpan.Parse(records[(records.Count - 1) / 2].Duration);
+                                TimeSpan secondRecord = TimeSpan.Parse(records[((records.Count - 1) / 2) + 1].Duration);
+                                string result = ((firstRecord + secondRecord) / 2).ToString();
+                                durationData[per].Add(result);
+                            }
+                            else
+                            {
+                                records = records.OrderBy(x => TimeSpan.Parse(x.Duration).Seconds).ToList();
+                                durationData[per].Add(records[(records.Count - 1) / 2].Duration);
+                            }
+                        }
+                        if (settings.ReportOptions[6] == true)
+                        {
+                            if (records.Count == 1)
+                            {
+                                durationData[per].Add(records[0].Duration);
+                            }
+                            else
+                            {
+                                Dictionary<string, int> ocurrences = new Dictionary<string, int>();
+                                foreach (var record in records)
+                                {
+                                    if (ocurrences.ContainsKey(record.Duration))
+                                    {
+                                        ocurrences[record.Duration] += 1;
+                                    }
+                                    else
+                                    {
+                                        ocurrences.Add(record.Duration, 1);
+                                    }
+                                }
+                                ocurrences.OrderByDescending(x => x.Value);
+
+                                if (ocurrences.ElementAt(0).Value == ocurrences.ElementAt(1).Value)
+                                {
+                                    durationData[per].Add("N/A");
+                                }
+                                else
+                                {
+                                    durationData[per].Add(ocurrences.ElementAt(0).Key);
+                                }
+                            }
+                        }
+                    }
+                    if (settings.DataOptions[1] == true)
+                    {
+                        commandString = @$"SELECT COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                        if (parameters.Count != 0)
+                        {
+                            recordCount = conn.ExecuteScalar<int>(commandString, parameters);
+                        }
+                        else
+                        {
+                            recordCount = conn.ExecuteScalar<int>(commandString);
+                        }
+                        if (recordCount == 0)
+                        {
+                            int reportOptionsCount = 0;
+                            foreach (bool b in settings.ReportOptions)
+                            {
+                                reportOptionsCount++;
+                            }
+                            for (int i = 0; i < linesData[per].Count; i++)
+                            {
+                                linesData[per].Add("N/A");
+                            }
+                            continue;
+                        }
+                        if (settings.ReportOptions[0] == true)
+                        {
+                            commandString = @$"SELECT COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                            linesData[per].Add(recordCount.ToString());
+                        }
+                        if (settings.ReportOptions[1] == true)
+                        {
+                            commandString = @$"SELECT SUM(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                            if (parameters.Count != 0)
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                            }
+                            else
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                            }
+                        }
+                        if (settings.ReportOptions[2] == true)
+                        {
+                            commandString = @$"SELECT MAX(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                            if (parameters.Count != 0)
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                            }
+                            else
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                            }
+                        }
+                        if (settings.ReportOptions[3] == true)
+                        {
+                            commandString = @$"SELECT MIN(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                            if (parameters.Count != 0)
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                            }
+                            else
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                            }
+                        }
+                        if (settings.ReportOptions[4] == true)
+                        {
+                            commandString = @$"SELECT AVG(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                            if (parameters.Count != 0)
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                            }
+                            else
+                            {
+                                linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                            }
+                        }
+                        if (settings.ReportOptions[5] == true)
+                        {
+                            int isOdd = recordCount % 2;
+                            int isEven = isOdd == 1 ? 0 : 1;
+
+                            if (recordCount == 1)
+                            {
+                                commandString = @$"SELECT ""Lines of code"" FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 AND ROWNUM = 1";
+                                if (parameters.Count != 0)
+                                {
+                                    linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                                }
+                                else
+                                {
+                                    linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                                }
+                            }
+                            else
+                            {
+                                commandString = @$"SELECT AVG(""Lines of code"") FROM (SELECT ""Lines of code"" FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 ORDER BY ""Lines of code"" LIMIT 1 + {isEven} OFFSET {((recordCount - isOdd) / 2) - isEven})";
+                                if (parameters.Count != 0)
+                                {
+                                    linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                                }
+                                else
+                                {
+                                    linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                                }
+                            }
+                        }
+                        if (settings.ReportOptions[6] == true)
+                        {
+                            if (recordCount == 1)
+                            {
+                                commandString = @$"SELECT ""Lines of code"" FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 AND ROWNUM = 1";
+                                if (parameters.Count != 0)
+                                {
+                                    linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
+                                }
+                                else
+                                {
+                                    linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
+                                }
+                            }
+                            else
+                            {
+                                System.Data.IDataReader reader;
+                                commandString = @$"SELECT ""Lines of code"", COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 GROUP BY ""Lines of code"" ORDER BY COUNT(*) DESC LIMIT 2";
+                                if (parameters.Count != 0)
+                                {
+                                    reader = conn.ExecuteReader(commandString, parameters);
+                                }
+                                else
+                                {
+                                    reader = conn.ExecuteReader(commandString);
+                                }
+                                Dictionary<string, string> modalDic = new Dictionary<string, string>(); 
+                                while (reader.Read())
+                                {
+                                    modalDic.Add(reader.GetString(0), reader.GetString(1));
+                                }
+                                if (modalDic.ElementAt(0).Value == modalDic.ElementAt(1).Value)
+                                {
+                                    linesData[per].Add("N/A");
+                                }
+                                else
+                                {
+                                    linesData[per].Add(modalDic.ElementAt(0).Key);
+                                }
+                            }
+                        }
+                    }
+                }
+                conn.Close();
+            }
+            DurationTable = durationData;
+            LinesTable = linesData;
+            return;
+        }
+        DurationTable = null;
+        LinesTable = null;
+    }
+    internal string TimeSpanToPresentableString(TimeSpan input)
+    {
+        return Regex.Replace(input.ToString(), @"(?<=^[1]{1})(/.)", " day, ");
     }
 }

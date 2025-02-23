@@ -50,7 +50,7 @@ internal enum SortingOrder
 {
     Ascending,
     Descending
-}  
+}
 internal enum SortingBy
 {
     CreationDate,
@@ -101,7 +101,7 @@ internal enum DeletionMenu
     BackToFileterMenu,
     BackToMainMenu
 }
-internal enum TableViewMenu 
+internal enum TableViewMenu
 {
     DisplayCreationDate,
     DisplayLastUpdateDate,
@@ -116,48 +116,4 @@ internal enum TimerTracked
 {
     TimerTracked,
     InsertedManually
-}
-internal enum ReportMenu
-{
-    OptionalApplyFilters,
-    ReportOptions,
-    DataOptions,
-    PeriodSelection,
-    ReturnToMainMenu
-}
-internal enum SummationOptions
-{
-    Durations,
-    Lines
-}
-internal enum ReportOptions
-{ 
-    CountRecords,
-    SumRecords,
-    FindMaximalValues,
-    FindMinimalValues,
-    FindMeanValues,
-    FindMedianValues,
-    FindModalValues
-}
-internal enum ReportSortationPeriod
-{
-    Yearly,
-    Weekly,
-    Daily
-}
-internal enum Months
-{
-    January,
-    February,
-    March,
-    April,
-    May,
-    June,
-    July,
-    August,
-    September,
-    October,
-    November,
-    December
 }

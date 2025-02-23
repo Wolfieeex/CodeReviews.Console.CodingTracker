@@ -6,6 +6,7 @@ namespace Console.CodingTracker.Controller.ScreenMangers;
 
 internal class FilterScreenManager
 {
+    // Yup, there should be some inheritence there
     internal static void BasicFilterMenu(string preTitle, ref bool returnToMenu, ref FilterDetails filterDetails, ref SortingDetails sortingDetails, ref bool runFilterMenuLoop, Dictionary<string, string> dic, string reason, bool shouldBlock)
     {
         int? userOption = UserInterface.DisplaySelectionUIWithUserInputs(preTitle + "Select [purple]filters[/] for your search:", typeof(MenuSelections.FilterRecords), Color.Plum2, dic, "[green]SearchRecords[/]", shouldBlock, reason);

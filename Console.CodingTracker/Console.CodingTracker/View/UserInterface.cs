@@ -235,6 +235,40 @@ internal class UserInterface
             .WithConverter(choice => choice ? positive : negative));     
         return addAnotherRecord;
     }
+    /// <summary>
+    /// Returns "0" if user goes back to previous menu. Returns "-1" if user cancels the operation.
+    /// </summary>
+    public static string DisplayStringListSelectionUI(string title, List<string> options, Color color)
+    {
+        SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
+
+        selectionPrompt
+        .Title(title)
+        .WrapAround(true)
+        .HighlightStyle(new Style()
+            .Foreground(color)
+            .Decoration(Decoration.RapidBlink))
+
+        .EnableSearch()
+        .PageSize(15)
+        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .AddChoices("Go Back")
+        .AddChoices("Cancel")
+        .AddChoices(options);
+
+        string userOption = AnsiConsole.Prompt(selectionPrompt);
+
+        if (userOption == "Go Back")
+        {
+            return "0";
+        }
+        if (userOption == "Cancel")
+        {
+            return "-1";
+        }
+
+        return userOption;
+    }
     public static dynamic DisplayEnumSelectionUI(string title, Type options, Color color)
     {
         SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
@@ -261,80 +295,7 @@ internal class UserInterface
 
         return parseSuccessful ? enumCardinal : -1;
     }
-    public static void DrawDatatable(List<CodingSession> list, bool[] viewSettings, bool automaticalDataFormatting = true)
-    {
-
-        Type type = list[0].GetType();
-
-        Table table = new Table();
-
-
-        FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        string[] names = Array.ConvertAll(fields, f => f.Name);
-        names = names.Skip(1).ToArray();
-        for (int i = 0; i < names.Length; i++)
-        {
-            names[i] = Regex.Match(names[i], @"(?<=<)[A-Za-z0-9]*(?=>)").Value;
-            names[i] = Regex.Replace(names[i], @"(?<=.+)([A-Z])", @" $1");
-            names[i] = names[i].Insert(0, "[yellow]");
-            names[i] += "[/]";
-        }
-
-        int interval = 0;
-        table.AddColumn("[yellow]Index[/]");
-        foreach (string n in names)
-        {
-            if (viewSettings.Length > interval)
-            {
-                if (viewSettings[interval] == true)
-                {
-                    table.AddColumn(n);
-                }
-            }
-            else
-            {
-                table.AddColumn(n);
-            }
-            interval++;
-        }
-
-        interval = 0;
-        foreach (CodingSession line in list)
-        {
-            interval++;
-            List<string> newRow = new();
-            newRow.Add(interval.ToString());
-            for (int i = 1; i < fields.Length; i++)
-            {
-                if (viewSettings[i - 1] == true)
-                {
-                    string rowValue = fields[i].GetValue(line) == null ? "" : fields[i].GetValue(line).ToString();
-                    if (automaticalDataFormatting)
-                    {
-                        bool isMatch = Regex.IsMatch(rowValue, @"(?<=^1)\.+(?=\d{2}:\d{2}:\d{2}$)");
-                        if (isMatch)
-                        {
-                            rowValue = Regex.Replace(rowValue, @"(?<=^1)\.+(?=\d{2}:\d{2}:\d{2}$)", @" day, ");
-                        }
-                        else
-                        {
-                            rowValue = Regex.Replace(rowValue, @"(?<=^[0-9]*)\.+(?=\d{2}:\d{2}:\d{2}$)", @" days, ");
-                        }
-                        rowValue = rowValue == "-1" ? "-" : rowValue;
-                    }
-                    newRow.Add(rowValue);
-                }
-            }
-            string[] rowToAdd = newRow.ToArray();
-            table.AddRow(rowToAdd);
-        }
-        table.Title("View previous records:", new Style().Foreground(Color.LightPink3));
-        table.Expand();
-        table.Border = TableBorder.DoubleEdge;
-        table.ShowRowSeparators();
-        table.BorderColor(Color.SteelBlue3);
-        AnsiConsole.Write(table);
-    }
+    
     public static void DisplayMultiselectionUI(string title, Type options, ref bool[] updateArray)
     {
         bool runMenu = true;

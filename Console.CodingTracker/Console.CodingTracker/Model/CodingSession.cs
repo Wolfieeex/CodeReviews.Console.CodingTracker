@@ -2,8 +2,8 @@
 
 internal class CodingSession
 {
-    // AI generated
     internal int Key { get; set;}
+    // AI generated
     internal static string[] ProgrammingComments { get; set; } = 
         {
             "Great job on that function!",
@@ -315,6 +315,4 @@ internal class CodingSession
         Comments = comments;
         WasTimerTracked = wasTimerTracked;
     }
-
-
 }

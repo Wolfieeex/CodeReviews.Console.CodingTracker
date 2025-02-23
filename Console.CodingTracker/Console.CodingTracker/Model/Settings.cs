@@ -2,6 +2,7 @@ namespace Console.CodingTracker.Model;
 
 internal class Settings
 {
+    // This will need correcting urgently!
     internal static string ConnectionString
     {
         get; private set;

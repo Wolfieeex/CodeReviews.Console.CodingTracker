@@ -145,7 +145,6 @@ internal class ProgramSetup
     internal static void ConsoleSettings()
     {
         System.Console.OutputEncoding = Encoding.UTF8;
-        
     }
     internal static long RandomExponentialValueInRange(long min, long max, double lambda)
     {

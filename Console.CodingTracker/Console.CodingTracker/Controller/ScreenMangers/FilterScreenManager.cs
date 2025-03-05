@@ -1,4 +1,5 @@
-﻿using Console.CodingTracker.Model;
+﻿using Console.CodingTracker.Controller.CRUD;
+using Console.CodingTracker.Model;
 using Console.CodingTracker.View;
 using Spectre.Console;
 
@@ -43,7 +44,7 @@ internal class FilterScreenManager
                 filterDetails.ViewOptions = tempViewOptions;
                 break;
             case 2:
-                filterDetails.SortingDetails = CRUDController.SortingMenu(sortingDetails);
+                filterDetails.SortingDetails = FilterController.SortingMenu(sortingDetails);
                 break;
             case 3:
                 temp = UserInterface.DisplayTextUI("Please insert [Blue]the date from which you want to search[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnlyOptional);

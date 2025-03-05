@@ -1,7 +1,4 @@
-﻿using Console.CodingTracker.MenuSelections;
-
-namespace Console.CodingTracker.Model;
-
+﻿namespace Console.CodingTracker.Model;
 internal enum ReportMenu
 {
     OptionalApplyFilters,
@@ -47,7 +44,6 @@ internal enum Months
     November,
     December
 }
-
 internal class ReportSettings
 {
     internal FilterDetails FilterDetails { get; set; }
@@ -55,5 +51,6 @@ internal class ReportSettings
     internal bool[] DataOptions { get; set; }
     internal ReportSortationPeriod Period { get; set; }
     internal int? SortationYear { get; set; }
+    internal List<string>? YearWeeks { get; set; }
     internal Months? SortationMonth { get; set; }
 }

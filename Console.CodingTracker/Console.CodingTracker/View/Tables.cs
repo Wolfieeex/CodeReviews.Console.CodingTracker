@@ -93,7 +93,6 @@ internal class Tables
         table.BorderColor(Color.SteelBlue3);
         AnsiConsole.Write(table);
     }
-
     public static void DrawReportTable(ReportSettings settings, Dictionary<string, List<string>> DurationTable, Dictionary<string, List<string>> LinesTable)
     {
         Table table = new Table();
@@ -178,7 +177,14 @@ internal class Tables
                     }
                     if (settings.DataOptions[1] == true)
                     {
-                        cell += "\n" + String.Format("{0:0.##}", LinesTable.ElementAt(i).Value[j] != "N/A" ? decimal.Parse(LinesTable.ElementAt(i).Value[j]) : "N/A");
+                        if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
+                        {
+                            cell += "\nN/A";
+                        }
+                        else
+                        {
+                            cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
+                        }
                         if (j != 0 || settings.ReportOptions[0] == false)
                         {
                             cell = cell.Insert(0, "[green]");
@@ -188,7 +194,14 @@ internal class Tables
                 }
                 else
                 {
-                    cell = String.Format("{0:0.##}", LinesTable.ElementAt(i).Value[j] != "N/A" ? decimal.Parse(LinesTable.ElementAt(i).Value[j]) : "N/A");
+                    if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
+                    {
+                        cell += "\nN/A";
+                    }
+                    else
+                    {
+                        cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
+                    }
                     if (j != 0 || settings.ReportOptions[0] == false)
                     {
                         cell = cell.Insert(0, "[green]");
@@ -221,7 +234,6 @@ internal class Tables
         System.Console.ReadKey();
         System.Console.Clear();
     }
-
     private static void AddPeriod(ref string cell, ReportSettings settings, string facePeriod)
     {
         switch (settings.Period)
@@ -235,7 +247,7 @@ internal class Tables
                 break;
             case ReportSortationPeriod.Weekly:
                 cell += settings.SortationYear.ToString();
-                cell += ", week " + facePeriod;
+                cell += ", week " + facePeriod.Substring(0, facePeriod.IndexOf('.'));
                 break;
             case ReportSortationPeriod.Daily:
                 cell += settings.SortationYear.ToString();

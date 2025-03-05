@@ -2,6 +2,7 @@
 using Console.CodingTracker.Model;
 using Dapper;
 using System.Text;
+using Console.CodingTracker.Controller.SQL;
 
 namespace Console.CodingTracker.Controller;
 
@@ -43,7 +44,6 @@ internal class ProgramSetup
             }
         }
     }
-
     internal static void CreateMockTablebase()
     {
         int minYear = Settings.MockTableBaseMinYear;
@@ -149,7 +149,7 @@ internal class ProgramSetup
 
             CodingSession session = new CodingSession(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines, Comments, WasTimerTracked);
             
-            SQLCommands.InjectRecord(session);
+            Crud.InjectRecord(session);
         }
     }
     internal static void ConsoleSettings()

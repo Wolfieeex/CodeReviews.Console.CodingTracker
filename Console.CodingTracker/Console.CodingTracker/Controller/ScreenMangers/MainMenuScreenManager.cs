@@ -1,4 +1,5 @@
-﻿using Console.CodingTracker.View;
+﻿using Console.CodingTracker.Controller.CRUD;
+using Console.CodingTracker.View;
 using Spectre.Console;
 
 namespace Console.CodingTracker.Controller.ScreenMangers;
@@ -32,7 +33,7 @@ internal class MainMenuScreenManager
                     CRUDController.ViewPreviousSessions();
                     break;
                 case 4:
-                    CRUDController.GenerateReport();
+                    Reporting.GenerateReport();
                     break;
                 case 5:
                     CRUDController.UpdateSessionDetails();

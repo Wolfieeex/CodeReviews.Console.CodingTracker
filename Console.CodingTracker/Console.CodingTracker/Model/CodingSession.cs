@@ -2,6 +2,29 @@
 
 internal class CodingSession
 {
+    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    {
+        CreationDate = creation;
+        LastUpdateDate = lastUpdate;
+        StartDate = start;
+        EndDate = end;
+        Duration = duration;
+        NumberOfLines = lines;
+        Comments = comments;
+        WasTimerTracked = wasTimerTracked;
+    }
+    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    {
+        Key = key;
+        CreationDate = creation;
+        LastUpdateDate = lastUpdate;
+        StartDate = start;
+        EndDate = end;
+        Duration = duration;
+        NumberOfLines = lines;
+        Comments = comments;
+        WasTimerTracked = wasTimerTracked;
+    }
     internal int Key { get; set;}
     // AI generated
     internal static string[] ProgrammingComments { get; set; } = 
@@ -290,29 +313,4 @@ internal class CodingSession
     internal int? NumberOfLines { get; set; }
     internal string? Comments { get; set; }
     internal bool WasTimerTracked { get; set; }
-
-    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
-    {
-        CreationDate = creation;
-        LastUpdateDate = lastUpdate;
-        StartDate = start;
-        EndDate = end;
-        Duration = duration;
-        NumberOfLines = lines;
-        Comments = comments;
-        WasTimerTracked = wasTimerTracked;
-    }
-
-    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
-    {
-        Key = key;
-        CreationDate = creation;
-        LastUpdateDate = lastUpdate;
-        StartDate = start;
-        EndDate = end;
-        Duration = duration;
-        NumberOfLines = lines;
-        Comments = comments;
-        WasTimerTracked = wasTimerTracked;
-    }
 }

@@ -1,8 +1,6 @@
-﻿using Console.CodingTracker.Controller;
-using Console.CodingTracker.Model;
+﻿using Console.CodingTracker.Controller.SQL;
 using Spectre.Console;
 using System.Globalization;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.View;
@@ -136,7 +134,7 @@ internal class UserInterface
             {
                 if (UIOptions == TextUIOptions.StartDate)
                 {
-                    datesToCheck = SQLCommands.GetEndDates(index);
+                    datesToCheck = Helpers.GetEndDates(index);
                     foreach (string d in datesToCheck)
                     {
                         if (firstIteration)
@@ -165,7 +163,7 @@ internal class UserInterface
                 {
                     if (UIOptions == TextUIOptions.EndDate)
                     {
-                        datesToCheck = SQLCommands.GetStartDates(index);
+                        datesToCheck = Helpers.GetStartDates(index);
                         foreach (string d in datesToCheck)
                         {
                             if (firstIteration)
@@ -295,7 +293,6 @@ internal class UserInterface
 
         return parseSuccessful ? enumCardinal : -1;
     }
-    
     public static void DisplayMultiselectionUI(string title, Type options, ref bool[] updateArray)
     {
         bool runMenu = true;

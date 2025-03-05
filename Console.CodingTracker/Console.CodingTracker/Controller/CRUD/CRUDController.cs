@@ -5,8 +5,9 @@ using System.Timers;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using Console.CodingTracker.Controller.ScreenMangers;
+using Console.CodingTracker.Controller.SQL;
 
-namespace Console.CodingTracker.Controller;
+namespace Console.CodingTracker.Controller.CRUD;
 
 internal class CRUDController
 {
@@ -107,11 +108,11 @@ internal class CRUDController
                         trackNewSessionLoop = false;
                         break;
                     case -1:
-                        string duration = SQLCommands.InjectRecord(new CodingSession(DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
-                                                                               DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"), 
+                        string duration = Crud.InjectRecord(new CodingSession(DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"),
+                                                                               DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"),
                                                                                start,
                                                                                end,
-                                                                               SQLCommands.CalculateDuration(start, end).ToString(),
+Helpers.CalculateDuration(start, end).ToString(),
                                                                                lines,
                                                                                comments,
                                                                                false));
@@ -184,16 +185,16 @@ internal class CRUDController
                         System.Console.Clear();
                         if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
                         {
-                            
+
 
                             System.Console.Clear();
                             string input = AnsiConsole.Prompt(
                                 new TextPrompt<string>("Please [blue]insert the number of lines produced[/]. If you changed your mind and want to [red]discard this timer[/], insert [red]\"D\"[/]. If you want to [green]continue tracking[/], insert [green]\"R\"[/]: ")
                                 .Validate((s) => s.ToLower() switch
                                 {
-                                    ("r") => ValidationResult.Success(),
-                                    ("d") => ValidationResult.Success(),
-                                    string when Int32.TryParse(s, out _) && Int32.Parse(s) > 0 => ValidationResult.Success(),
+                                    "r" => ValidationResult.Success(),
+                                    "d" => ValidationResult.Success(),
+                                    string when int.TryParse(s, out _) && int.Parse(s) > 0 => ValidationResult.Success(),
                                     _ => ValidationResult.Error("Please [green]enter \"R\" to resume[/], [red]\"D\" to discard[/], or [blue]valid number to continue[/]: ")
                                 })
                                 );
@@ -220,8 +221,8 @@ internal class CRUDController
                                     new TextPrompt<string>("Please [blue]insert any comments you want to add[/]. If you changed your mind and want to [red]discard this timer[/], insert [red]\"D\"[/]. If you want to [green]continue tracking[/], insert [green]\"R\"[/]: ")
                                     .Validate((s) => s.ToLower() switch
                                     {
-                                        ("r") => ValidationResult.Success(),
-                                        ("d") => ValidationResult.Success(),
+                                        "r" => ValidationResult.Success(),
+                                        "d" => ValidationResult.Success(),
                                         string => ValidationResult.Success(),
                                         _ => ValidationResult.Error("Please enter [green]\"R\" to resume[/], [red]\"D\" to discard[/], or a [blue]comment to continue[/]: ")
                                     })
@@ -243,7 +244,7 @@ internal class CRUDController
                                             }
                                             break;
                                         default:
-                                            SQLCommands.InjectRecord(new CodingSession((sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                            Crud.InjectRecord(new CodingSession((sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 sessionStart.ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
@@ -260,7 +261,7 @@ internal class CRUDController
                                                 System.Console.Clear();
                                                 return;
                                             }
-                                            secondsPassed = 0; 
+                                            secondsPassed = 0;
                                             System.Console.Clear();
                                             break;
 
@@ -268,7 +269,7 @@ internal class CRUDController
                                     break;
                             }
                         }
-                        if (!sessionDiscarted) 
+                        if (!sessionDiscarted)
                         {
                             System.Console.Clear();
                             DisplayTimer(secondsPassed);
@@ -278,7 +279,7 @@ internal class CRUDController
                 }
             }
 
-            void TimerEvent(Object source, ElapsedEventArgs e)
+            void TimerEvent(object source, ElapsedEventArgs e)
             {
                 secondsPassed++;
                 DisplayTimer(secondsPassed);
@@ -307,7 +308,7 @@ internal class CRUDController
         {
             try
             {
-                Filter = FilterRecords("You are currently using [green]view previous sessions method[/]. ", ref returnToMenu);
+                Filter = FilterController.FilterRecords("You are currently using [green]view previous sessions method[/]. ", ref returnToMenu);
                 if (returnToMenu)
                 {
                     break;
@@ -319,7 +320,7 @@ internal class CRUDController
                 System.Console.ReadKey();
             }
 
-            List<CodingSession> sessions = SQLCommands.GetRecords(Filter);
+            List<CodingSession> sessions = Crud.GetRecords(Filter);
             if (sessions != null && sessions.Any())
             {
                 Tables.DrawDatatable(sessions, Filter.ViewOptions);
@@ -344,12 +345,12 @@ internal class CRUDController
             System.Console.Clear();
 
             bool quitMenu = false;
-            FilterDetails filters = FilterRecords("You are currently using [green]update record method[/]. ", ref quitMenu);
-            if (quitMenu) 
-            { 
-                break; 
+            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]update record method[/]. ", ref quitMenu);
+            if (quitMenu)
+            {
+                break;
             }
-            List<CodingSession> sessions = SQLCommands.GetRecords(filters);
+            List<CodingSession> sessions = Crud.GetRecords(filters);
 
             if (sessions == null || !sessions.Any())
             {
@@ -369,19 +370,19 @@ internal class CRUDController
                 new TextPrompt<string>("\nPlese [blue]select record(s) you would like to update by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, e.g. [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
                 .Validate((s) => s.ToLower() switch
                 {
-                    ("e") => ValidationResult.Success(),
+                    "e" => ValidationResult.Success(),
                     string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? "You can only [blue]input index numbers you want to update separated by commas[/] or [red]\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
-                    (_) => ValidationResult.Success()
+                    _ => ValidationResult.Success()
                 })
             );
 
             if (userInput.ToLower() == "e")
             {
-                continue;                
+                continue;
             }
 
             int[] indexNumbers = userInput.Split(',')
-                               .Select(x =>  int.Parse(x)).ToArray();
+                               .Select(x => int.Parse(x)).ToArray();
             List<CodingSession> selectedSessions = new List<CodingSession>();
             foreach (int i in indexNumbers)
             {
@@ -413,17 +414,17 @@ internal class CRUDController
                     {
                         break;
                     }
-                    if (String.IsNullOrEmpty(temp))
+                    if (string.IsNullOrEmpty(temp))
                     {
                         break;
                     }
-                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateStartDate);
+                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateStartDate);
                     foreach (CodingSession s in sessions)
                     {
                         s.StartDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
                     }
-                    List<string> durations = SQLCommands.GetDurations(sessions.Select(x => x.Key).ToList());
+                    List<string> durations = Helpers.GetDurations(sessions.Select(x => x.Key).ToList());
                     for (int i = 0; i < sessions.Count; i++)
                     {
                         sessions[i].Duration = durations[i];
@@ -436,17 +437,17 @@ internal class CRUDController
                     {
                         break;
                     }
-                    if (String.IsNullOrEmpty(temp))
+                    if (string.IsNullOrEmpty(temp))
                     {
                         break;
                     }
-                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateEndDate);
+                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateEndDate);
                     foreach (CodingSession s in sessions)
                     {
                         s.EndDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
                     }
-                    durations = SQLCommands.GetDurations(sessions.Select(x => x.Key).ToList());
+                    durations = Helpers.GetDurations(sessions.Select(x => x.Key).ToList());
                     for (int i = 0; i < sessions.Count; i++)
                     {
                         sessions[i].Duration = durations[i];
@@ -471,7 +472,7 @@ internal class CRUDController
                         temp = null;
                     }
 
-                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
+                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
                     foreach (CodingSession s in sessions)
                     {
                         s.NumberOfLines = temp == null ? null : int.Parse(temp);
@@ -486,7 +487,7 @@ internal class CRUDController
                     }
                     temp = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
 
-                    SQLCommands.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateComments);
+                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateComments);
                     foreach (CodingSession s in sessions)
                     {
                         s.Comments = temp;
@@ -509,12 +510,12 @@ internal class CRUDController
             System.Console.Clear();
 
             bool quitMenu = false;
-            FilterDetails filters = FilterRecords("You are currently using [green]delete record method[/]. ", ref quitMenu);
+            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]delete record method[/]. ", ref quitMenu);
             if (quitMenu)
             {
                 break;
             }
-            List<CodingSession> sessions = SQLCommands.GetRecords(filters);
+            List<CodingSession> sessions = Crud.GetRecords(filters);
 
             if (sessions == null || !sessions.Any())
             {
@@ -534,9 +535,9 @@ internal class CRUDController
                 new TextPrompt<string>("\nPlese [blue]select record(s) you would like to delete by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, e.g. [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
                 .Validate((s) => s.ToLower() switch
                 {
-                    ("e") => ValidationResult.Success(),
+                    "e" => ValidationResult.Success(),
                     string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? "You can only [blue]input index numbers you want to update separated by commas[/] or [red]\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
-                    (_) => ValidationResult.Success()
+                    _ => ValidationResult.Success()
                 })
             );
 
@@ -575,7 +576,7 @@ internal class CRUDController
                     bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"[red]Are you sure you want to delete {demonstrative}?[/]", "Yes", "No");
                     if (confirmation)
                     {
-                        SQLCommands.DeleteRecords(sessions.Select(x => x.Key).ToList());
+                        Crud.DeleteRecords(sessions.Select(x => x.Key).ToList());
                         AnsiConsole.Markup($"Deletion of {sessions.Count} record{(sessions.Count > 1 ? "s" : "")} completed. [blue]Press any key[/] to return to the previous menu: ");
                         System.Console.ReadKey();
                         return true;
@@ -588,367 +589,6 @@ internal class CRUDController
             }
         }
         return false;
-    }
-    internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu)
-    {
-        FilterDetails filterDetails = new FilterDetails()
-        {
-            SortingDetails = TemporaryData.lastFilter.SortingDetails,
-            ViewOptions = TemporaryData.lastFilter.ViewOptions,
-            FromDate = TemporaryData.lastFilter.FromDate,
-            ToDate = TemporaryData.lastFilter.ToDate,
-            MinLines = TemporaryData.lastFilter.MinLines,
-            MaxLines = TemporaryData.lastFilter.MaxLines,
-            Comment = TemporaryData.lastFilter.Comment,
-            MinDuration = TemporaryData.lastFilter.MinDuration,
-            MaxDuration = TemporaryData.lastFilter.MaxDuration,
-            WasTimerTracked = TemporaryData.lastFilter.WasTimerTracked
-        };
-        SortingDetails sortingDetails = TemporaryData.lastFilter.SortingDetails;
-        
-        bool runFilterMenuLoop = true;
-        while (runFilterMenuLoop)
-        {
-            string sortingDetailsString = sortingDetails.SortBy == null || sortingDetails.SortOrder == null ? null : sortingDetails.SortOrder.ToString() + ", " + Regex.Replace(sortingDetails.SortBy.ToString(), @"(?<=[A-Za-z])([A-Z])", @" $1");
-            Dictionary<string, string> dic = new Dictionary<string, string>()
-            {
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)2), sortingDetailsString},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)3), filterDetails.FromDate},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)4), filterDetails.ToDate},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)5), filterDetails.MinLines},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)6), filterDetails.MaxLines},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)7), filterDetails.Comment},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)8), filterDetails.MinDuration},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)9), filterDetails.MaxDuration},
-                { Enum.GetName(typeof(MenuSelections.FilterRecords), (MenuSelections.FilterRecords)10), filterDetails.WasTimerTracked}
-            };
-
-            System.Console.Clear();
-
-            string reason = "";
-            bool shouldBlock = false;
-            CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
-
-            FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock);
-        }
-        return filterDetails;
-    }
-    private static void CheckFilterConditions(FilterDetails filterDetails, ref string reason, ref bool shouldBlock)
-    {
-        if (!String.IsNullOrEmpty(filterDetails.FromDate) && !String.IsNullOrEmpty(filterDetails.ToDate))
-        {
-            DateTime dateStart = DateTime.Parse(filterDetails.FromDate);
-            DateTime dateEnd = DateTime.Parse(filterDetails.ToDate);
-
-            if (dateEnd < dateStart)
-            {
-                reason += "[red]The start date of your session must be before the end date of your session.[/]\n";
-                shouldBlock = true;
-            }
-        }
-        if (!String.IsNullOrEmpty(filterDetails.MaxLines) && !String.IsNullOrEmpty(filterDetails.MinLines))
-        {
-
-            if (Int32.Parse(filterDetails.MaxLines) < Int32.Parse(filterDetails.MinLines))
-            {
-                reason += "[red]Minimal number of lines cannot exceed maximal lines search.[/]\n";
-                shouldBlock = true;
-            }
-        }
-        if (!String.IsNullOrEmpty(filterDetails.MaxDuration) && !String.IsNullOrEmpty(filterDetails.MinDuration))
-        {
-            if (TimeSpan.ParseExact(filterDetails.MaxDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(filterDetails.MinDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
-            {
-                reason += "[red]Your maximal session time needs to be longer than the minimal session time.[/]\n";
-                shouldBlock = true;
-            }
-        }
-    }
-    internal static SortingDetails SortingMenu(SortingDetails previousDetails)
-    {
-        bool inSortingMenu = true;
-        SortingDetails sortingDetails = TemporaryData.lastFilter.SortingDetails;
-
-        while (inSortingMenu)
-        {
-            Dictionary<string, string> filteringSelections = new Dictionary<string, string>()
-            {
-                { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)1), sortingDetails.SortOrder == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortOrder.GetType(), sortingDetails.SortOrder), @"(?<=[A-Za-z])([A-Z])", @" $1")},
-                { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)2), sortingDetails.SortBy == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortBy.GetType(), sortingDetails.SortBy), @"(?<=[A-Za-z])([A-Z])", @" $1")},
-            };
-            int? userSelection = UserInterface.DisplaySelectionUIWithUserInputs("Please [purple]select your sorting options:[/]", typeof(MenuSelections.SortingMenu), Color.LightSeaGreen, filteringSelections, "[green]Execute[/]", false);
-
-            switch (userSelection)
-            {
-                case -1:
-                    TemporaryData.lastFilter.SortingDetails = sortingDetails;
-                    return sortingDetails;
-                case 0:
-                    sortingDetails.SortBy = null;
-                    sortingDetails.SortOrder = null;
-                    break;
-                case 1:
-                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Please select your sorting order: ", typeof(MenuSelections.SortingOrder), Color.LightSeaGreen);
-                    if (!(resultSortingOrder is int))
-                    {
-                        sortingDetails.SortOrder = resultSortingOrder;
-                    }
-                    break;
-                case 2:
-                    dynamic resultSortingBy = UserInterface.DisplayEnumSelectionUI("Please select your sorting option: ", typeof(MenuSelections.SortingBy), Color.LightSeaGreen);
-                    if (!(resultSortingBy is int))
-                    {
-                        sortingDetails.SortBy = resultSortingBy;
-                    }
-                    break;
-                case 3:
-                    return new SortingDetails()
-                    {
-                        SortBy = null,
-                        SortOrder = null
-                    };
-            }
-        }
-        return null;
-    }
-    internal static void GenerateReport()
-    {
-        ReportSettings reportSettings = TemporaryData.reportSettings;
-        FilterDetails filterDetails = TemporaryData.lastFilter;
-        reportSettings.FilterDetails = filterDetails;
-
-        string? reportOptionsString = null;
-        string? dataOptionsString = null;
-        string? PeriodSelectionString = null;
-
-        bool loopReportMenu = true;
-        while (loopReportMenu)
-        {
-            bool wasFilterSelected = true;
-            if (filterDetails.FromDate == null && filterDetails.ToDate == null && filterDetails.MinLines == null && filterDetails.MaxLines == null && filterDetails.Comment == null && filterDetails.MinDuration == null && filterDetails.MaxDuration == null && filterDetails.WasTimerTracked == null)
-            {
-                wasFilterSelected = false;
-            }
-            try
-            {
-                if (Enum.GetNames(typeof(ReportOptions)).Length != reportSettings.ReportOptions.Length)
-                {
-                    throw new DataMisalignedException("ReportOptions Enum must have the same length as reportSettings.ReportOptions array length.");
-                }
-                if (Enum.GetNames(typeof(SummationOptions)).Length != reportSettings.DataOptions.Length)
-                {
-                    throw new DataMisalignedException("SummationOptions Enum must have the same length as reportSettings.DataOptions array length.");
-                }
-                
-                if (reportSettings.ReportOptions != null)
-                {
-                    reportOptionsString = "";
-                    int counter = 0;
-                    foreach (string s in Enum.GetNames(typeof(ReportOptions)))
-                    {
-                        if (reportSettings.ReportOptions[counter])
-                        {
-                            reportOptionsString += Regex.Replace(s, @"(?<=[a-z])([A-Z]{1})", " $1");
-                            reportOptionsString += ", ";
-                        }
-                        counter++;
-                    }
-                    reportOptionsString = reportOptionsString.Remove(reportOptionsString.Length - 2, 2);
-                }
-                else
-                {
-                    reportOptionsString = null;
-                }
-                if (reportSettings.DataOptions != null)
-                {
-                    dataOptionsString = "";
-                    int counter = 0;
-                    foreach (string s in Enum.GetNames(typeof(SummationOptions)))
-                    {
-                        if (reportSettings.DataOptions[counter])
-                        {
-                            dataOptionsString += Regex.Replace(s, @"(?<=[a-z])([A-Z]{1})", " $1");
-                            dataOptionsString += ", ";
-                        }
-                        counter++;
-                    }
-                    dataOptionsString = dataOptionsString.Remove(dataOptionsString.Length - 2, 2);
-                }
-                else
-                {
-                    dataOptionsString = null;
-                }
-                if (reportSettings.Period != null)
-                {
-                    PeriodSelectionString = "";
-                    PeriodSelectionString += Enum.GetName(typeof(ReportSortationPeriod), reportSettings.Period);
-
-                    if (reportSettings.SortationYear != null)
-                    {
-                        PeriodSelectionString += ", " + reportSettings.SortationYear.ToString();
-                    }
-                    if (reportSettings.SortationMonth != null)
-                    {
-                        PeriodSelectionString += ", " + Enum.GetName(typeof(Months), reportSettings.SortationMonth);
-                    }
-                }
-            }
-            catch
-            {
-                System.Console.ReadKey();
-            }
-
-            Dictionary<string, string> reportMenuDic = new Dictionary<string, string>()
-            {
-                { Enum.GetName((ReportMenu)0), (wasFilterSelected ? "Filter(s) selected" : "No filters")},
-                { Enum.GetName((ReportMenu)1), reportOptionsString },
-                { Enum.GetName((ReportMenu)2), dataOptionsString },
-                { Enum.GetName((ReportMenu)3), PeriodSelectionString }
-            };
-
-            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs("\nYou are currently in the [purple]report generation menu[/]. Please [purple]select your report settings: [/]", typeof(ReportMenu), Color.MediumPurple2_1, reportMenuDic, "Run report", false);
-
-            bool[] tempOptions;
-            switch (userInput)
-            {
-                case -1:
-                    reportSettings.FilterDetails = filterDetails;
-                    TemporaryData.reportSettings = reportSettings;
-                    TemporaryData.lastFilter = filterDetails;
-
-                    Dictionary<string, List<string>> DurationTable = new Dictionary<string, List<string>>();
-                    Dictionary<string, List<string>> LinesTable = new Dictionary<string, List<string>>();
-                    SQLCommands.CalculateReport(reportSettings, out DurationTable, out LinesTable);
-                    Tables.DrawReportTable(reportSettings, DurationTable, LinesTable);
-                    break;
-                case 0:
-                    bool runFilterMenu = true;
-                    while (runFilterMenu)
-                    {
-                        Dictionary<string, string> filterDic = new Dictionary<string, string>()
-                        {
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)1), filterDetails.FromDate},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)2), filterDetails.ToDate},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)3), filterDetails.MinLines},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)4), filterDetails.MaxLines},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)5), filterDetails.Comment},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)6), filterDetails.MinDuration},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)7), filterDetails.MaxDuration},
-                            { Enum.GetName(typeof(MenuSelections.FilterRecordsForReport), (MenuSelections.FilterRecordsForReport)8), filterDetails.WasTimerTracked}
-                        };
-                        System.Console.Clear();
-                        bool shouldBlock = false;
-                        string reason = "";
-                        CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
-                        FilterScreenManager.ReportFilterMenu("Records used to calculate your report will be [purple]selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock);
-                    }
-                    break;
-                case 1:
-                    tempOptions = reportSettings.ReportOptions;
-                    UserInterface.DisplayMultiselectionUI("Select [purple]data to display for your report[/]:", typeof(ReportOptions), ref tempOptions);
-                    reportSettings.ReportOptions = tempOptions;
-                    break;
-                case 2:
-                    tempOptions = reportSettings.DataOptions;
-                    UserInterface.DisplayMultiselectionUI("Select [purple]variables by which your report will calculated[/]:", typeof(SummationOptions), ref tempOptions);
-                    reportSettings.DataOptions = tempOptions;
-                    break;
-                case 3:
-                    PeriodSelectionMenu(ref reportSettings);
-                    break;
-                case 4:
-                    loopReportMenu = false;
-                    TemporaryData.reportSettings = reportSettings;
-                    TemporaryData.lastFilter = filterDetails;
-                    break;
-            }
-        }
-    }
-    internal static void PeriodSelectionMenu(ref ReportSettings reportSettings)
-    {
-        bool runPeriodMenu = true;
-        while (runPeriodMenu)
-        {
-            List<string> years = SQLCommands.ReturnAllRecordedYears();
-
-            var enumReturn = UserInterface.DisplayEnumSelectionUI("Select by [purple]which period you would like to generate your report:[/]", typeof(ReportSortationPeriod), Color.Purple4);
-            if (enumReturn is not int)
-            {
-                if (enumReturn == ReportSortationPeriod.Yearly)
-                {
-                    reportSettings.Period = enumReturn;
-                    reportSettings.SortationYear = null;
-                    reportSettings.SortationMonth = null;
-                    runPeriodMenu = false;
-                    break;
-                }
-
-                bool runYearSelectionMenu = true;
-                while (runYearSelectionMenu)
-                {
-                    string year = UserInterface.DisplayStringListSelectionUI("Select [purple]by which year[/] the report should be built:", years, Color.Purple3);
-                    if (year == "0")
-                    {
-                        runYearSelectionMenu = false;
-                        continue;
-                    }
-                    if (year == "-1")
-                    {
-                        runYearSelectionMenu = false;
-                        runPeriodMenu = false;
-                        break;
-                    }
-                    if (enumReturn == ReportSortationPeriod.Monthly || enumReturn == ReportSortationPeriod.Weekly)
-                    {
-                        reportSettings.Period = enumReturn;
-                        reportSettings.SortationYear = int.Parse(year);
-                        reportSettings.SortationMonth = null;
-                        runPeriodMenu = false;
-                        break;
-                    }
-
-                    bool runMonthSelectionMenu = true;
-                    while (runMonthSelectionMenu)
-                    {
-                        List<int> months = SQLCommands.ReturnRecordedMonthsForYear(int.Parse(year));
-                        for (int i = 0; i < months.Count; i++)
-                        {
-                            months[i] -= 1;
-                        }
-                        List<Months> enumMonths = new List<Months>();
-                        for (int i = 0; i < months.Count; i++)
-                        {
-                            enumMonths.Add((Months)months[i]);
-                        }
-
-                        string monthSelection = UserInterface.DisplayStringListSelectionUI("Select [purple]by which month[/] the report should be built:", enumMonths.Select(s => Enum.GetName(typeof(Months), s)).ToList(), Color.Purple3);
-                        if (monthSelection == "0")
-                        {
-                            runMonthSelectionMenu = false;
-                            continue;
-                        }
-
-                        runYearSelectionMenu = false;
-                        runMonthSelectionMenu = false;
-                        runPeriodMenu = false;
-
-                        if (monthSelection == "-1")
-                        {
-                            break;
-                        }
-                        reportSettings.Period = enumReturn;
-                        reportSettings.SortationYear = int.Parse(year);
-                        reportSettings.SortationMonth = (Months)Enum.Parse(typeof(Months), monthSelection);
-                        runPeriodMenu = false;
-                    }
-                }
-            }
-            else
-            {
-                runPeriodMenu = false;
-            }
-        }
-        
     }
     internal static bool IndexCheck(string index, int sessionsLength, ref int reason)
     {

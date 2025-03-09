@@ -105,55 +105,55 @@ internal class Crud
 
         if (sortingDetails != null)
         {
-            MenuSelections.SortingOrder? sortingOrder = sortingDetails.SortOrder;
-            MenuSelections.SortingBy? sortingBy = sortingDetails.SortBy;
+            Controller.CRUD.SortingOrder? sortingOrder = sortingDetails.SortOrder;
+            Controller.CRUD.SortingBy? sortingBy = sortingDetails.SortBy;
 
             switch (sortingBy)
             {
-                case MenuSelections.SortingBy.CreationDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.CreationDate:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => Helpers.SqlDateToSortableDate(x.CreationDate)).ToList();
                     else
                         records = records.OrderByDescending(x => Helpers.SqlDateToSortableDate(x.CreationDate)).ToList();
                     break;
-                case MenuSelections.SortingBy.UpdateDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.UpdateDate:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => Helpers.SqlDateToSortableDate(x.LastUpdateDate)).ToList();
                     else
                         records = records.OrderByDescending(x => Helpers.SqlDateToSortableDate(x.LastUpdateDate)).ToList();
                     break;
-                case MenuSelections.SortingBy.StartDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.StartDate:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => Helpers.SqlDateToSortableDate(x.StartDate)).ToList();
                     else
                         records = records.OrderByDescending(x => Helpers.SqlDateToSortableDate(x.StartDate)).ToList();
                     break;
-                case MenuSelections.SortingBy.EndDate:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.EndDate:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => Helpers.SqlDateToSortableDate(x.EndDate)).ToList();
                     else
                         records = records.OrderByDescending(x => Helpers.SqlDateToSortableDate(x.EndDate)).ToList();
                     break;
-                case MenuSelections.SortingBy.Duration:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.Duration:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => x.Duration).ToList();
                     else
                         records = records.OrderByDescending(x => x.Duration).ToList();
                     break;
-                case MenuSelections.SortingBy.NumberOfLines:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.NumberOfLines:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => x.NumberOfLines).ToList();
                     else
                         records = records.OrderByDescending(x => x.NumberOfLines).ToList();
                     break;
-                case MenuSelections.SortingBy.Comment:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.Comment:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => x.Comments).ToList();
                     else
                         records = records.OrderByDescending(x => x.Comments).ToList();
                     break;
-                case MenuSelections.SortingBy.WasTimerTracked:
-                    if (sortingOrder == MenuSelections.SortingOrder.Ascending)
+                case Controller.CRUD.SortingBy.WasTimerTracked:
+                    if (sortingOrder == Controller.CRUD.SortingOrder.Ascending)
                         records = records.OrderBy(x => x.WasTimerTracked).ToList();
                     else
                         records = records.OrderByDescending(x => x.WasTimerTracked).ToList();

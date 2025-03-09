@@ -16,6 +16,6 @@ internal class FilterDetails
 
 internal class SortingDetails
 {
-    public MenuSelections.SortingBy? SortBy { get; set; }
-    public MenuSelections.SortingOrder? SortOrder { get; set; }
+    public Controller.CRUD.SortingBy? SortBy { get; set; }
+    public Controller.CRUD.SortingOrder? SortOrder { get; set; }
 }

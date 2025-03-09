@@ -46,29 +46,6 @@ internal enum FilterRecordsForReport
     OptionalMaximalDuration,
     OptionalWasTimerTracked,
 }
-internal enum SortingOrder
-{
-    Ascending,
-    Descending
-}
-internal enum SortingBy
-{
-    CreationDate,
-    UpdateDate,
-    StartDate,
-    EndDate,
-    Duration,
-    NumberOfLines,
-    Comment,
-    WasTimerTracked
-}
-internal enum SortingMenu
-{
-    Clear,
-    SortingOrder,
-    SortingBy,
-    Cancel
-}
 internal enum RecordSessionStartMenu
 {
     StartTrackingNow,
@@ -112,8 +89,17 @@ internal enum TableViewMenu
     DisplayComments,
     DisplayIfWasTimerTracked
 }
-internal enum TimerTracked
+internal enum SortingMenu
 {
-    TimerTracked,
-    InsertedManually
+    Clear,
+    SortingOrder,
+    SortingBy,
+    Cancel
+}
+internal enum GoalSetterMenu
+{
+    ReturnToMainMenu,
+    SetNewGoal,
+    ViewPreviousGoals,
+    DeleteGoal,
 }

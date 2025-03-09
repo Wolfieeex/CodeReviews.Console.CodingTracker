@@ -13,7 +13,7 @@ internal class TemporaryData
             SortingDetails = new SortingDetails()
             {
                 SortBy = null,
-                SortOrder = MenuSelections.SortingOrder.Ascending
+                SortOrder = Controller.CRUD.SortingOrder.Ascending
             },
             FromDate = null,
             ToDate = null,

@@ -3,8 +3,6 @@ using Console.CodingTracker.Model;
 using Spectre.Console;
 using System.Timers;
 using System.Text.RegularExpressions;
-using System.Globalization;
-using Console.CodingTracker.Controller.ScreenMangers;
 using Console.CodingTracker.Controller.SQL;
 
 namespace Console.CodingTracker.Controller.CRUD;
@@ -13,6 +11,14 @@ internal class CRUDController
 {
     internal static void AddNewSessionManually()
     {
+        Color titleColor = Color.Orange4_1;
+        Color mainColor = Color.Yellow4;
+        Color inputColor = Color.LightGoldenrod3;
+
+        string titleColorHex = $"[#{titleColor.ToHex()}]";
+        string mainColorHex = $"[#{mainColor.ToHex()}]";
+        string inputColorHex = $"[#{inputColor.ToHex()}]";
+
         string? start = null;
         string? end = null;
         int? lines = null;
@@ -47,7 +53,7 @@ internal class CRUDController
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs($"Track your [violet]new session{(valuesNotInserted ? " (please fill in all non-optional values to proceed)" : "")}:[/]", typeof(MenuSelections.TrackNewSession), Color.DodgerBlue1, dic, "[green]AddRecord[/]", blockEndOption, "[red]The start date of your session must be earlier than the end date of your session:[/]");
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs($"Track your {titleColorHex}new session[/]{(valuesNotInserted ? " (please fill in all non-optional values to proceed)" : "")}:", typeof(MenuSelections.TrackNewSession), titleColor, mainColor, inputColor , dic, $"{Settings.optionalsCompleted}AddRecord[/]", blockEndOption, $"{Settings.optionalsNotCompleted}The start date of your session must be earlier than the end date of your session[/]");
             }
 
             catch (Exception ex)
@@ -61,7 +67,7 @@ internal class CRUDController
                 switch (userOption)
                 {
                     case 0:
-                        temp = UserInterface.DisplayTextUI("Please insert [Blue]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                        temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the start of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\" format[/]. ", TextUIOptions.DateOnly, mainColor);
                         if (temp.ToLower() == "e")
                         {
                             break;
@@ -70,7 +76,7 @@ internal class CRUDController
                         start.Trim();
                         break;
                     case 1:
-                        temp = UserInterface.DisplayTextUI("Please insert [Blue]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.DateOnly);
+                        temp = UserInterface.DisplayTextUI($"Please insert {inputColorHex}the end of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\" format[/]. ", TextUIOptions.DateOnly, mainColor);
                         if (temp.ToLower() == "e")
                         {
                             break;
@@ -79,7 +85,7 @@ internal class CRUDController
                         end.Trim();
                         break;
                     case 2:
-                        temp = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional);
+                        temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional, mainColor);
                         if (temp.ToLower() == "e")
                         {
                             break;
@@ -96,7 +102,7 @@ internal class CRUDController
                         }
                         break;
                     case 3:
-                        temp = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add. ", TextUIOptions.Optional);
+                        temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}any comments[/] you want to add. ", TextUIOptions.Optional, mainColor);
                         if (temp.ToLower() == "e")
                         {
                             break;
@@ -118,7 +124,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                                                                false));
                         duration = duration.Replace(".", " days, ");
                         duration += " hours";
-                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [Pink1]{duration} has been added![/]\nWould you like to [Pink1]add another record[/], or [Pink1]return to the main menu[/]?:\n", "Add", "Return");
+                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?:\n", "Add", "Return", inputColor);
 
                         start = null;
                         end = null;
@@ -135,11 +141,19 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static void TrackNewSession()
     {
+        Color titleColor = Color.LightSkyBlue1;
+        Color mainColor = Color.DarkSeaGreen2_1;
+        Color inputColor = Color.IndianRed_1;
+
+        string titleColorHex = $"[#{titleColor.ToHex()}]";
+        string mainColorHex = $"[#{mainColor.ToHex()}]";
+        string inputColorHex = $"[#{inputColor.ToHex()}]";
+
         System.Console.Clear();
         bool trackNewSessionLoop = true;
         while (trackNewSessionLoop)
         {
-            int? option = UserInterface.DisplaySelectionUI("Start tracking your [yellow2]new session[/]:", typeof(MenuSelections.RecordSessionStartMenu), Color.GreenYellow);
+            int? option = UserInterface.DisplaySelectionUI($"Start tracking your {titleColorHex}new session[/]:", typeof(MenuSelections.RecordSessionStartMenu), mainColor);
 
             if (option == 1)
             {
@@ -160,7 +174,7 @@ Helpers.CalculateDuration(start, end).ToString(),
             while (trackerOn)
             {
                 bool sessionDiscarted = false;
-                option = UserInterface.DisplaySelectionUI(timer.Enabled ? "[blue]Your session is in progress:[/]" : "[blue]Your session is[/] [red]paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), Color.LightSteelBlue);
+                option = UserInterface.DisplaySelectionUI(timer.Enabled ? $"{titleColorHex}Your session is in progress:[/]" : $"{titleColorHex}Your session is[/] {inputColorHex}paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), mainColor);
 
                 switch (option)
                 {
@@ -169,7 +183,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                         break;
                     case 1:
                         timer.Stop();
-                        if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                        if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
                         {
                             timer.Close();
                             trackerOn = false;
@@ -183,19 +197,19 @@ Helpers.CalculateDuration(start, end).ToString(),
                     case 2:
                         timer.Stop();
                         System.Console.Clear();
-                        if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [yellow]end this session?[/]", "yes", "no"))
+                        if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}end this session?[/]", "yes", "no", inputColor))
                         {
 
 
                             System.Console.Clear();
                             string input = AnsiConsole.Prompt(
-                                new TextPrompt<string>("Please [blue]insert the number of lines produced[/]. If you changed your mind and want to [red]discard this timer[/], insert [red]\"D\"[/]. If you want to [green]continue tracking[/], insert [green]\"R\"[/]: ")
+                                new TextPrompt<string>($"Please {mainColorHex}insert the number of lines produced[/]. If you changed your mind and want to {inputColorHex}discard this timer[/], insert {inputColorHex}\"D\"[/]. If you want to {mainColorHex}continue tracking[/], insert {mainColorHex}\"R\"[/]: ")
                                 .Validate((s) => s.ToLower() switch
                                 {
                                     "r" => ValidationResult.Success(),
                                     "d" => ValidationResult.Success(),
                                     string when int.TryParse(s, out _) && int.Parse(s) > 0 => ValidationResult.Success(),
-                                    _ => ValidationResult.Error("Please [green]enter \"R\" to resume[/], [red]\"D\" to discard[/], or [blue]valid number to continue[/]: ")
+                                    _ => ValidationResult.Error($"Please {mainColorHex}enter \"R\" to resume[/], {inputColorHex}\"D\" to discard[/], or {mainColorHex}valid number to continue[/]: ")
                                 })
                                 );
                             switch (input.ToLower())
@@ -204,7 +218,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                     break;
                                 case "d":
                                     System.Console.Clear();
-                                    if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                                    if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
                                     {
                                         sessionDiscarted = true;
                                         timer.Stop();
@@ -218,13 +232,13 @@ Helpers.CalculateDuration(start, end).ToString(),
 
                                     System.Console.Clear();
                                     input = AnsiConsole.Prompt(
-                                    new TextPrompt<string>("Please [blue]insert any comments you want to add[/]. If you changed your mind and want to [red]discard this timer[/], insert [red]\"D\"[/]. If you want to [green]continue tracking[/], insert [green]\"R\"[/]: ")
+                                    new TextPrompt<string>($"Please {mainColorHex}insert any comments you want to add[/]. If you changed your mind and want to {inputColorHex}discard this timer[/], insert {inputColorHex}\"D\"[/]. If you want to {mainColorHex}continue tracking[/], insert {mainColorHex}\"R\"[/]: ")
                                     .Validate((s) => s.ToLower() switch
                                     {
                                         "r" => ValidationResult.Success(),
                                         "d" => ValidationResult.Success(),
                                         string => ValidationResult.Success(),
-                                        _ => ValidationResult.Error("Please enter [green]\"R\" to resume[/], [red]\"D\" to discard[/], or a [blue]comment to continue[/]: ")
+                                        _ => ValidationResult.Error($"Please enter {mainColorHex}\"R\" to resume[/], {inputColorHex}\"D\" to discard[/], or a {mainColorHex}comment to continue[/]: ")
                                     })
                                     );
 
@@ -234,7 +248,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                             break;
                                         case "d":
                                             System.Console.Clear();
-                                            if (UserInterface.DisplayConfirmationSelectionUI("Are you sure you want to [red]discard this session?[/]", "yes", "no"))
+                                            if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
                                             {
                                                 sessionDiscarted = true;
                                                 timer.Close();
@@ -253,7 +267,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                                                                 input,
                                                                                 true));
                                             System.Console.Clear();
-                                            if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [Pink1]{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/]\nWould you like to [Pink1]start another session[/], or [Pink1]return to the main menu[/]?:\n", "Start", "Return"))
+                                            if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration {titleColorHex}{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/]\nWould you like to {inputColorHex}start another session[/], or {titleColorHex}return to the main menu[/]?:\n", "Start", "Return", inputColor))
                                             {
                                                 sessionDiscarted = true;
                                                 timer.Close();
@@ -301,6 +315,10 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static void ViewPreviousSessions()
     {
+        Color titleColor = Color.Pink1;
+        Color mainColor = Color.DarkMagenta;
+        Color inputColor = Color.Magenta3;
+
         FilterDetails Filter = null;
         bool returnToMenu = false;
 
@@ -308,7 +326,7 @@ Helpers.CalculateDuration(start, end).ToString(),
         {
             try
             {
-                Filter = FilterController.FilterRecords("You are currently using [green]view previous sessions method[/]. ", ref returnToMenu);
+                Filter = FilterController.FilterRecords("You are currently using [green]view previous sessions method[/]. ", ref returnToMenu, titleColor, mainColor, inputColor);
                 if (returnToMenu)
                 {
                     break;
@@ -339,13 +357,17 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static void UpdateSessionDetails()
     {
+        Color titleColor = Color.DarkOrange3;
+        Color mainColor = Color.Orange1;
+        Color inputColor = Color.Orange3;
+
         bool updateMenuRun = true;
         while (updateMenuRun)
         {
             System.Console.Clear();
 
             bool quitMenu = false;
-            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]update record method[/]. ", ref quitMenu);
+            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]update record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
             if (quitMenu)
             {
                 break;
@@ -397,19 +419,23 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static bool UpdateMenu(List<CodingSession> sessions)
     {
+        Color titleColor = Color.OrangeRed1;
+        Color mainColor = Color.DarkOrange;
+        Color inputColor = Color.Orange1;
+
         bool updateWhile = true;
         while (updateWhile)
         {
             System.Console.Clear();
             Tables.DrawDatatable(sessions, new bool[] { true, true, true, true, true, true, true, true });
-            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : "Multi - update ([yellow]all selected records will be updated at the same time[/]). ")}[blue]Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), Color.Orange4);
+            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : $"Multi - update ([#{titleColor.ToHex()}]all selected records will be updated at the same time[/]). ")}[#{titleColor.ToHex()}]Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), mainColor);
 
             string temp = "";
             switch (userOption)
             {
 
                 case 0:
-                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.StartDate, sessions.Select(x => x.Key).ToList());
+                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.StartDate, mainColor, sessions.Select(x => x.Key).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -432,7 +458,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                     break;
 
                 case 1:
-                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.EndDate, sessions.Select(x => x.Key).ToList());
+                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.EndDate, mainColor, sessions.Select(x => x.Key).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -455,7 +481,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                     break;
 
                 case 2:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional);
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional, mainColor);
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -480,7 +506,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                     }
                     break;
                 case 3:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add. ", TextUIOptions.Optional);
+                    temp = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add. ", TextUIOptions.Optional, titleColor);
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -504,13 +530,16 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static void DeleteSession()
     {
+        Color titleColor = Color.DarkRed_1;
+        Color mainColor = Color.Red3;
+        Color inputColor = Color.Red;
+
         bool runDeleteMenu = true;
         while (runDeleteMenu)
         {
             System.Console.Clear();
-
             bool quitMenu = false;
-            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]delete record method[/]. ", ref quitMenu);
+            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]delete record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
             if (quitMenu)
             {
                 break;
@@ -573,7 +602,7 @@ Helpers.CalculateDuration(start, end).ToString(),
             switch (userOption)
             {
                 case 0:
-                    bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"[red]Are you sure you want to delete {demonstrative}?[/]", "Yes", "No");
+                    bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"[red]Are you sure you want to delete {demonstrative}?[/]", "Yes", "No", Color.Red);
                     if (confirmation)
                     {
                         Crud.DeleteRecords(sessions.Select(x => x.Key).ToList());

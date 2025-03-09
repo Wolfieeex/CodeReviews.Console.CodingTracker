@@ -2,18 +2,13 @@
 using Console.CodingTracker.Model;
 using Console.CodingTracker.View;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Console.CodingTracker.Controller.CRUD;
 internal class FilterController
 {
-    internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu)
+    internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu, Color titleColor, Color mainColor, Color inputColor)
     {
         FilterDetails filterDetails = new FilterDetails()
         {
@@ -53,11 +48,11 @@ internal class FilterController
             bool shouldBlock = false;
             CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
 
-            FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock);
+            FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock, titleColor, mainColor, inputColor);
         }
         return filterDetails;
     }
-    internal static SortingDetails SortingMenu(SortingDetails previousDetails)
+    internal static SortingDetails SortingMenu(SortingDetails previousDetails, Color titleColor, Color mainColor, Color inputColor)
     {
         bool inSortingMenu = true;
         SortingDetails sortingDetails = TemporaryData.lastFilter.SortingDetails;
@@ -69,7 +64,7 @@ internal class FilterController
                 { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)1), sortingDetails.SortOrder == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortOrder.GetType(), sortingDetails.SortOrder), @"(?<=[A-Za-z])([A-Z])", @" $1")},
                 { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)2), sortingDetails.SortBy == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortBy.GetType(), sortingDetails.SortBy), @"(?<=[A-Za-z])([A-Z])", @" $1")},
             };
-            int? userSelection = UserInterface.DisplaySelectionUIWithUserInputs("Please [purple]select your sorting options:[/]", typeof(MenuSelections.SortingMenu), Color.LightSeaGreen, filteringSelections, "[green]Execute[/]", false);
+            int? userSelection = UserInterface.DisplaySelectionUIWithUserInputs($"Please [{titleColor}]select your sorting options:[/]", typeof(MenuSelections.SortingMenu), titleColor, mainColor, inputColor, filteringSelections, "[green]Execute[/]", false);
 
             switch (userSelection)
             {
@@ -81,14 +76,14 @@ internal class FilterController
                     sortingDetails.SortOrder = null;
                     break;
                 case 1:
-                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Please select your sorting order: ", typeof(MenuSelections.SortingOrder), Color.LightSeaGreen);
+                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Please select your sorting order: ", typeof(SortingOrder), Color.LightSeaGreen);
                     if (!(resultSortingOrder is int))
                     {
                         sortingDetails.SortOrder = resultSortingOrder;
                     }
                     break;
                 case 2:
-                    dynamic resultSortingBy = UserInterface.DisplayEnumSelectionUI("Please select your sorting option: ", typeof(MenuSelections.SortingBy), Color.LightSeaGreen);
+                    dynamic resultSortingBy = UserInterface.DisplayEnumSelectionUI("Please select your sorting option: ", typeof(SortingBy), Color.LightSeaGreen);
                     if (!(resultSortingBy is int))
                     {
                         sortingDetails.SortBy = resultSortingBy;

@@ -6,10 +6,31 @@ using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.Controller.CRUD;
 
+public enum SortingOrder
+{
+    Ascending,
+    Descending
+}
+internal enum SortingBy
+{
+    CreationDate,
+    UpdateDate,
+    StartDate,
+    EndDate,
+    Duration,
+    NumberOfLines,
+    Comment,
+    WasTimerTracked
+}
+
 internal class Reporting
 {
     internal static void GenerateReport()
     {
+        Color titleColor = Color.Purple;
+        Color mainColor = Color.Purple_1;
+        Color inputColor = Color.SlateBlue1;
+
         ReportSettings reportSettings = TemporaryData.reportSettings;
         FilterDetails filterDetails = TemporaryData.lastFilter;
         reportSettings.FilterDetails = filterDetails;
@@ -103,7 +124,7 @@ internal class Reporting
                 { Enum.GetName((ReportMenu)3), PeriodSelectionString }
             };
 
-            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs("\nYou are currently in the [purple]report generation menu[/]. Please [purple]select your report settings: [/]", typeof(ReportMenu), Color.MediumPurple2_1, reportMenuDic, "Run report", false);
+            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs($"\nYou are currently in the [#{titleColor.ToHex()}]report generation menu[/]. ", typeof(ReportMenu), titleColor, mainColor, inputColor, reportMenuDic, $"[{Settings.optionalsCompleted}]Run report[/]", false);
 
             bool[] tempOptions;
             switch (userInput)
@@ -137,7 +158,7 @@ internal class Reporting
                         bool shouldBlock = false;
                         string reason = "";
                         FilterController.CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
-                        FilterScreenManager.ReportFilterMenu("Records used to calculate your report will be [purple]selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock);
+                        FilterScreenManager.ReportFilterMenu($"Records used to calculate your report will be [{titleColor}]selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock, titleColor, mainColor, inputColor);
                     }
                     break;
                 case 1:

@@ -2,6 +2,7 @@
 using Spectre.Console;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Console.CodingTracker.Model;
 
 namespace Console.CodingTracker.View;
 
@@ -33,8 +34,8 @@ internal class UserInterface
                                    .Decoration(Decoration.RapidBlink))
         .EnableSearch()
         .PageSize(15)
-        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]"))
+        .MoreChoicesText("[dim]Move up and down to reveal more options[/]")
+        .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @$"[dim]($1)[/]"))
         .AddChoices((rawOptions)));
 
         int enumCardinal = (int)Enum.Parse(options, userOption);
@@ -52,7 +53,7 @@ internal class UserInterface
     /// /// <param name="blockFinalOption">If true, it will block final option from appearing, even if all non-optional parameters have been inserted by the user.</param>
     /// /// /// <param name="blockingMessage">Message that will be displayed instead of title if final option is blocked.</param>
     /// <returns>Returns selected option for enumerator's type in int format.</returns>
-    public static int? DisplaySelectionUIWithUserInputs(string title, Type options, Color highlightcolor, Dictionary<string, string> typeDictionary, string finalOptionName, bool blockFinalOption, string blockingMessage = null)
+    public static int? DisplaySelectionUIWithUserInputs(string title, Type options, Color titleColor, Color highlightcolor, Color inputColor, Dictionary<string, string> typeDictionary, string finalOptionName, bool blockFinalOption, string blockingMessage = null)
     {
         SelectionPrompt<string> selectionPrompt = new SelectionPrompt<string>();
         List<string> rawOptions = Enum.GetNames(options).ToList();
@@ -74,6 +75,8 @@ internal class UserInterface
                 }
             }
         }
+
+        string hexColor = inputColor.ToHex();
         if (finalChoiceAvailabe && !blockFinalOption)
         {
             selectionPrompt.AddChoice(finalOptionName);
@@ -87,8 +90,8 @@ internal class UserInterface
             .Decoration(Decoration.RapidBlink))
         .EnableSearch()
         .PageSize(15)
-        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @"[Grey]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null || typeDictionary[n] == "" ? "" : ": [Blue]" + typeDictionary[n] + "[/]") : "")))
+        .MoreChoicesText($"[#{highlightcolor.Blend(Color.Grey19, 0.8f).ToHex()}]Move up and down to reveal more options[/]")
+        .UseConverter((string n) => (Regex.Replace(Regex.Replace(n.Trim(), @"(?<=[a-z]+)([A-Z])(?=[a-z]+)", @" $1"), @"(Optional)", $@"[#{inputColor.Blend(Color.Grey19, 0.8f).ToHex()}]($1)[/]") + (typeDictionary.ContainsKey(n) ? (typeDictionary[n] == null || typeDictionary[n] == "" ? "" : ($": [#{hexColor}]" + typeDictionary[n] + "[/]")) : "")))
         .AddChoices((rawOptions));
 
         string userOption = AnsiConsole.Prompt(selectionPrompt);
@@ -98,9 +101,10 @@ internal class UserInterface
 
         return parseSuccessful ? (int)enumCardinal : -1;
     }
-    public static string? DisplayTextUI(string title, TextUIOptions UIOptions, List<int> index = null)
+    public static string? DisplayTextUI(string title, TextUIOptions UIOptions, Color titleColor, List<int> index = null)
     {
-        TextPrompt<string> prompt = new(title + "[red]Leave this space blank[/] to clear the previous insert or [red]input \"E\"[/] to go back to filter menu: ");
+        string hexTitleColor = $"[#{titleColor.ToHex()}]";
+        TextPrompt<string> prompt = new(title + $"{hexTitleColor}Leave this space blank[/] to clear the previous insert or {hexTitleColor}input \"E\"[/] to go back to filter menu: ");
         prompt.AllowEmpty();
 
 
@@ -111,7 +115,7 @@ internal class UserInterface
                 ("") => ValidationResult.Success(),
                 ("e") => ValidationResult.Success(),
                 string when (int.TryParse(s, out _)) => ValidationResult.Success(),
-                (_) => ValidationResult.Error("Your insert needs to represent an integer."),
+                (_) => ValidationResult.Error($"Your insert needs to represent an {hexTitleColor}integer[/]."),
             });
         }
         if (UIOptions == TextUIOptions.DateOnly || UIOptions == TextUIOptions.DateOnlyOptional)
@@ -121,7 +125,7 @@ internal class UserInterface
                 "" => ValidationResult.Success(),
                 ("e") => ValidationResult.Success(),
                 string when DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out _) => ValidationResult.Success(),
-                _ => ValidationResult.Error("\nThe date and time you have given is not in [red]\"dd/mm/yyyy, hh:mm\" format[/]. Please try again.\n"),
+                _ => ValidationResult.Error($"\nThe date and time you have given is not in {hexTitleColor}\"dd/mm/yyyy, hh:mm\" format[/]. Please try again.\n"),
             });
         }
         if (UIOptions == TextUIOptions.StartDate || UIOptions == TextUIOptions.EndDate)
@@ -154,8 +158,8 @@ internal class UserInterface
                     {
                         "" => ValidationResult.Success(),
                         ("e") => ValidationResult.Success(),
-                        string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
-                        string when userInput > borderlineDate => ValidationResult.Error("\nOne or more session [red]end dates would fall earlier than the newly updated start date.[/] Please try again.\n"),
+                        string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error($"The date and time you have given is not in {hexTitleColor}\"dd/mm/yyyy, hh:mm\" format[/]. Please try again."),
+                        string when userInput > borderlineDate => ValidationResult.Error($"\nOne or more session {hexTitleColor}end dates would fall earlier than the newly updated start date.[/] Please try again.\n"),
                         _ => ValidationResult.Success()
                     });
                 }
@@ -183,8 +187,8 @@ internal class UserInterface
                         {
                             "" => ValidationResult.Success(),
                             ("e") => ValidationResult.Success(),
-                            string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
-                            string when userInput < borderlineDate => ValidationResult.Error("\nOne or more session [red]start dates would fall later than the newly updated end date.[/] Please try again.\n"),
+                            string when (!DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out userInput)) => ValidationResult.Error($"The date and time you have given is not in {hexTitleColor}\"dd/mm/yyyy, hh:mm\" format[/]. Please try again."),
+                            string when userInput < borderlineDate => ValidationResult.Error($"\nOne or more session {hexTitleColor}start dates would fall later than the newly updated end date.[/] Please try again.\n"),
                             _ => ValidationResult.Success()
                         });
                     }
@@ -200,7 +204,7 @@ internal class UserInterface
                     "" => ValidationResult.Success(),
                     ("e") => ValidationResult.Success(),
                     string when DateTime.TryParseExact(s, "dd/MM/yyyy, HH:mm", new CultureInfo("en-GB"), DateTimeStyles.None, out _) => ValidationResult.Success(),
-                    _ => ValidationResult.Error("The date and time you have given is not in \"dd/mm/yyyy, hh:mm\" format. Please try again."),
+                    _ => ValidationResult.Error($"The date and time you have given is not in {hexTitleColor}\"dd/mm/yyyy, hh:mm\" format[/]. Please try again."),
                 });
             }
 
@@ -212,13 +216,13 @@ internal class UserInterface
                 "" => ValidationResult.Success(),
                 ("e") => ValidationResult.Success(),
                 string when TimeSpan.TryParseExact(s,@"d\ hh\:mm",new CultureInfo("en-GB"), TimeSpanStyles.None, out _) => ValidationResult.Success(),
-                _ => ValidationResult.Error("The time span you have given is not in \"d hh:mm\" format. Please try again."),
+                _ => ValidationResult.Error($"The time span you have given is not in {hexTitleColor}\"d hh:mm\" format[/]. Please try again."),
             });
         }
 
         return AnsiConsole.Prompt(prompt);
     }
-    public static bool DisplayConfirmationSelectionUI(string title, string positive, string negative)
+    public static bool DisplayConfirmationSelectionUI(string title, string positive, string negative, Color inputColor)
     {
         positive = positive.ToLower();
 
@@ -228,6 +232,7 @@ internal class UserInterface
         bool addAnotherRecord = AnsiConsole.Prompt(
             new TextPrompt<bool>(title)
             .AddChoice(true)
+            .PromptStyle(new Style(foreground: inputColor))
             .AddChoice(false)
             .DefaultValue(false)
             .WithConverter(choice => choice ? positive : negative));     

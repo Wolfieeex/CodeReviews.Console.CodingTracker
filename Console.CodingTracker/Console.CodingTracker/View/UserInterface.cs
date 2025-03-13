@@ -220,7 +220,10 @@ internal class UserInterface
             });
         }
 
-        return AnsiConsole.Prompt(prompt);
+        string userOption = AnsiConsole.Prompt(prompt);
+        userOption = Regex.Replace(userOption, @"[\[\]\{\}]", "");
+
+        return userOption;
     }
     public static bool DisplayConfirmationSelectionUI(string title, string positive, string negative, Color inputColor)
     {
@@ -229,13 +232,17 @@ internal class UserInterface
         negative = negative.ToLower();
 
         System.Console.Clear();
-        bool addAnotherRecord = AnsiConsole.Prompt(
-            new TextPrompt<bool>(title)
+        TextPrompt<bool> prompt =
+            new TextPrompt<bool>(title + $" [#{inputColor.Blend(Color.Red, 0.5f).ToHex()}]({positive}[/][#{inputColor.ToHex()}]/[/][#{inputColor.Blend(Color.Green, 0.5f).ToHex()}]{negative})[/] - [#{inputColor.Blend(Color.Green, 0.5f).ToHex()}]{negative} on default if you insert blank:[/]")
             .AddChoice(true)
-            .PromptStyle(new Style(foreground: inputColor))
             .AddChoice(false)
             .DefaultValue(false)
-            .WithConverter(choice => choice ? positive : negative));     
+            .HideChoices()
+            .HideDefaultValue()
+            .DefaultValueStyle(new Style(foreground: inputColor.Blend(Color.Green, 0.5f)))
+            .WithConverter(choice => choice ? positive : negative);
+
+        bool addAnotherRecord = AnsiConsole.Prompt(prompt);
         return addAnotherRecord;
     }
     /// <summary>
@@ -251,10 +258,9 @@ internal class UserInterface
         .HighlightStyle(new Style()
             .Foreground(color)
             .Decoration(Decoration.RapidBlink))
-
         .EnableSearch()
         .PageSize(15)
-        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .MoreChoicesText($"[#{color.Blend(Color.Grey, 0.5f).ToHex()}]Move up and down to reveal more options[/]")
         .AddChoices("Go Back")
         .AddChoices("Cancel")
         .AddChoices(options);
@@ -283,10 +289,9 @@ internal class UserInterface
         .HighlightStyle(new Style()
             .Foreground(color)
             .Decoration(Decoration.RapidBlink))
-
         .EnableSearch()
         .PageSize(15)
-        .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+        .MoreChoicesText($"[#{color.Blend(Color.Grey, 0.5f).ToHex()}]Move up and down to reveal more options[/]")
         .AddChoices("Cancel")
         .AddChoices(rawOptions)
         .UseConverter(n => Regex.Replace(n, @"(?<=[A-Za-z])([A-Z])", @" $1"));
@@ -298,7 +303,7 @@ internal class UserInterface
 
         return parseSuccessful ? enumCardinal : -1;
     }
-    public static void DisplayMultiselectionUI(string title, Type options, ref bool[] updateArray)
+    public static void DisplayMultiselectionUI(string title, Type options, ref bool[] updateArray, Color mainColor)
     {
         bool runMenu = true;
         string originalTitle = title;
@@ -314,18 +319,18 @@ internal class UserInterface
             }
             for (int i = 0; i < stringOptions.Count; i++)
             {
-                stringOptions[i] += ":" + (updateArray[i] ? "☑ " : "☐ ");
+                stringOptions[i] += ":" + (updateArray[i] ? $"☑ " : $"☐ ");
             }
 
             selectionPrompt
             .Title(title)
             .WrapAround(true)
             .HighlightStyle(new Style()
-                .Foreground(Color.Olive)
+                .Foreground(mainColor)
                 .Decoration(Decoration.RapidBlink))
             .EnableSearch()
             .PageSize(15)
-            .MoreChoicesText("[Grey]Move up and down to reveal more options[/]")
+            .MoreChoicesText($"[#{mainColor.Blend(Color.Grey, 0.5f).ToHex()}]Move up and down to reveal more options[/]")
             .UseConverter((string n) => (Regex.Replace(n, @"([A-Z][^:])", @" $1")))
             .AddChoices("Save and exit")
             .AddChoices(stringOptions);
@@ -354,7 +359,7 @@ internal class UserInterface
                 }
                 if (allValuesFalse)
                 {
-                    title = "[red]At least one value must be selected for your table[/]";
+                    title = $"[#{mainColor.Blend(Color.Red, 0.5f).ToHex()}]At least one value must be selected for your table[/]";
                     updateArray[optionCardinal] = !updateArray[optionCardinal];
                 }
             }

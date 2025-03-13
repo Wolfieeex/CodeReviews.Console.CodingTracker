@@ -86,8 +86,18 @@ internal class Tables
             string[] rowToAdd = newRow.ToArray();
             table.AddRow(rowToAdd);
         }
+
+        foreach (var col in table.Columns)
+        {
+            col.Width(col.Width + 3);
+            col.RightAligned().Padding(1, 0);
+            col.NoWrap();
+        }
+        table.Columns[0].Width(table.Columns[0].Width + 3).LeftAligned().Padding(1, 0);
+
+        table.Centered();
+
         table.Title("View previous records:", new Style().Foreground(Color.LightPink3));
-        table.Expand();
         table.Border = TableBorder.DoubleEdge;
         table.ShowRowSeparators();
         table.BorderColor(Color.SteelBlue3);

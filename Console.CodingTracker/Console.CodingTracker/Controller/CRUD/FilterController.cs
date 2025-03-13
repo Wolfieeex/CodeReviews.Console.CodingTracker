@@ -46,7 +46,7 @@ internal class FilterController
 
             string reason = "";
             bool shouldBlock = false;
-            CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
+            CheckFilterConditions(filterDetails, ref reason, ref shouldBlock, mainColor);
 
             FilterScreenManager.BasicFilterMenu(preTitle, ref returnToMenu, ref filterDetails, ref sortingDetails, ref runFilterMenuLoop, dic, reason, shouldBlock, titleColor, mainColor, inputColor);
         }
@@ -64,7 +64,7 @@ internal class FilterController
                 { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)1), sortingDetails.SortOrder == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortOrder.GetType(), sortingDetails.SortOrder), @"(?<=[A-Za-z])([A-Z])", @" $1")},
                 { Enum.GetName(typeof(MenuSelections.SortingMenu), (MenuSelections.SortingMenu)2), sortingDetails.SortBy == null ? null : Regex.Replace(Enum.GetName(sortingDetails.SortBy.GetType(), sortingDetails.SortBy), @"(?<=[A-Za-z])([A-Z])", @" $1")},
             };
-            int? userSelection = UserInterface.DisplaySelectionUIWithUserInputs($"Please [{titleColor}]select your sorting options:[/]", typeof(MenuSelections.SortingMenu), titleColor, mainColor, inputColor, filteringSelections, "[green]Execute[/]", false);
+            int? userSelection = UserInterface.DisplaySelectionUIWithUserInputs($"Please [#{titleColor.ToHex()}]select your sorting options:[/]", typeof(MenuSelections.SortingMenu), titleColor, mainColor, inputColor, filteringSelections, $"[#{inputColor.Blend(Color.Green, 0.5f).ToHex()}]Execute[/]", false);
 
             switch (userSelection)
             {
@@ -76,14 +76,14 @@ internal class FilterController
                     sortingDetails.SortOrder = null;
                     break;
                 case 1:
-                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Please select your sorting order: ", typeof(SortingOrder), Color.LightSeaGreen);
+                    dynamic resultSortingOrder = UserInterface.DisplayEnumSelectionUI("Please select your sorting order: ", typeof(SortingOrder), mainColor);
                     if (!(resultSortingOrder is int))
                     {
                         sortingDetails.SortOrder = resultSortingOrder;
                     }
                     break;
                 case 2:
-                    dynamic resultSortingBy = UserInterface.DisplayEnumSelectionUI("Please select your sorting option: ", typeof(SortingBy), Color.LightSeaGreen);
+                    dynamic resultSortingBy = UserInterface.DisplayEnumSelectionUI("Please select your sorting option: ", typeof(SortingBy), mainColor);
                     if (!(resultSortingBy is int))
                     {
                         sortingDetails.SortBy = resultSortingBy;
@@ -99,7 +99,7 @@ internal class FilterController
         }
         return null;
     }
-    public static void CheckFilterConditions(FilterDetails filterDetails, ref string reason, ref bool shouldBlock)
+    public static void CheckFilterConditions(FilterDetails filterDetails, ref string reason, ref bool shouldBlock, Color mainColor)
     {
         if (!string.IsNullOrEmpty(filterDetails.FromDate) && !string.IsNullOrEmpty(filterDetails.ToDate))
         {
@@ -108,7 +108,7 @@ internal class FilterController
 
             if (dateEnd < dateStart)
             {
-                reason += "[red]The start date of your session must be before the end date of your session.[/]\n";
+                reason += $"[#{mainColor.Blend(Color.Red, 0.5f)}]The start date of your session must be before the end date of your session.[/]\n";
                 shouldBlock = true;
             }
         }
@@ -117,7 +117,7 @@ internal class FilterController
 
             if (int.Parse(filterDetails.MaxLines) < int.Parse(filterDetails.MinLines))
             {
-                reason += "[red]Minimal number of lines cannot exceed maximal lines search.[/]\n";
+                reason += $"#[{mainColor.Blend(Color.Red, 0.5f)}]Minimal number of lines cannot exceed maximal lines search.[/]\n";
                 shouldBlock = true;
             }
         }
@@ -125,7 +125,7 @@ internal class FilterController
         {
             if (TimeSpan.ParseExact(filterDetails.MaxDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(filterDetails.MinDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
             {
-                reason += "[red]Your maximal session time needs to be longer than the minimal session time.[/]\n";
+                reason += $"[#{mainColor.Blend(Color.Red, 0.5f)}]Your maximal session time needs to be longer than the minimal session time.[/]\n";
                 shouldBlock = true;
             }
         }

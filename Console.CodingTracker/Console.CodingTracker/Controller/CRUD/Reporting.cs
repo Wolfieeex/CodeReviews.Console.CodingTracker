@@ -157,18 +157,18 @@ internal class Reporting
                         System.Console.Clear();
                         bool shouldBlock = false;
                         string reason = "";
-                        FilterController.CheckFilterConditions(filterDetails, ref reason, ref shouldBlock);
+                        FilterController.CheckFilterConditions(filterDetails, ref reason, ref shouldBlock, mainColor);
                         FilterScreenManager.ReportFilterMenu($"Records used to calculate your report will be [{titleColor}]selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock, titleColor, mainColor, inputColor);
                     }
                     break;
                 case 1:
                     tempOptions = reportSettings.ReportOptions;
-                    UserInterface.DisplayMultiselectionUI("Select [purple]data to display for your report[/]:", typeof(ReportOptions), ref tempOptions);
+                    UserInterface.DisplayMultiselectionUI("Select [purple]data to display for your report[/]:", typeof(ReportOptions), ref tempOptions, mainColor);
                     reportSettings.ReportOptions = tempOptions;
                     break;
                 case 2:
                     tempOptions = reportSettings.DataOptions;
-                    UserInterface.DisplayMultiselectionUI("Select [purple]variables by which your report will calculated[/]:", typeof(SummationOptions), ref tempOptions);
+                    UserInterface.DisplayMultiselectionUI("Select [purple]variables by which your report will calculated[/]:", typeof(SummationOptions), ref tempOptions, mainColor );
                     reportSettings.DataOptions = tempOptions;
                     break;
                 case 3:

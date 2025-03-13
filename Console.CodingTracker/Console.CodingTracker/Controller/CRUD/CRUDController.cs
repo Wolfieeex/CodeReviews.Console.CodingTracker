@@ -4,6 +4,7 @@ using Spectre.Console;
 using System.Timers;
 using System.Text.RegularExpressions;
 using Console.CodingTracker.Controller.SQL;
+using System.Diagnostics;
 
 namespace Console.CodingTracker.Controller.CRUD;
 
@@ -124,7 +125,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                                                                false));
                         duration = duration.Replace(".", " days, ");
                         duration += " hours";
-                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?:\n", "Add", "Return", inputColor);
+                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?", "Add", "Return", inputColor);
 
                         start = null;
                         end = null;
@@ -141,9 +142,9 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static void TrackNewSession()
     {
-        Color titleColor = Color.LightSkyBlue1;
-        Color mainColor = Color.DarkSeaGreen2_1;
-        Color inputColor = Color.IndianRed_1;
+        Color titleColor = Color.SeaGreen2;
+        Color mainColor = Color.SeaGreen1;
+        Color inputColor = Color.SeaGreen1_1;
 
         string titleColorHex = $"[#{titleColor.ToHex()}]";
         string mainColorHex = $"[#{mainColor.ToHex()}]";
@@ -161,13 +162,16 @@ Helpers.CalculateDuration(start, end).ToString(),
             }
             System.Console.Clear();
             int secondsPassed = 0;
-            DisplayTimer(secondsPassed);
+            int timeRemaining = 0;
+            DisplayTimer(secondsPassed, mainColor);
 
             DateTime sessionStart = DateTime.Now;
 
             System.Timers.Timer timer = new System.Timers.Timer(1000);
+
             timer.Elapsed += TimerEvent;
             timer.AutoReset = true;
+
             timer.Enabled = true;
 
             bool trackerOn = true;
@@ -191,13 +195,13 @@ Helpers.CalculateDuration(start, end).ToString(),
                             break;
                         }
                         System.Console.Clear();
-                        DisplayTimer(secondsPassed);
+                        DisplayTimer(secondsPassed, mainColor);
                         timer.Start();
                         break;
                     case 2:
                         timer.Stop();
                         System.Console.Clear();
-                        if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}end this session?[/]", "yes", "no", inputColor))
+                        if (!(UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}end this session?[/]", "no", "yes", inputColor)))
                         {
 
 
@@ -267,7 +271,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                                                                 input,
                                                                                 true));
                                             System.Console.Clear();
-                                            if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration {titleColorHex}{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/]\nWould you like to {inputColorHex}start another session[/], or {titleColorHex}return to the main menu[/]?:\n", "Start", "Return", inputColor))
+                                            if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration {titleColorHex}{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/] Would you like to {inputColorHex}start another session[/], or {titleColorHex}return to the main menu[/]?:", "Start", "Return", inputColor))
                                             {
                                                 sessionDiscarted = true;
                                                 timer.Close();
@@ -286,7 +290,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                         if (!sessionDiscarted)
                         {
                             System.Console.Clear();
-                            DisplayTimer(secondsPassed);
+                            DisplayTimer(secondsPassed, mainColor);
                             timer.Start();
                         }
                         break;
@@ -296,11 +300,11 @@ Helpers.CalculateDuration(start, end).ToString(),
             void TimerEvent(object source, ElapsedEventArgs e)
             {
                 secondsPassed++;
-                DisplayTimer(secondsPassed);
+                DisplayTimer(secondsPassed, mainColor);
             }
         }
 
-        void DisplayTimer(int seconds)
+        void DisplayTimer(int seconds, Color color)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
 
@@ -310,14 +314,14 @@ Helpers.CalculateDuration(start, end).ToString(),
             AnsiConsole.Write(
             new FigletText(Regex.Replace(timeSpan.ToString(), @"\.", isMatch ? " day, " : " days, "))
                 .Centered()
-                .Color(Color.SteelBlue1_1));
+                .Color(color));
         }
     }
     internal static void ViewPreviousSessions()
     {
-        Color titleColor = Color.Pink1;
-        Color mainColor = Color.DarkMagenta;
-        Color inputColor = Color.Magenta3;
+        Color titleColor = Color.MediumOrchid;
+        Color mainColor = Color.MediumPurple2;
+        Color inputColor = Color.Fuchsia;
 
         FilterDetails Filter = null;
         bool returnToMenu = false;
@@ -326,7 +330,7 @@ Helpers.CalculateDuration(start, end).ToString(),
         {
             try
             {
-                Filter = FilterController.FilterRecords("You are currently using [green]view previous sessions method[/]. ", ref returnToMenu, titleColor, mainColor, inputColor);
+                Filter = FilterController.FilterRecords($"You are currently using [#{titleColor.ToHex()}]view previous sessions method[/]. ", ref returnToMenu, titleColor, mainColor, inputColor);
                 if (returnToMenu)
                 {
                     break;
@@ -342,15 +346,15 @@ Helpers.CalculateDuration(start, end).ToString(),
             if (sessions != null && sessions.Any())
             {
                 Tables.DrawDatatable(sessions, Filter.ViewOptions);
-                AnsiConsole.Write(new Markup("\n[green]Press any key[/] to return to previous menu:"));
+                AnsiConsole.Write(new Markup($"\n[#{titleColor.ToHex()}]Press any key[/] to return to previous menu:"));
             }
             else if (Filter == null)
             {
-                AnsiConsole.Write(new Markup("[red]No records found[/]. [green]Press any key[/] to return to previous menu:"));
+                AnsiConsole.Write(new Markup($"[#{titleColor.Blend(Color.Red, 0.5f).ToHex()}]No records found[/]. [#{titleColor.ToHex()}]Press any key[/] to return to previous menu:"));
             }
             else
             {
-                AnsiConsole.Write(new Markup("[red]No records found with selected filters[/]. [green]Press any key[/] to return to previous menu:"));
+                AnsiConsole.Write(new Markup($"[#{titleColor.Blend(Color.Red, 0.2f).ToHex()}]No records found with selected filters[/]. [#{titleColor.ToHex()}]Press any key[/] to return to previous menu:"));
             }
             System.Console.ReadKey();
         }
@@ -361,13 +365,17 @@ Helpers.CalculateDuration(start, end).ToString(),
         Color mainColor = Color.Orange1;
         Color inputColor = Color.Orange3;
 
+        string titleColorHex = $"[#{titleColor.ToHex()}]";
+        string mainColorHex = $"[#{mainColor.ToHex()}]";
+        string inputColorHex = $"[#{inputColor.ToHex()}]";
+
         bool updateMenuRun = true;
         while (updateMenuRun)
         {
             System.Console.Clear();
 
             bool quitMenu = false;
-            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]update record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
+            FilterDetails filters = FilterController.FilterRecords($"You are currently using {titleColorHex}update record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
             if (quitMenu)
             {
                 break;
@@ -377,7 +385,7 @@ Helpers.CalculateDuration(start, end).ToString(),
             if (sessions == null || !sessions.Any())
             {
                 System.Console.Clear();
-                AnsiConsole.Markup("No records to update with given filters. Press any [blue]key to go back to filter menu[/]: ");
+                AnsiConsole.Markup($"No records to update with given filters. Press any {titleColorHex}key to go back to filter menu[/]: ");
                 System.Console.ReadKey();
                 continue;
             }
@@ -387,13 +395,12 @@ Helpers.CalculateDuration(start, end).ToString(),
             System.Console.WriteLine();
             int reason = 0;
 
-            // This to be transferred into UserInterface class- this is not a controller, this belongs to View Model
             string userInput = AnsiConsole.Prompt(
-                new TextPrompt<string>("\nPlese [blue]select record(s) you would like to update by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, e.g. [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
+                new TextPrompt<string>($"\nPlese {titleColorHex}select record(s) you would like to update by choosing their index number(s)[/]. Please separate {titleColorHex}multiple records[/] by adding \",\" between them, e.g. {inputColorHex}1[/]  or  {inputColorHex}23,58[/]  or  {inputColorHex}8, 34, 8[/]. You can also insert {titleColorHex}\"E\" to return to previous menu:[/] ")
                 .Validate((s) => s.ToLower() switch
                 {
                     "e" => ValidationResult.Success(),
-                    string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? "You can only [blue]input index numbers you want to update separated by commas[/] or [red]\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
+                    string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? $"You can only {titleColorHex}input index numbers you want to update separated by commas[/] or {titleColorHex}\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
                     _ => ValidationResult.Success()
                 })
             );
@@ -419,23 +426,27 @@ Helpers.CalculateDuration(start, end).ToString(),
     }
     internal static bool UpdateMenu(List<CodingSession> sessions)
     {
-        Color titleColor = Color.OrangeRed1;
-        Color mainColor = Color.DarkOrange;
-        Color inputColor = Color.Orange1;
+        Color titleColor = Color.DarkOrange3;
+        Color mainColor = Color.Orange1;
+        Color inputColor = Color.Orange3;
+
+        string titleColorHex = $"[#{titleColor.ToHex()}]";
+        string mainColorHex = $"[#{mainColor.ToHex()}]";
+        string inputColorHex = $"[#{inputColor.ToHex()}]";
 
         bool updateWhile = true;
         while (updateWhile)
         {
             System.Console.Clear();
             Tables.DrawDatatable(sessions, new bool[] { true, true, true, true, true, true, true, true });
-            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : $"Multi - update ([#{titleColor.ToHex()}]all selected records will be updated at the same time[/]). ")}[#{titleColor.ToHex()}]Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), mainColor);
+            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : $"Multi - update ({titleColorHex}all selected records will be updated at the same time[/]). ")}{titleColorHex}Please make your selection:[/]", typeof(MenuSelections.UpdateMenu), mainColor);
 
             string temp = "";
             switch (userOption)
             {
 
                 case 0:
-                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the start of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.StartDate, mainColor, sessions.Select(x => x.Key).ToList());
+                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the start of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\"[/] format. ", TextUIOptions.StartDate, mainColor, sessions.Select(x => x.Key).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -458,7 +469,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                     break;
 
                 case 1:
-                    temp = UserInterface.DisplayTextUI("Please insert [yellow]the end of the session[/] in \"dd/mm/yyyy, hh:mm\" format. ", TextUIOptions.EndDate, mainColor, sessions.Select(x => x.Key).ToList());
+                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the end of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\"[/] format. ", TextUIOptions.EndDate, mainColor, sessions.Select(x => x.Key).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -481,7 +492,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                     break;
 
                 case 2:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional, mainColor);
+                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}number of lines you produced[/] during your session. ", TextUIOptions.NumbersOnlyOptional, mainColor);
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -506,7 +517,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                     }
                     break;
                 case 3:
-                    temp = UserInterface.DisplayTextUI("Please insert [Blue]any comments[/] you want to add. ", TextUIOptions.Optional, titleColor);
+                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}any comments[/] you want to add. ", TextUIOptions.Optional, titleColor);
                     if (temp.ToLower() == "e")
                     {
                         break;

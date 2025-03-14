@@ -1,16 +1,24 @@
 using Spectre.Console;
+using System.Reflection;
 
 namespace Console.CodingTracker.Model;
 
 internal class Settings
 {
     // This will need correcting urgently!
-    internal static string ConnectionString
-    {
-        get; private set;
-    } =
-    "Data Source=C:\\Users\\aleks\\Desktop\\CSharpProjects\\CodeReviews.Console.CodingTracker\\Console.CodingTracker\\Databases\\Coding Tracker Database.db";
 
+    private static string ConnectionString
+    {
+        get
+        {
+            string conn = Assembly.GetEntryAssembly().Location;
+            conn = conn.Remove(conn.LastIndexOf("bin") - 1);
+            conn = conn.Remove(conn.LastIndexOf("\\") + 1) + "Databases\\Coding Tracker Database.db";
+            conn = "Data Source=" + conn;
+            return conn;
+        }
+    } 
+    
     internal static string DatabaseName { get; private set; } = "Trackingv4";
     internal static bool CreateMockTablebase { get; private set; } = true;
     internal static int MockTableBaseNumberOfLines { get; private set; } = 400;

@@ -319,7 +319,7 @@ internal class UserInterface
             }
             for (int i = 0; i < stringOptions.Count; i++)
             {
-                stringOptions[i] += ":" + (updateArray[i] ? $"☑ " : $"☐ ");
+                stringOptions[i] += ":" + (updateArray[i] ? $"[#{mainColor.Blend(Color.Green, 0.5f).ToHex()}]☑[/] " : $"[#{mainColor.Blend(Color.Grey, 0.5f).ToHex()}]☐[/] ");
             }
 
             selectionPrompt
@@ -331,7 +331,7 @@ internal class UserInterface
             .EnableSearch()
             .PageSize(15)
             .MoreChoicesText($"[#{mainColor.Blend(Color.Grey, 0.5f).ToHex()}]Move up and down to reveal more options[/]")
-            .UseConverter((string n) => (Regex.Replace(n, @"([A-Z][^:])", @" $1")))
+            .UseConverter((string n) => (Regex.Replace(n, @"(?<!^)([A-Z])(?=.*:)", @" $1")))
             .AddChoices("Save and exit")
             .AddChoices(stringOptions);
 

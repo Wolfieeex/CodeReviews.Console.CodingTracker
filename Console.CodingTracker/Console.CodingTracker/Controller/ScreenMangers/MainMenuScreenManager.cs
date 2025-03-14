@@ -27,7 +27,7 @@ internal class MainMenuScreenManager
                     CRUDController.TrackNewSession();
                     break;
                 case 2:
-                    GoalSetter.SetNewGoals();
+                    GoalSetter.GoalSetterMenu();
                     break;
                 case 3:
                     CRUDController.ViewPreviousSessions();

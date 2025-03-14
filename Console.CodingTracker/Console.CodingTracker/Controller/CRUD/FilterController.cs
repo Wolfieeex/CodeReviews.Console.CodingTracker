@@ -108,7 +108,7 @@ internal class FilterController
 
             if (dateEnd < dateStart)
             {
-                reason += $"[#{mainColor.Blend(Color.Red, 0.5f)}]The start date of your session must be before the end date of your session.[/]\n";
+                reason += $"[#{mainColor.Blend(Color.Red, 0.5f).ToHex()}]The start date of your session must be before the end date of your session.[/]\n";
                 shouldBlock = true;
             }
         }
@@ -117,7 +117,7 @@ internal class FilterController
 
             if (int.Parse(filterDetails.MaxLines) < int.Parse(filterDetails.MinLines))
             {
-                reason += $"#[{mainColor.Blend(Color.Red, 0.5f)}]Minimal number of lines cannot exceed maximal lines search.[/]\n";
+                reason += $"[#{mainColor.Blend(Color.Red, 0.5f).ToHex()}]Minimal number of lines cannot exceed maximal lines search.[/]\n";
                 shouldBlock = true;
             }
         }
@@ -125,7 +125,7 @@ internal class FilterController
         {
             if (TimeSpan.ParseExact(filterDetails.MaxDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None) < TimeSpan.ParseExact(filterDetails.MinDuration, @"d\ hh\:mm", new CultureInfo("en-GB"), TimeSpanStyles.None))
             {
-                reason += $"[#{mainColor.Blend(Color.Red, 0.5f)}]Your maximal session time needs to be longer than the minimal session time.[/]\n";
+                reason += $"[#{mainColor.Blend(Color.Red, 0.5f).ToHex()}]Your maximal session time needs to be longer than the minimal session time.[/]\n";
                 shouldBlock = true;
             }
         }

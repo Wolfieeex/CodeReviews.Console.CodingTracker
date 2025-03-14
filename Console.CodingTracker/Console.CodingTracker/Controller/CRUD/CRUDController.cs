@@ -346,7 +346,7 @@ Helpers.CalculateDuration(start, end).ToString(),
             if (sessions != null && sessions.Any())
             {
                 Tables.DrawDatatable(sessions, Filter.ViewOptions);
-                AnsiConsole.Write(new Markup($"\n[#{titleColor.ToHex()}]Press any key[/] to return to previous menu:"));
+                AnsiConsole.Write(new Markup($"\n[#{titleColor.ToHex()}]Press any key[/] to return to previous menu:").Centered());
             }
             else if (Filter == null)
             {

@@ -31,6 +31,10 @@ internal class Reporting
         Color mainColor = Color.Purple_1;
         Color inputColor = Color.SlateBlue1;
 
+        string titleColorHex = "[#" + titleColor.ToHex() + "]";
+        string mainColorHex = "[#" + mainColor.ToHex() + "]";
+        string inputColorHex = inputColor.ToHex();
+
         ReportSettings reportSettings = TemporaryData.reportSettings;
         FilterDetails filterDetails = TemporaryData.lastFilter;
         reportSettings.FilterDetails = filterDetails;
@@ -124,7 +128,7 @@ internal class Reporting
                 { Enum.GetName((ReportMenu)3), PeriodSelectionString }
             };
 
-            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs($"\nYou are currently in the [#{titleColor.ToHex()}]report generation menu[/]. ", typeof(ReportMenu), titleColor, mainColor, inputColor, reportMenuDic, $"[{Settings.optionalsCompleted}]Run report[/]", false);
+            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs($"\nYou are currently in the {titleColorHex}report generation menu[/]. ", typeof(ReportMenu), titleColor, mainColor, inputColor, reportMenuDic, $"{Settings.optionalsCompleted}Run report[/]", false);
 
             bool[] tempOptions;
             switch (userInput)
@@ -158,17 +162,17 @@ internal class Reporting
                         bool shouldBlock = false;
                         string reason = "";
                         FilterController.CheckFilterConditions(filterDetails, ref reason, ref shouldBlock, mainColor);
-                        FilterScreenManager.ReportFilterMenu($"Records used to calculate your report will be [{titleColor}]selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock, titleColor, mainColor, inputColor);
+                        FilterScreenManager.ReportFilterMenu($"Records used to calculate your report will be {titleColorHex}selected by your filters. [/]", ref filterDetails, ref runFilterMenu, filterDic, reason, shouldBlock, titleColor, mainColor, inputColor);
                     }
                     break;
                 case 1:
                     tempOptions = reportSettings.ReportOptions;
-                    UserInterface.DisplayMultiselectionUI("Select [purple]data to display for your report[/]:", typeof(ReportOptions), ref tempOptions, mainColor);
+                    UserInterface.DisplayMultiselectionUI($"Select {titleColorHex}data to display for your report[/]:", typeof(ReportOptions), ref tempOptions, mainColor);
                     reportSettings.ReportOptions = tempOptions;
                     break;
                 case 2:
                     tempOptions = reportSettings.DataOptions;
-                    UserInterface.DisplayMultiselectionUI("Select [purple]variables by which your report will calculated[/]:", typeof(SummationOptions), ref tempOptions, mainColor );
+                    UserInterface.DisplayMultiselectionUI($"Select {titleColorHex}variables by which your report will calculated[/]:", typeof(SummationOptions), ref tempOptions, mainColor );
                     reportSettings.DataOptions = tempOptions;
                     break;
                 case 3:

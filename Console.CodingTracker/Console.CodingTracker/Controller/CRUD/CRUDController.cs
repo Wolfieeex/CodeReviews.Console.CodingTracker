@@ -545,12 +545,16 @@ Helpers.CalculateDuration(start, end).ToString(),
         Color mainColor = Color.Red3;
         Color inputColor = Color.Red;
 
+        string titleColorHex = $"[#{titleColor.ToHex()}]";
+        string mainColorHex = $"[#{mainColor.ToHex()}]";
+        string inputColorHex = $"[#{inputColor.ToHex()}]";
+
         bool runDeleteMenu = true;
         while (runDeleteMenu)
         {
             System.Console.Clear();
             bool quitMenu = false;
-            FilterDetails filters = FilterController.FilterRecords("You are currently using [green]delete record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
+            FilterDetails filters = FilterController.FilterRecords($"You are currently using {titleColorHex}delete record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
             if (quitMenu)
             {
                 break;
@@ -560,7 +564,7 @@ Helpers.CalculateDuration(start, end).ToString(),
             if (sessions == null || !sessions.Any())
             {
                 System.Console.Clear();
-                AnsiConsole.Markup("No records to update with given filters. Press any [blue]key to go back to filter menu[/]: ");
+                AnsiConsole.Markup($"No records to update with given filters. Press any {titleColorHex}key to go back to filter menu[/]: ");
                 System.Console.ReadKey();
                 continue;
             }
@@ -572,11 +576,11 @@ Helpers.CalculateDuration(start, end).ToString(),
 
             // This to be transferred into UserInterface class- this is not a controller, this belongs to View Model
             string userInput = AnsiConsole.Prompt(
-                new TextPrompt<string>("\nPlese [blue]select record(s) you would like to delete by choosing their index number(s)[/]. Please separate [yellow]multiple records[/] by adding \",\" between them, e.g. [green]1[/]  or  [green]23,58[/]  or  [green]8, 34, 8[/]. You can also insert [red]\"E\" to return to previous menu:[/] ")
+                new TextPrompt<string>($"\nPlese {titleColorHex}select record(s) you would like to delete by choosing their index number(s)[/]. Please separate {inputColorHex}multiple records[/] by adding \",\" between them, e.g. {inputColorHex}1[/]  or  {inputColorHex}23,58[/]  or  {inputColorHex}8, 34, 8[/]. You can also insert {inputColorHex}\"E\" to return to previous menu:[/] ")
                 .Validate((s) => s.ToLower() switch
                 {
                     "e" => ValidationResult.Success(),
-                    string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? "You can only [blue]input index numbers you want to update separated by commas[/] or [red]\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
+                    string when !IndexCheck(s, sessions.Count, ref reason) => ValidationResult.Error($"\n{(reason == 0 ? $"You can only {mainColorHex}input index numbers you want to update separated by commas[/] or {inputColorHex}\"E\" to return to a previous menu[/]." : "You can only select index " + (sessions.Count == 1 ? "number 1" : " numbers from 1 to " + sessions.Count))}\n"),
                     _ => ValidationResult.Success()
                 })
             );
@@ -592,32 +596,36 @@ Helpers.CalculateDuration(start, end).ToString(),
             foreach (int i in indexNumbers)
             {
                 if (!selectedSessions.Contains(sessions[i - 1]))
-                {
+                { 
                     selectedSessions.Add(sessions[i - 1]);
                 }
             }
 
-            runDeleteMenu = DeletionMenu(selectedSessions);
+            runDeleteMenu = DeletionMenu(selectedSessions, titleColor, mainColor, inputColor);
         }
     }
-    internal static bool DeletionMenu(List<CodingSession> sessions)
+    internal static bool DeletionMenu(List<CodingSession> sessions, Color titleColor, Color mainColor, Color inputColor)
     {
+        string titleColorHex = $"[#{titleColor.ToHex()}]";
+        string mainColorHex = $"[#{mainColor.ToHex()}]";
+        string inputColorHex = $"[#{inputColor.ToHex()}]";
+
         bool deletionWhile = true;
         while (deletionWhile)
-        {
+        { 
             System.Console.Clear();
             Tables.DrawDatatable(sessions, new bool[] { true, true, true, true, true, true, true, true });
-            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : "Multi - deletion ([red]all selected records will be deleted at the same time[/]). ")}[blue]Please make your selection:[/]", typeof(MenuSelections.DeletionMenu), Color.Orange1);
+            int? userOption = UserInterface.DisplaySelectionUI($"{(sessions.Count == 1 ? "" : $"Multi - deletion ({titleColorHex}all selected records will be deleted at the same time[/]). ")}{inputColorHex}Please make your selection:[/]", typeof(MenuSelections.DeletionMenu), Color.Orange1);
 
             string demonstrative = sessions.Count > 1 ? "all the selected sessions" : "that session";
             switch (userOption)
             {
                 case 0:
-                    bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"[red]Are you sure you want to delete {demonstrative}?[/]", "Yes", "No", Color.Red);
+                    bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"{titleColorHex}Are you sure you want to delete {demonstrative}?[/]", "Yes", "No", Color.Red);
                     if (confirmation)
                     {
                         Crud.DeleteRecords(sessions.Select(x => x.Key).ToList());
-                        AnsiConsole.Markup($"Deletion of {sessions.Count} record{(sessions.Count > 1 ? "s" : "")} completed. [blue]Press any key[/] to return to the previous menu: ");
+                        AnsiConsole.Markup($"Deletion of {sessions.Count} record{(sessions.Count > 1 ? "s" : "")} completed. {inputColorHex}Press any key[/] to return to the previous menu: ");
                         System.Console.ReadKey();
                         return true;
                     }

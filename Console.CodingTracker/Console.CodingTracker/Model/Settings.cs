@@ -5,9 +5,7 @@ namespace Console.CodingTracker.Model;
 
 internal class Settings
 {
-    // This will need correcting urgently!
-
-    private static string ConnectionString
+    public static string ConnectionString
     {
         get
         {
@@ -17,9 +15,9 @@ internal class Settings
             conn = "Data Source=" + conn;
             return conn;
         }
-    } 
-    
+    }
     internal static string DatabaseName { get; private set; } = "Trackingv4";
+    internal static string GoalDatabaseName { get; private set; } = "Goals";
     internal static bool CreateMockTablebase { get; private set; } = true;
     internal static int MockTableBaseNumberOfLines { get; private set; } = 400;
     internal static int MockTableBaseMinYear { get; private set; } = 2023;

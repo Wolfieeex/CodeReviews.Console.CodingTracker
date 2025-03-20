@@ -23,7 +23,8 @@ internal class GoalSetter
             switch (userOption)
             {
                 case 0:
-                    SetNewGoal();
+                    //SetNewGoal();
+
                     break;
                 case 1:
                     ViewPreviousGoals();
@@ -38,7 +39,7 @@ internal class GoalSetter
         }
     }
 
-    private static void SetNewGoal()
+    private static void SetNewGoalMenu()
     {
 
     }

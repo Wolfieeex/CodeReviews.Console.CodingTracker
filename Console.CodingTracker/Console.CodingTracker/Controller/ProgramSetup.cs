@@ -3,6 +3,7 @@ using Console.CodingTracker.Model;
 using Dapper;
 using System.Text;
 using Console.CodingTracker.Controller.SQL;
+using System.Data.SqlClient;
 
 namespace Console.CodingTracker.Controller;
 
@@ -42,6 +43,20 @@ internal class ProgramSetup
             {
                 CreateMockTablebase();
             }
+        }
+
+        using (SqliteConnection connection = new SqliteConnection(Settings.ConnectionString))
+        {
+            connection.Open();
+            string connComm = @$"CREATE TABLE IF NOT EXISTS {Settings.GoalDatabaseName} (
+                                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                 Goal TEXT,
+                                 Status TEXT,
+                                 'Time to reach' TEXT,
+                                 'Time left' TEXT
+                                 )";
+            new SqliteCommand(connComm, connection).ExecuteNonQuery();
+            connection.Close();
         }
     }
     internal static void CreateMockTablebase()

@@ -36,7 +36,7 @@ internal class UserInterface
         .PageSize(15)
         .MoreChoicesText("[dim]Move up and down to reveal more options[/]")
         .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @$"[dim]($1)[/]"))
-        .AddChoices((rawOptions)));
+        .AddChoices(rawOptions));
 
         int enumCardinal = (int)Enum.Parse(options, userOption);
 
@@ -114,7 +114,7 @@ internal class UserInterface
             { 
                 ("") => ValidationResult.Success(),
                 ("e") => ValidationResult.Success(),
-                string when (int.TryParse(s, out _)) => ValidationResult.Success(),
+                { } when (int.TryParse(s, out _)) => ValidationResult.Success(),
                 (_) => ValidationResult.Error($"Your insert needs to represent an {hexTitleColor}integer[/]."),
             });
         }

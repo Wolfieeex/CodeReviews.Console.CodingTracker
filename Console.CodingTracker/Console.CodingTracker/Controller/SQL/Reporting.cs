@@ -8,13 +8,16 @@ namespace Console.CodingTracker.Controller.SQL
 {
     internal class Reporting
     {
-        public static void CalculateReport(ReportSettings settings, out Dictionary<string, List<string>> DurationTable, out Dictionary<string, List<string>> LinesTable)
+        public static bool CalculateReport(ReportSettings settings, out Dictionary<string, List<string>> DurationTable, out Dictionary<string, List<string>> LinesTable, Color titleColor)
         {
             List<CodingSession> sessions = Crud.GetRecords(settings.FilterDetails);
             if (sessions.Count == 0)
             {
                 System.Console.Clear();
-                AnsiConsole.WriteLine("Cannot generate report with selected settings- no records found. [red]Please select different settings and try again.[/]");
+                AnsiConsole.MarkupLine($"Cannot generate report with selected settings- no records found. [#{titleColor.Blend(Color.Red, 0.3f).ToHex()}]Please select DIFFERENT FILTERS and try again.[/]");
+                DurationTable = null;
+                LinesTable = null;
+                return true;
             }
             else
             {
@@ -403,10 +406,11 @@ namespace Console.CodingTracker.Controller.SQL
                 }
                 DurationTable = durationData;
                 LinesTable = linesData;
-                return;
+                return false;
             }
             DurationTable = null;
             LinesTable = null;
+            return true;
         }
         public static List<Tuple<string, string>> ReturnAllWeeksOfTheYear(int year)
         {

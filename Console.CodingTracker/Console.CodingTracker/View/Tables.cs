@@ -187,18 +187,25 @@ internal class Tables
                     }
                     if (settings.DataOptions[1] == true)
                     {
-                        if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
+                        if (LinesTable.ElementAt(i).Value.Count == 0)
                         {
                             cell += "\nN/A";
                         }
                         else
                         {
-                            cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
-                        }
-                        if (j != 0 || settings.ReportOptions[0] == false)
-                        {
-                            cell = cell.Insert(0, "[green]");
-                            cell += "[/]";
+                            if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
+                            {
+                                cell += "\nN/A";
+                            }
+                            else
+                            {
+                                cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
+                            }
+                            if (j != 0 || settings.ReportOptions[0] == false)
+                            {
+                                cell = cell.Insert(0, "[green]");
+                                cell += "[/]";
+                            }
                         }
                     }
                 }

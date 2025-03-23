@@ -140,8 +140,12 @@ internal class Reporting
 
                     Dictionary<string, List<string>> DurationTable = new Dictionary<string, List<string>>();
                     Dictionary<string, List<string>> LinesTable = new Dictionary<string, List<string>>();
-                    SQL.Reporting.CalculateReport(reportSettings, out DurationTable, out LinesTable);
-                    Tables.DrawReportTable(reportSettings, DurationTable, LinesTable);
+                    bool noRecords = SQL.Reporting.CalculateReport(reportSettings, out DurationTable, out LinesTable, titleColor);
+                    if (!noRecords || DurationTable == null || LinesTable == null || DurationTable.Count == 0)
+                    {
+                        LinesTable ??= new Dictionary<string, List<string>>();
+                        Tables.DrawReportTable(reportSettings, DurationTable, LinesTable);
+                    }
                     break;
                 case 0:
                     bool runFilterMenu = true;

@@ -19,6 +19,7 @@ enum ReportTableTitles
 
 internal class Tables
 {
+    // YES. I know I should have used polymorphism here... Somehow at least. But I realised at the very end of it. Next time, I promise!!
     public static void DrawDatatable(List<CodingSession> list, bool[] viewSettings, bool automaticalDataFormatting = true)
     {
 

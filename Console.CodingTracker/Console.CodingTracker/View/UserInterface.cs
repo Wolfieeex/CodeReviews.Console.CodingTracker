@@ -35,7 +35,7 @@ internal class UserInterface
         .EnableSearch()
         .PageSize(15)
         .MoreChoicesText("[dim]Move up and down to reveal more options[/]")
-        .UseConverter((string n) => Regex.Replace(Regex.Replace(n, @"([A-Z])", @" $1"), @"(Optional)", @$"[dim]($1)[/]"))
+        .UseConverter((string n) => Regex.Replace(Regex.Replace(Regex.Replace(n, @"(?<=[a-zA-Z])([A-Z])", @" $1"), @"(Optional)", @$"[dim]($1)[/]"), @"(.*)([0-9]{1,})", @"$2 $1"))
         .AddChoices(rawOptions));
 
         int enumCardinal = (int)Enum.Parse(options, userOption);
@@ -101,10 +101,20 @@ internal class UserInterface
 
         return parseSuccessful ? (int)enumCardinal : -1;
     }
-    public static string? DisplayTextUI(string title, TextUIOptions UIOptions, Color titleColor, List<int> index = null)
+    public static string? DisplayTextUI(string title, TextUIOptions UIOptions, Color titleColor, List<int> index = null, bool goalSetterTitle = false)
     {
+        string[] textOptionalInputs;
+        if (goalSetterTitle)
+        {
+            textOptionalInputs = new string[] { "Leave this space blank[/] or ", "input \"E\"[/] to go back to filter menu: " };
+        }
+        else
+        {
+            textOptionalInputs = new string[]{ "Leave this space blank[/] to clear the previous insert or ", "input \"E\"[/] to go back to filter menu: " };
+        }
+
         string hexTitleColor = $"[#{titleColor.ToHex()}]";
-        TextPrompt<string> prompt = new(title + $"{hexTitleColor}Leave this space blank[/] to clear the previous insert or {hexTitleColor}input \"E\"[/] to go back to filter menu: ");
+        TextPrompt<string> prompt = new(title + $"{hexTitleColor}{textOptionalInputs[0]}{hexTitleColor}{textOptionalInputs[1]}");
         prompt.AllowEmpty();
 
 

@@ -98,8 +98,8 @@ internal enum SortingMenu
 }
 internal enum GoalSetterMenu
 {
+    ReturnToMainMenu,
     SetNewGoal,
     ViewPreviousGoals,  
-    DeleteGoal,
-    ReturnToMainMenu
+    DeleteGoal
 }

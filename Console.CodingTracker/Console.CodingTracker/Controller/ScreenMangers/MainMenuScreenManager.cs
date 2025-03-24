@@ -1,4 +1,6 @@
 ﻿using Console.CodingTracker.Controller.CRUD;
+using Console.CodingTracker.MenuSelections;
+using Console.CodingTracker.Controller.SQL; 
 using Console.CodingTracker.View;
 using Spectre.Console;
 
@@ -27,13 +29,13 @@ internal class MainMenuScreenManager
                     CRUDController.TrackNewSession();
                     break;
                 case 2:
-                    GoalSetter.GoalSetterMenu();
+                    GoalSettings.GoalMenu();
                     break;
                 case 3:
                     CRUDController.ViewPreviousSessions();
                     break;
                 case 4:
-                    Reporting.GenerateReport();
+                    CRUD.Reporting.GenerateReport();
                     break;
                 case 5:
                     CRUDController.UpdateSessionDetails();

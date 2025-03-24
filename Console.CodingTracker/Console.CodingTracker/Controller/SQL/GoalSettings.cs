@@ -16,7 +16,6 @@ internal enum GoalLimit
     BackToPreviousMenu,
     Custom,
     Days3,
-    Days7,
     Week1,
     Weeks2,
     Month1,
@@ -86,29 +85,53 @@ internal static class GoalSettings
                 }
 
                 
-
+                TimeSpan timeLimit = new TimeSpan(0);
                 switch (userInputTimeLimit)
                 {
                     case 1:
                         dynamic timeLimitCustom = UserInterface.DisplayTextUI($"Please select a custom time as your limit to complete your goal in the \"d hh:mm\" format.", TextUIOptions.TimeSpanOnly, titleColor, goalSetterTitle: true);
-                        if (timeLimit)
-                        string timeLimitString = timeLimitCustom.ToString();
+                        if (timeLimitCustom != null)
+                        {
+                            string timeLimitString = timeLimitCustom.ToString();
+                            if (timeLimitString.ToLower() == "e" || timeLimitString == "")
+                            {
+                                runTimeLimitMenu = false;
+                                break;
+                            }
+                            // Not parsing correctly - need to implement Regex :/
+                            timeLimit = TimeSpan.Parse(timeLimitString);
+                        }
+                        else
+                        {
+                            runTimeLimitMenu = false;
+                            break;
+                        }
                         break;
                     case 2:
+                        timeLimit = new TimeSpan(3, 0, 0, 0);
                         break;
                     case 3:
+                        timeLimit = new TimeSpan(7, 0, 0, 0);
                         break;
                     case 4:
+                        timeLimit = new TimeSpan(14, 0, 0, 0);
                         break;
                     case 5:
+                        timeLimit = DateTime.Now.AddMonths(1) - DateTime.Now;
                         break;
                     case 6:
+                        timeLimit = DateTime.Now.AddMonths(3) - DateTime.Now;
                         break;
                     case 7:
+                        timeLimit = DateTime.Now.AddMonths(6) - DateTime.Now;
                         break;
                     case 8:
+                        timeLimit = DateTime.Now.AddYears(1) - DateTime.Now;
                         break;
                 }
+
+                System.Console.WriteLine(timeLimit!.ToString());
+                System.Console.ReadKey();
 
                 // Kolejny input, tym razem jesli chodzi o typ danych:
 

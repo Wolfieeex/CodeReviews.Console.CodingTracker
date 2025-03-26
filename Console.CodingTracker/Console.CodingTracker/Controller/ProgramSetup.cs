@@ -52,7 +52,7 @@ internal class ProgramSetup
                                  Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                  Goal TEXT,
                                  Status TEXT,
-                                 'Time to reach' TEXT,
+                                 'Goal amount left' TEXT,
                                  'Time left' TEXT
                                  )";
             new SqliteCommand(connComm, connection).ExecuteNonQuery();

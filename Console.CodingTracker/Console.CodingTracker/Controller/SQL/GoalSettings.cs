@@ -1,7 +1,8 @@
 ﻿using Console.CodingTracker.View;
-using System.Text.RegularExpressions;
 using Console.CodingTracker.Model;
+using System.Text.RegularExpressions;
 using Spectre.Console;
+using Microsoft.Data.Sqlite;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -88,7 +89,6 @@ internal static class GoalSettings
                     break;
                 }
 
-                
                 TimeSpan timeLimit = new TimeSpan(0);
                 switch (userInputTimeLimit)
                 {
@@ -99,14 +99,12 @@ internal static class GoalSettings
                             string timeLimitString = timeLimitCustom.ToString();
                             if (timeLimitString.ToLower() == "e" || timeLimitString == "")
                             {
-                                runTimeLimitMenu = false;
                                 continue;
                             }
                             timeLimit = TimeSpan.Parse(timeLimitString.Replace(' ', '.'));
                         }
                         else
                         {
-                            runTimeLimitMenu = false;
 							continue;
                         }
                         break;
@@ -136,50 +134,48 @@ internal static class GoalSettings
                 bool runGoalAmountMenu = true;
                 while (runGoalAmountMenu)
                 {
-                    
-                    string timeLimitInString = Regex.Replace(timeLimit.ToString(), @"(d\+)\s", match =>
-                    {
-                        return match.Groups[1].Value == "1" ? "1 day" : match.Groups[1].Value + " days";
-                    });
+                    System.Console.Clear();
 
 					switch (userInputType)
 					{
 						case 1:
-							dynamic commitAmount = UserInterface.DisplayTextUI($"Please {inputColorHex}input total time[/] you want to commit into programming in the {inputColorHex}\"d hh:ss\"[/] format in the {timeLimitInString} timeframe: ", TextUIOptions.TimeSpanOnly, titleColor, goalSetterTitle: true);
+							dynamic commitAmount = UserInterface.DisplayTextUI($"Please {inputColorHex}input total time[/] you want to commit into programming in the {inputColorHex}\"d hh:ss\"[/] format in the {ViewTimeSpan(timeLimit.ToString())} timeframe: ", TextUIOptions.TimeSpanOnly, titleColor, goalSetterTitle: true);
                             if (commitAmount != null)
                             {
                                 string commitAmountString = commitAmount.ToString();
                                 if (commitAmountString.ToLower() == "e" || commitAmountString == "")
                                 {
-                                    runTimeLimitMenu = false;
+									runGoalAmountMenu = false;
                                     continue;
                                 }
-                                Goal goal = new Goal(commitAmountString, timeLimitInString);
+
+								TimeSpan commitAmountTimeSpan = TimeSpan.Parse(commitAmountString.Replace(' ', '.'));
+								Goal goal = new Goal(DateTime.Now, timeLimit, commitAmountTimeSpan, commitAmountTimeSpan);
                                 goal.AddGoalToDatabase();
                             }
                             else
                             {
-								runTimeLimitMenu = false;
+								runGoalAmountMenu = false;
                                 continue;
 							}
 						    break;
 						case 2:
-							commitAmount = UserInterface.DisplayTextUI($"Please {inputColorHex}input number of lines[/] you want to produce in the {timeLimitInString} timeframe: ", TextUIOptions.NumbersOnly, titleColor, goalSetterTitle: true);
+							commitAmount = UserInterface.DisplayTextUI($"Please {inputColorHex}input number of lines[/] you want to produce in the {ViewTimeSpan(timeLimit.ToString())} timeframe: ", TextUIOptions.NumbersOnly, titleColor, goalSetterTitle: true);
 							if (commitAmount != null)
 							{
 								string commitLines = commitAmount.ToString();
 								if (commitLines.ToLower() == "e" || commitLines == "")
 								{
-									runTimeLimitMenu = false;
+									runGoalAmountMenu = false;
 									continue;
 								}
                                 int linesGoalInt = int.Parse(commitLines);
-								Goal goal = new Goal(linesGoalInt, timeLimitInString);
+								Goal goal = new Goal(DateTime.Now, timeLimit, linesGoalInt, linesGoalInt);
 								goal.AddGoalToDatabase();
 							}
 							else
 							{
-								runTimeLimitMenu = false;
+								runGoalAmountMenu = false;
 								continue;
 							}
 							break;
@@ -193,10 +189,141 @@ internal static class GoalSettings
             }
         }
     }
+
+    private static string ViewTimeSpan(string initialString)
+    {
+		initialString = Regex.Replace(initialString.ToString(), @"(d\+)\s|\.", match =>
+		{
+			return match.Groups[1].Value == "1" ? "1 day " : match.Groups[1].Value + " days ";
+		});
+        return Regex.Match(initialString, @".+?:\d{2}").Value;
+	}
     private static void ViewPreviousGoals()
     {
+        bool runViewMenu = true;
+        while (runViewMenu)
+        {
+            System.Console.Clear();
+            int? userInput = UserInterface.DisplaySelectionUI($"Here, you can {titleColorHex}view your goals[/]. First, select one of the options below: ", typeof(MenuSelections.GoalViewerMenu), inputColor);
 
+            string statusFilter = null;
+            switch (userInput)
+            {
+                case 0:
+                    runViewMenu = false;
+                    continue;
+                case 1:
+                    statusFilter = ((GoalStatus)1).ToString();
+					break;
+				case 2:
+					statusFilter = ((GoalStatus)0).ToString();
+					break;
+				case 3:
+					statusFilter = ((GoalStatus)2).ToString();
+					break;
+				case 4:
+					bool confirm = UserInterface.DisplayConfirmationSelectionUI($"This action will [red]delete all previous history[/], including both failed and completed goals. Are you sure you want to continue?", "delete", "no", inputColor);
+                    if (confirm)
+                    {
+                        DeleteGoalHistory();
+                    }
+					continue;
+			}
+
+			System.Console.Clear();
+
+            List<Goal> goals = new List<Goal>();
+			using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+			{
+				conn.Open();
+				SqliteCommand comm = conn.CreateCommand();
+				comm.CommandText = $"SELECT * FROM {Settings.GoalDatabaseName} WHERE Status = '{statusFilter ??= "-1"}'";
+                SqliteDataReader reader = comm.ExecuteReader();
+
+                if (!reader.HasRows)
+                {
+                    AnsiConsole.Markup($"No records found. Please {titleColorHex}press any button[/] to return to the previous menu: ");
+                    System.Console.ReadKey();
+                    continue;
+                }
+
+                while (reader.Read())
+                {
+                    bool isInt = int.TryParse(reader.GetString(5), out int _);
+                    if (isInt)
+                    {
+                        DateTime startDate = DateTime.Parse(reader.GetString(3));
+                        TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
+                        int startGoal = reader.GetInt32(5);
+                        int goalLeft = reader.GetInt32(6);
+						goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
+					}
+					else
+                    {
+						DateTime startDate = DateTime.Parse(reader.GetString(3));
+						TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
+						TimeSpan startGoal = TimeSpan.Parse(reader.GetString(5));
+						TimeSpan goalLeft = TimeSpan.Parse(reader.GetString(6));
+						goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
+					}
+                }
+
+                // Table creation:
+                Table table = new Table();
+                table.AddColumns(new string[] { "Index", "Goal", "Status", "Time left", "Amount of work left" });
+                for (int i = 0; i < goals.Count; i++)
+                {
+                    table.AddRow(goals[i].SetTableRow(i));
+                }
+
+                // Table formatting:
+				foreach (var col in table.Columns)
+				{
+					col.Width(col.Width + 3);
+					col.RightAligned().Padding(1, 0);
+					col.NoWrap();
+				}
+				table.Columns[0].Width(table.Columns[0].Width + 3).LeftAligned().Padding(1, 0);
+				table.Centered();
+				table.Border = TableBorder.Rounded;
+				table.ShowRowSeparators();
+				table.BorderColor(Color.BlueViolet);
+
+                // Table title:
+				string statusView = Regex.Replace(statusFilter, @"(.+)([A-Z])", match =>
+                {
+                    return match.Groups[1].Value + " " + match.Groups[2].Value;
+                });
+                System.Console.WriteLine(statusView);
+				table.Title($"Goals that are {statusView}:", new Style().Foreground(Color.DeepPink1));
+				
+                // Table view:
+				System.Console.Clear();
+				AnsiConsole.Write(table);
+				AnsiConsole.Write(new Rule($"Press any button to [#{inputColor.ToHex()}]return to the previous menu:[/]").Centered());
+				System.Console.ReadKey();
+				System.Console.Clear();
+			}
+		}
     }
+
+	private static void DeleteGoalHistory()
+	{
+		System.Console.Clear();
+		using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+		{
+			conn.Open();
+			SqliteCommand comm = conn.CreateCommand();
+			comm.CommandText = $"DELETE FROM {Settings.GoalDatabaseName} WHERE Status = 'Completed' OR Status = 'Failed'";
+			comm.ExecuteNonQuery();
+		}
+		AnsiConsole.Markup($"All previous records have been erased. {titleColorHex}Press any button[/] to return to the previous menu: ");
+		System.Console.ReadKey();
+	}
+
+    // Regular update timer
+
+    // Update after tracking a new session NOT IF injecting or updating. Only tracking by timer counts.
 
     private static void DeleteGoals()
     {

@@ -103,3 +103,12 @@ internal enum GoalSetterMenu
     ViewPreviousGoals,  
     DeleteGoal
 }
+
+internal enum GoalViewerMenu
+{
+    ReturnToPreviousMenu,
+    ShowInProgressGoals,
+    ShowCompletedGoals,
+    ShowFailedGoals,
+    ClearHistory
+}

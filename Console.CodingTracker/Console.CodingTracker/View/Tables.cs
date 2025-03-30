@@ -2,6 +2,7 @@
 using Spectre.Console;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.View;
@@ -104,9 +105,10 @@ internal class Tables
         table.BorderColor(Color.SteelBlue3);
         AnsiConsole.Write(table);
     }
-    public static void DrawReportTable(ReportSettings settings, Dictionary<string, List<string>> DurationTable, Dictionary<string, List<string>> LinesTable)
+    public static void DrawReportTable(ReportSettings settings, Dictionary<string, List<string>> DurationTable, Dictionary<string, List<string>> LinesTable, string titleHex, string inputHex)
     {
         Table table = new Table();
+        StringBuilder csvTable = new StringBuilder();
 
         string[] names = Enum.GetNames(typeof(ReportTableTitles));
         for (int i = 0; i < names.Length; i++)
@@ -130,7 +132,9 @@ internal class Tables
         }
 
         int interval = 0;
-        table.AddColumn("[yellow]Index:[/]");
+        csvTable.Append("Index:;");
+		csvTable.Append("Data type:;");
+		table.AddColumn("[yellow]Index:[/]");
         table.AddColumn("[yellow]Data type:[/]");
         foreach (string n in names)
         {
@@ -138,12 +142,14 @@ internal class Tables
             {
                 if (settings.ReportOptions[interval] == true)
                 {
-                    table.AddColumn(n);
+					csvTable.Append(n);
+					table.AddColumn(n);
                 }
             }
             else
             {
-                table.AddColumn(n);
+				csvTable.Append(n);
+				table.AddColumn(n);
             }
             interval++;
         }
@@ -247,11 +253,20 @@ internal class Tables
         System.Console.Clear();
         AnsiConsole.Write(table);
         string finishingText = "Report printed. Press any button to return to the report menu: ";
-        System.Console.SetCursorPosition((System.Console.WindowWidth - finishingText.Length) / 2, System.Console.CursorTop);
-        AnsiConsole.Markup("Report printed. [green]Press any button to return to the report menu: [/]");
-        System.Console.ReadKey();
-        System.Console.Clear();
-    }
+        AnsiConsole.Write(new Rule("-"));
+		AnsiConsole.Write(new Markup($"Report printed. {titleHex}Insert \"s\" to save it[/] or {inputHex}any other text to return to the report menu[/]: "));
+        string lineInput = System.Console.ReadLine();
+		System.Console.Clear();
+
+		if (lineInput.ToLower() == "s")
+		{
+			string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"/report.csv";
+			File.WriteAllText(desktopPath, csvTable.ToString());
+			AnsiConsole.Write(new Markup($"Report {titleHex}saved to your desktop[/]. Press {inputHex}any key to return to the previous menu:[/] "));
+			System.Console.ReadKey();
+			System.Console.Clear();
+		}
+	}
     private static void AddPeriod(ref string cell, ReportSettings settings, string facePeriod)
     {
         switch (settings.Period)

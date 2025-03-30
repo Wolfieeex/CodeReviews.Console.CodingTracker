@@ -33,9 +33,9 @@ internal class Reporting
 
         string titleColorHex = "[#" + titleColor.ToHex() + "]";
         string mainColorHex = "[#" + mainColor.ToHex() + "]";
-        string inputColorHex = inputColor.ToHex();
+        string inputColorHex = "[#" + inputColor.ToHex() + "]";
 
-        ReportSettings reportSettings = TemporaryData.reportSettings;
+		ReportSettings reportSettings = TemporaryData.reportSettings;
         FilterDetails filterDetails = TemporaryData.lastFilter;
         reportSettings.FilterDetails = filterDetails;
 
@@ -144,8 +144,8 @@ internal class Reporting
                     if (!noRecords || DurationTable == null || LinesTable == null || DurationTable.Count == 0)
                     {
                         LinesTable ??= new Dictionary<string, List<string>>();
-                        Tables.DrawReportTable(reportSettings, DurationTable, LinesTable);
-                    }
+                        Tables.DrawReportTable(reportSettings, DurationTable, LinesTable, titleColorHex, inputColorHex);
+					}
                     break;
                 case 0:
                     bool runFilterMenu = true;

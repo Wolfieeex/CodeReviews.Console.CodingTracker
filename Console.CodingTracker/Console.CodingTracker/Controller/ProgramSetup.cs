@@ -3,7 +3,6 @@ using Console.CodingTracker.Model;
 using Dapper;
 using System.Text;
 using Console.CodingTracker.Controller.SQL;
-using System.Data.SqlClient;
 
 namespace Console.CodingTracker.Controller;
 
@@ -52,8 +51,10 @@ internal class ProgramSetup
                                  Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                  Goal TEXT,
                                  Status TEXT,
-                                 'Goal amount left' TEXT,
-                                 'Time left' TEXT
+                                 'Start Date' TEXT,
+                                 'End Date' TEXT,
+                                 'Start Goal Amount',
+                                 'Goal Amount Left'
                                  )";
             new SqliteCommand(connComm, connection).ExecuteNonQuery();
             connection.Close();

@@ -46,7 +46,9 @@ internal class Reporting
         bool loopReportMenu = true;
         while (loopReportMenu)
         {
-            bool wasFilterSelected = true;
+			System.Console.Clear();
+
+			bool wasFilterSelected = true;
             if (filterDetails.FromDate == null && filterDetails.ToDate == null && filterDetails.MinLines == null && filterDetails.MaxLines == null && filterDetails.Comment == null && filterDetails.MinDuration == null && filterDetails.MaxDuration == null && filterDetails.WasTimerTracked == null)
             {
                 wasFilterSelected = false;

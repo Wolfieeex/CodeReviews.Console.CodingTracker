@@ -111,10 +111,13 @@ internal class Tables
         StringBuilder csvTable = new StringBuilder();
 
         string[] names = Enum.GetNames(typeof(ReportTableTitles));
-        for (int i = 0; i < names.Length; i++)
+		string[] csvNames = Enum.GetNames(typeof(ReportTableTitles));
+		for (int i = 0; i < names.Length; i++)
         {
             names[i] = Regex.Replace(names[i], @"(?<=.+)([A-Z])", @" $1");
-            names[i] = names[i].Insert(0, "[yellow]");
+            csvNames[i] = Regex.Replace(csvNames[i], @"(?<=.+)([A-Z])", @" $1");
+
+			names[i] = names[i].Insert(0, "[yellow]");
             names[i] += ":[/]";
         }
 
@@ -136,58 +139,82 @@ internal class Tables
 		csvTable.Append("Data type:;");
 		table.AddColumn("[yellow]Index:[/]");
         table.AddColumn("[yellow]Data type:[/]");
-        foreach (string n in names)
+        for (int i = 0; i < names.Length; i++)
         {
             if (settings.ReportOptions.Length > interval)
             {
                 if (settings.ReportOptions[interval] == true)
                 {
-					csvTable.Append(n);
-					table.AddColumn(n);
+                    csvTable.Append(csvNames[i] + ":;");
+                    table.AddColumn(names[i]);
                 }
             }
             else
             {
-				csvTable.Append(n);
-				table.AddColumn(n);
+				csvTable.Append(csvNames[i] + ":;");
+				table.AddColumn(names[i]);
             }
             interval++;
         }
 
-        int line = 0;
+		int line = 0;
         for (int i = 0; i < recordsLength; i++)
         {
-            line++;
+			csvTable.AppendLine();
+
+			line++;
             List<string> lines = new List<string>();
             string linePeriod = "";
+            string csvLinePeriod = "";
             linePeriod += line.ToString() + ") ";
 
             string data = "";
+            string csvData = "\"";
             if (settings.DataOptions[0] == true)
             {
                 AddPeriod(ref linePeriod, settings, DurationTable.ElementAt(i).Key);
-                data += "[blue]Time span -->[/]";
-                if (settings.DataOptions[1] == true)
+                csvLinePeriod = linePeriod + ";";
+
+				data += "[blue]Time span -->[/]";
+                csvData += "Time span";
+
+				if (settings.DataOptions[1] == true)
                 {
                     data += "\n[green]Lines number -->[/]";
-                }
+					csvData += "\nLines number";
+				}
+
+                csvData += "\";";
             }
             else
             {
                 AddPeriod(ref linePeriod, settings, LinesTable.ElementAt(i).Key);
-                data += "[green]Lines number -->[/]";
-            }
+				csvLinePeriod = linePeriod + ";";
+
+				data += "[green]Lines number -->[/]";
+                csvData += "Lines number;";
+
+			}
+
             lines.Add(linePeriod);
             lines.Add(data);
 
-            for (int j = 0; j < lineLength; j++)
+            csvTable.Append(csvLinePeriod);
+            csvTable.Append(csvData);
+
+			for (int j = 0; j < lineLength; j++)
             {
                 int padding = 5;
                 string cell = "";
+                string csvCell = "";
+
                 if (settings.DataOptions[0] == true)
                 {
-                    cell = DurationTable.ElementAt(i).Value[j];
-                    if (j != 0 || settings.ReportOptions[0] == false)
+                    csvCell += "\"";
+					cell = DurationTable.ElementAt(i).Value[j];
+					csvCell += DurationTable.ElementAt(i).Value[j];
+
+					if (j != 0 || settings.ReportOptions[0] == false)
                     {
                         cell = cell.Insert(0, "[blue]");
                         cell += "[/]";
@@ -197,17 +224,20 @@ internal class Tables
                         if (LinesTable.ElementAt(i).Value.Count == 0)
                         {
                             cell += "\nN/A";
-                        }
+							csvCell += "\nN/A";
+						}
                         else
                         {
                             if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
                             {
                                 cell += "\nN/A";
-                            }
+								csvCell += "\nN/A";
+							}
                             else
                             {
                                 cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
-                            }
+								csvCell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
+							}
                             if (j != 0 || settings.ReportOptions[0] == false)
                             {
                                 cell = cell.Insert(0, "[green]");
@@ -215,27 +245,33 @@ internal class Tables
                             }
                         }
                     }
-                }
+					csvCell += "\";";
+				}
                 else
                 {
-                    if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
+					csvCell += "\"";
+					if (LinesTable.ElementAt(i).Value[j] == null || LinesTable.ElementAt(i).Value[j] == "N/A")
                     {
                         cell += "\nN/A";
-                    }
+						csvCell += "\nN/A";
+					}
                     else
                     {
                         cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
-                    }
+						csvCell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
+					}
                     if (j != 0 || settings.ReportOptions[0] == false)
                     {
                         cell = cell.Insert(0, "[green]");
                         cell += "[/]";
                     }
-                }
+					csvCell += "\";";
+				}
                 lines.Add(cell);
+                csvTable.Append(csvCell);
             }
             table.AddRow(lines.ToArray());
-        }
+		}
 
         foreach (var col in table.Columns)
         {
@@ -260,7 +296,17 @@ internal class Tables
 
 		if (lineInput.ToLower() == "s")
 		{
-			string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"/report.csv";
+            string pathVersion = "";
+            int versionInterval = 1;
+
+			string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @$"/Coding Tracker Report {DateTime.Now.ToString("dd.MM.yyyy HH-mm")}{pathVersion}.csv";
+            while (File.Exists(desktopPath))
+            {
+                pathVersion = " v" + versionInterval;
+                versionInterval++;
+                desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @$"/Coding Tracker Report {DateTime.Now.ToString("dd.MM.yyyy HH-mm")}{pathVersion}.csv";
+			}
+
 			File.WriteAllText(desktopPath, csvTable.ToString());
 			AnsiConsole.Write(new Markup($"Report {titleHex}saved to your desktop[/]. Press {inputHex}any key to return to the previous menu:[/] "));
 			System.Console.ReadKey();

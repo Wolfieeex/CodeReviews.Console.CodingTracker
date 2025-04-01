@@ -64,7 +64,6 @@ internal static class GoalSettings
             }
         }
     }
-
     private static void SetNewGoal()
     {
         bool runTypeSelectorMenu = true;
@@ -189,7 +188,6 @@ internal static class GoalSettings
             }
         }
     }
-
     private static string ViewTimeSpan(string initialString)
     {
 		initialString = Regex.Replace(initialString.ToString(), @"(d\+)\s|\.", match =>
@@ -229,83 +227,16 @@ internal static class GoalSettings
                     }
 					continue;
 			}
+            bool tableRendered = RenderGoalTable(statusFilter!);
 
-			System.Console.Clear();
-
-            List<Goal> goals = new List<Goal>();
-			using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
-			{
-				conn.Open();
-				SqliteCommand comm = conn.CreateCommand();
-				comm.CommandText = $"SELECT * FROM {Settings.GoalDatabaseName} WHERE Status = '{statusFilter ??= "-1"}'";
-                SqliteDataReader reader = comm.ExecuteReader();
-
-                if (!reader.HasRows)
-                {
-                    AnsiConsole.Markup($"No records found. Please {titleColorHex}press any button[/] to return to the previous menu: ");
-                    System.Console.ReadKey();
-                    continue;
-                }
-
-                while (reader.Read())
-                {
-                    bool isInt = int.TryParse(reader.GetString(5), out int _);
-                    if (isInt)
-                    {
-                        DateTime startDate = DateTime.Parse(reader.GetString(3));
-                        TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
-                        int startGoal = reader.GetInt32(5);
-                        int goalLeft = reader.GetInt32(6);
-						goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
-					}
-					else
-                    {
-						DateTime startDate = DateTime.Parse(reader.GetString(3));
-						TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
-						TimeSpan startGoal = TimeSpan.Parse(reader.GetString(5));
-						TimeSpan goalLeft = TimeSpan.Parse(reader.GetString(6));
-						goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
-					}
-                }
-
-                // Table creation:
-                Table table = new Table();
-                table.AddColumns(new string[] { "Index", "Goal", "Status", "Time left", "Amount of work left" });
-                for (int i = 0; i < goals.Count; i++)
-                {
-                    table.AddRow(goals[i].SetTableRow(i));
-                }
-
-                // Table formatting:
-				foreach (var col in table.Columns)
-				{
-					col.Width(col.Width + 3);
-					col.RightAligned().Padding(1, 0);
-					col.NoWrap();
-				}
-				table.Columns[0].Width(table.Columns[0].Width + 3).LeftAligned().Padding(1, 0);
-				table.Centered();
-				table.Border = TableBorder.Rounded;
-				table.ShowRowSeparators();
-				table.BorderColor(Color.BlueViolet);
-
-                // Table title:
-				string statusView = Regex.Replace(statusFilter, @"(.+)([A-Z])", match =>
-                {
-                    return match.Groups[1].Value + " " + match.Groups[2].Value;
-                });
-                System.Console.WriteLine(statusView);
-				table.Title($"Goals that are {statusView}:", new Style().Foreground(Color.DeepPink1));
-				
-                // Table view:
-				System.Console.Clear();
-				AnsiConsole.Write(table);
+            if (tableRendered)
+            {
 				AnsiConsole.Write(new Rule($"Press any button to [#{inputColor.ToHex()}]return to the previous menu:[/]").Centered());
 				System.Console.ReadKey();
 				System.Console.Clear();
 			}
 		}
-    }
+	}
 
 	private static void DeleteGoalHistory()
 	{
@@ -327,6 +258,215 @@ internal static class GoalSettings
 
     private static void DeleteGoals()
     {
-        
+        bool runDeleteMenu = true;
+        while (runDeleteMenu)
+        {
+            System.Console.Clear();
+            bool wasSuccessful = RenderGoalTable(((GoalStatus)1).ToString());
+
+            if (!wasSuccessful)
+                break;
+
+            bool userSelectionforDeletion = true;
+            while (userSelectionforDeletion)
+            {
+                AnsiConsole.Write(new Rule("-").Centered());
+
+                int recordsCount = 0;
+                using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+                {
+                    conn.Open();
+                    SqliteCommand comm = conn.CreateCommand();
+                    comm.CommandText = $"SELECT COUNT(*) FROM {Settings.GoalDatabaseName} WHERE Status = 'InProgress'";
+                    recordsCount = Convert.ToInt32(comm.ExecuteScalar());
+                }
+
+                string[] indexNumbers = Array.Empty<string>();
+                string reason = "";
+
+				string userInput = AnsiConsole.Prompt(new TextPrompt<string>($"Please insert {titleColorHex}index numbers you want to remove seperated by commas[/]. For example, you can input {mainColorHex}2[/] or {mainColorHex}2, 15[/] or {mainColorHex}1,2,3[/]. You can also input {mainColorHex}nothing[/] or {mainColorHex}'E'[/] to return to the previous menu: ")
+                    .Validate((string s) => s.ToLower() switch
+                    {
+                        { } when IndexCheck(s, recordsCount, out indexNumbers, out reason) => ValidationResult.Success(),
+						null or "" or "e" => ValidationResult.Success(),
+                        _ => ValidationResult.Error($"{reason}")
+                    })
+                    .AllowEmpty()
+                    );
+
+                if (String.IsNullOrEmpty(userInput))
+                {
+                    runDeleteMenu = false;
+                    break;
+                }
+                else if (userInput.ToLower() == "e" || userInput == "")
+                {
+					runDeleteMenu = false;
+					break;
+				}
+
+                System.Console.Clear();
+
+                string pluralForm = $"Are you sure you want to {titleColorHex}delete {indexNumbers.Length} goals that you started tracking[/]? This operation [red]cannot be reversed[/] and the statuses of those goals will change to \"Failed\".";
+                string singularForm = $"Are you sure you want to {titleColorHex}delete {indexNumbers.Length} goal that you started tracking[/]? This operation [red]cannot be reversed[/] and the status of that goal will change to \"Failed\".";
+				string promptVersion = indexNumbers.Length > 1 ? pluralForm : singularForm;
+
+                bool userIsSure = UserInterface.DisplayConfirmationSelectionUI(promptVersion,
+                    "Delete", "Back", inputColor);
+
+                if (userIsSure)
+                {
+                    using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+                    {
+                        conn.Open();
+
+                        // Unfortunately, I need to pull IDs here...
+
+						List<int> numList = new List<int>();
+						foreach (string i in indexNumbers)
+                        {
+                            int num = int.Parse(i);
+                            numList.Add(num);
+                        }
+
+                        numList.Sort();
+                        numList.Reverse();
+
+						foreach (int i in numList)
+						{
+							SqliteCommand comm = conn.CreateCommand();
+                            comm.CommandText = $"UPDATE {Settings.GoalDatabaseName} SET Status = 'Failed' WHERE rowid = ( SELECT rowid FROM {Settings.GoalDatabaseName} LIMIT 1 OFFSET {i} )";
+                            comm.ExecuteNonQuery();
+                        }
+                    }
+                        runDeleteMenu = false;
+				}
+                break;
+			}
+		}
+	}
+
+    /// <summary>
+    /// </summary>
+    /// <param name="status"></param>
+    /// <param name="deletionMenuVersion"></param>
+    /// <returns>Bool - did table render succeed?</returns>
+    private static bool RenderGoalTable(string status, bool deletionMenuVersion = false)
+    {
+		System.Console.Clear();
+
+		List<Goal> goals = new List<Goal>();
+		using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+		{
+			conn.Open();
+			SqliteCommand comm = conn.CreateCommand();
+			comm.CommandText = $"SELECT * FROM {Settings.GoalDatabaseName} WHERE Status = '{status ??= "-1"}'";
+			SqliteDataReader reader = comm.ExecuteReader();
+
+			if (!reader.HasRows)
+			{
+                if (deletionMenuVersion)
+                {
+					AnsiConsole.Markup($"No records to remove at this time. Please {titleColorHex}press any button[/] to return to the previous menu: ");
+					System.Console.ReadKey();
+					return false;
+				}
+				else
+                {
+					AnsiConsole.Markup($"No records found. Please {titleColorHex}press any button[/] to return to the previous menu: ");
+					System.Console.ReadKey();
+					return false;
+				}
+			}
+
+			while (reader.Read())
+			{
+				bool isInt = int.TryParse(reader.GetString(5), out int _);
+				if (isInt)
+				{
+					DateTime startDate = DateTime.Parse(reader.GetString(3));
+					TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
+					int startGoal = reader.GetInt32(5);
+					int goalLeft = reader.GetInt32(6);
+					goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
+				}
+				else
+				{
+					DateTime startDate = DateTime.Parse(reader.GetString(3));
+					TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
+					TimeSpan startGoal = TimeSpan.Parse(reader.GetString(5));
+					TimeSpan goalLeft = TimeSpan.Parse(reader.GetString(6));
+					goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
+				}
+			}
+
+			// Table creation:
+			Table table = new Table();
+			table.AddColumns(new string[] { "Index", "Goal", "Status", "Time left", "Amount of work left" });
+			for (int i = 0; i < goals.Count; i++)
+			{
+				table.AddRow(goals[i].SetTableRow(i));
+			}
+
+			// Table formatting:
+			foreach (var col in table.Columns)
+			{
+				col.Width(col.Width + 3);
+				col.RightAligned().Padding(1, 0);
+				col.NoWrap();
+			}
+			table.Columns[0].Width(table.Columns[0].Width + 3).LeftAligned().Padding(1, 0);
+			table.Centered();
+			table.Border = TableBorder.Rounded;
+			table.ShowRowSeparators();
+			table.BorderColor(Color.BlueViolet);
+
+			// Table title:
+			string statusView = Regex.Replace(status, @"(.+)([A-Z])", match =>
+			{
+				return match.Groups[1].Value + " " + match.Groups[2].Value;
+			});
+			System.Console.WriteLine(statusView);
+			table.Title($"Goals that are {statusView}:", new Style().Foreground(Color.DeepPink1));
+
+			// Table view:
+			System.Console.Clear();
+			AnsiConsole.Write(table);
+
+            return true;
+		}
+	}
+    private static bool IndexCheck(string s, int recordNumber, out string[] indexNumbers, out string reason)
+    {
+        reason = $"This is not in the correct format. Only use {inputColorHex}integer or integers separated by commas.[/]";
+
+		indexNumbers = Array.Empty<string>();
+
+        if (!(Regex.Match(s, @"^(\d+)(,{1}\d+)*$").Success))
+        {
+            return false;
+        }
+
+        s.Trim().Trim(',');
+        indexNumbers = s.Split(',');
+
+        List<string> indexNumbersNoRepetition = new List<string>();
+        foreach (string ind in indexNumbers)
+        {
+            if (int.Parse(ind) < 1 || int.Parse(ind) > recordNumber)
+            {
+                indexNumbers = Array.Empty<string>();
+				reason = $"The chosen index numbers must {inputColorHex}lie between 1 and {recordNumber}[/].";
+				return false;
+            }
+            if (!indexNumbersNoRepetition.Contains(ind))
+            {
+                indexNumbersNoRepetition.Add(ind);
+            }
+		}
+
+        indexNumbers = indexNumbersNoRepetition.ToArray();
+
+        return true;
     }
 }

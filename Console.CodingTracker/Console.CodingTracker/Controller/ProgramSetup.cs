@@ -3,6 +3,8 @@ using Console.CodingTracker.Model;
 using Dapper;
 using System.Text;
 using Console.CodingTracker.Controller.SQL;
+using System.Configuration;
+using System;
 
 namespace Console.CodingTracker.Controller;
 
@@ -14,7 +16,7 @@ internal class ProgramSetup
         {
             conn.Open();
 
-            string commString = $@"CREATE TABLE IF NOT EXISTS '{Settings.DatabaseName}' (
+            string commString = $@"CREATE TABLE IF NOT EXISTS '{ConfigurationManager.AppSettings.Get("DatabaseName")}' (
                                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 'Creation date' TEXT,
                                 'Last update date' TEXT,
@@ -27,7 +29,7 @@ internal class ProgramSetup
                                 )";
             new SqliteCommand(commString, conn).ExecuteNonQuery();
 
-            commString = $"SELECT * FROM '{Settings.DatabaseName}'";
+            commString = $"SELECT * FROM '{ConfigurationManager.AppSettings.Get("DatabaseName")}'";
             System.Data.IDataReader reader = conn.ExecuteReader(commString);
 
             bool isDbNull = false;
@@ -47,17 +49,32 @@ internal class ProgramSetup
         using (SqliteConnection connection = new SqliteConnection(Settings.ConnectionString))
         {
             connection.Open();
-            string connComm = @$"CREATE TABLE IF NOT EXISTS {Settings.GoalDatabaseName} (
+            string connComm = @$"CREATE TABLE IF NOT EXISTS {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} (
                                  Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                  Goal TEXT,
                                  Status TEXT,
                                  'Start Date' TEXT,
                                  'End Date' TEXT,
-                                 'Start Goal Amount',
-                                 'Goal Amount Left'
+                                 'Start Goal Amount' TEXT,
+                                 'Goal Amount Left' TEXT
                                  )";
             new SqliteCommand(connComm, connection).ExecuteNonQuery();
-            connection.Close();
+
+			connComm = $"SELECT * FROM '{ConfigurationManager.AppSettings.Get("GoalDatabaseName")}'";
+			System.Data.IDataReader reader = connection.ExecuteReader(connComm);
+
+			bool isDbNull = false;
+			if (!reader.Read())
+			{
+				isDbNull = true;
+			}
+
+			connection.Close();
+
+			if (Settings.CreateMockTablebase && isDbNull)
+			{
+				CreateGoalMockTablebase();
+			}
         }
     }
     internal static void CreateMockTablebase()
@@ -168,6 +185,125 @@ internal class ProgramSetup
             Crud.InjectRecord(session);
         }
     }
+    internal static void CreateGoalMockTablebase()
+    {
+        List<Goal> goalList = new List<Goal>();
+
+        string Status;
+        string GoalType;
+        string StartDate;
+        string EndDate;
+        string GoalAmount;
+        string GoalAmountLeft;
+
+        Random random = new Random();
+
+        for (int i = 0; i < 5; i++)
+        {
+            Status = "InProgress"; 
+
+			TimeSpan timeSpan1 = new TimeSpan(random.Next(0,181), random.Next(0, 60), random.Next(0, 60), 0);
+            TimeSpan doneTimeSpan1 = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)timeSpan1.TotalMilliseconds, 0.4f));
+			TimeSpan leftTimeSpan1 = timeSpan1 - doneTimeSpan1;
+
+            DateTime deadline = DateTime.Now + leftTimeSpan1;
+            EndDate = deadline.ToString("dd/MM/yyyy HH:mm:ss");
+
+			DateTime startDate = DateTime.Now - doneTimeSpan1;
+			StartDate = startDate.ToString("dd/MM/yyyy HH:mm:ss");
+
+            int taskType = random.Next(0, 2);
+
+            if (taskType == 0)
+            {
+                GoalType = "Lines";
+
+                int totalGoal = random.Next(20, 101) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days);
+                GoalAmount = totalGoal.ToString();
+                GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / timeSpan1.TotalSeconds))).ToString();
+            }
+            else
+            {
+				GoalType = "Time";
+
+				TimeSpan totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days));
+				GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
+				GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling((float)(totalGoal.TotalSeconds * (timeSpan1.TotalSeconds / leftTimeSpan1.TotalSeconds)))).ToString();
+			}
+
+            using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+            {
+                conn.Open();
+
+                string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left])
+                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}')";
+
+                conn.Execute(command);
+            }
+		}
+
+		for (int i = 0; i < 5; i++)
+		{
+			Status = random.Next(0, 2) == 0 ? "Failed" : "Completed";
+
+			TimeSpan timeSpan1 = new TimeSpan(random.Next(0, 181), random.Next(0, 60), random.Next(0, 60), 0);
+			TimeSpan doneTimeSpan1 = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)timeSpan1.TotalMilliseconds, 0.4f));
+			TimeSpan leftTimeSpan1 = timeSpan1 - doneTimeSpan1;
+
+            TimeSpan inThePastAmount = new TimeSpan(random.Next(0, 61), random.Next(0, 60), random.Next(0, 60), 0);
+
+            DateTime deadline = DateTime.Now - inThePastAmount;
+			EndDate = deadline.ToString("dd/MM/yyyy HH:mm:ss");
+
+            DateTime startDate = deadline - timeSpan1;
+			StartDate = startDate.ToString("dd/MM/yyyy HH:mm:ss");
+
+			int taskType = random.Next(0, 2);
+
+			if (taskType == 0)
+			{
+				GoalType = "Lines";
+
+				int totalGoal = random.Next(20, 101) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days);
+				GoalAmount = totalGoal.ToString();
+
+                if (Status == "Failed")
+                {
+					GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / timeSpan1.TotalSeconds / 2))).ToString();
+				}
+				else
+                {
+                    GoalAmountLeft = "0";
+				}
+			}
+			else
+			{
+				GoalType = "Time";
+
+				TimeSpan totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days));
+				GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
+
+				if (Status == "Failed")
+				{
+					GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling((float)(totalGoal.TotalSeconds * (timeSpan1.TotalSeconds / leftTimeSpan1.TotalSeconds / 2)))).ToString();
+				}
+				else
+				{
+					GoalAmountLeft = "0";
+				}
+			}
+
+			using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+			{
+				conn.Open();
+
+				string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left])
+                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}')";
+
+				conn.Execute(command);
+			}
+		}
+	}
     internal static void ConsoleSettings()
     {
         System.Console.OutputEncoding = Encoding.UTF8;

@@ -1,6 +1,7 @@
 ﻿using Console.CodingTracker.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
+using System.Configuration;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -19,7 +20,7 @@ internal static class Helpers
             System.Data.IDataReader idr;
             for (int i = 0; i < index.Count; i++)
             {
-                string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {Settings.DatabaseName} WHERE @id = Id";
+                string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} WHERE @id = Id";
                 idr = conn.ExecuteReader(retreiveDatesCommand, new
                 {
                     id = index[i]
@@ -39,7 +40,7 @@ internal static class Helpers
             conn.Open();
             for (int i = 0; i < index.Count; i++)
             {
-                string commandString = $@"SELECT ""End date"" FROM {Settings.DatabaseName} WHERE @id = ID";
+                string commandString = $@"SELECT ""End date"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} WHERE @id = ID";
                 dates.Add(conn.ExecuteScalar(commandString, new
                 {
                     id = index[i]
@@ -57,7 +58,7 @@ internal static class Helpers
             conn.Open();
             for (int i = 0; i < index.Count; i++)
             {
-                string commandString = $@"SELECT ""Start date"" FROM {Settings.DatabaseName} WHERE @id = ID";
+                string commandString = $@"SELECT ""Start date"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} WHERE @id = ID";
                 dates.Add(conn.ExecuteScalar(commandString, new
                 {
                     id = index[i]

@@ -3,6 +3,7 @@ using Console.CodingTracker.Model;
 using System.Text.RegularExpressions;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
+using System.Configuration;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -245,7 +246,7 @@ internal static class GoalSettings
 		{
 			conn.Open();
 			SqliteCommand comm = conn.CreateCommand();
-			comm.CommandText = $"DELETE FROM {Settings.GoalDatabaseName} WHERE Status = 'Completed' OR Status = 'Failed'";
+			comm.CommandText = $"DELETE FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'Completed' OR Status = 'Failed'";
 			comm.ExecuteNonQuery();
 		}
 		AnsiConsole.Markup($"All previous records have been erased. {titleColorHex}Press any button[/] to return to the previous menu: ");
@@ -277,7 +278,7 @@ internal static class GoalSettings
                 {
                     conn.Open();
                     SqliteCommand comm = conn.CreateCommand();
-                    comm.CommandText = $"SELECT COUNT(*) FROM {Settings.GoalDatabaseName} WHERE Status = 'InProgress'";
+                    comm.CommandText = $"SELECT COUNT(*) FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
                     recordsCount = Convert.ToInt32(comm.ExecuteScalar());
                 }
 
@@ -320,7 +321,7 @@ internal static class GoalSettings
                     {
                         conn.Open();
 
-                        // Unfortunately, I need to pull IDs here...
+                        // Unfortunately, I need to pull IDs here... OR NOT!
 
 						List<int> numList = new List<int>();
 						foreach (string i in indexNumbers)
@@ -335,7 +336,7 @@ internal static class GoalSettings
 						foreach (int i in numList)
 						{
 							SqliteCommand comm = conn.CreateCommand();
-                            comm.CommandText = $"UPDATE {Settings.GoalDatabaseName} SET Status = 'Failed' WHERE rowid = ( SELECT rowid FROM {Settings.GoalDatabaseName} LIMIT 1 OFFSET {i} )";
+                            comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
                             comm.ExecuteNonQuery();
                         }
                     }
@@ -360,7 +361,7 @@ internal static class GoalSettings
 		{
 			conn.Open();
 			SqliteCommand comm = conn.CreateCommand();
-			comm.CommandText = $"SELECT * FROM {Settings.GoalDatabaseName} WHERE Status = '{status ??= "-1"}'";
+			comm.CommandText = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = '{status ??= "-1"}'";
 			SqliteDataReader reader = comm.ExecuteReader();
 
 			if (!reader.HasRows)

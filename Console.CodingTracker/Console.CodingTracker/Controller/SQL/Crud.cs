@@ -1,6 +1,7 @@
 ﻿using Console.CodingTracker.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
+using System.Configuration;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -15,7 +16,7 @@ internal class Crud
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
-            string commString = @$"INSERT INTO '{Settings.DatabaseName}' 
+            string commString = @$"INSERT INTO '{ConfigurationManager.AppSettings.Get("DatabaseName")}' 
                                 ('Creation date', 'Last update date', 'Start date', 'End date', Duration, 'Lines of code', Comments, 'Was Timer Tracked')
                                 VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments, @Timer)";
             var newRow = new { Creation = session.CreationDate, Update = session.LastUpdateDate, Start = session.StartDate, End = session.EndDate, session.Duration, Lines = session.NumberOfLines.HasValue ? session.NumberOfLines : -1, Comments = string.IsNullOrEmpty(session.Comments) ? "" : session.Comments, Timer = session.WasTimerTracked ? 1 : 0 };
@@ -46,8 +47,8 @@ internal class Crud
         {
             conn.Open();
             string stringDateNow = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
-            string updateDateCommand = $@"Update '{Settings.DatabaseName}' SET 'Last update date' = @stringDate WHERE Id = @id";
-            string updateCommand = $@"Update '{Settings.DatabaseName}' SET '{columnUpdateName}' = @updateValue WHERE Id = @id";
+            string updateDateCommand = $@"Update '{ConfigurationManager.AppSettings.Get("DatabaseName")}' SET 'Last update date' = @stringDate WHERE Id = @id";
+            string updateCommand = $@"Update '{ConfigurationManager.AppSettings.Get("DatabaseName")}' SET '{columnUpdateName}' = @updateValue WHERE Id = @id";
 
             for (int i = 0; i < indexNumbers.Count; i++)
             {
@@ -56,8 +57,8 @@ internal class Crud
 
                 if (columnUpdateName == "Creation date" || columnUpdateName == "End date")
                 {
-                    string updateDurationCommand = $@"Update '{Settings.DatabaseName}' SET Duration = @duration WHERE Id = @id";
-                    string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {Settings.DatabaseName} WHERE Id = @id";
+                    string updateDurationCommand = $@"Update '{ConfigurationManager.AppSettings.Get("DatabaseName")}' SET Duration = @duration WHERE Id = @id";
+                    string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} WHERE Id = @id";
                     System.Data.IDataReader idr = conn.ExecuteReader(retreiveDatesCommand, new { id = indexNumbers[i] });
                     idr.Read();
                     string durationCalculated = Helpers.CalculateDuration(idr.GetString(0), idr.GetString(1)).ToString();
@@ -80,7 +81,7 @@ internal class Crud
         {
             conn.Open();
 
-            string commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereInject}";
+            string commandString = @$"SELECT * FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereInject}";
             System.Data.IDataReader reader;
             if (parameters.Count != 0)
             {
@@ -172,7 +173,7 @@ internal class Crud
             conn.Open();
             foreach (int i in index)
             {
-                string command = @$"DELETE FROM '{Settings.DatabaseName}' WHERE @id = Id";
+                string command = @$"DELETE FROM '{ConfigurationManager.AppSettings.Get("DatabaseName")}' WHERE @id = Id";
                 conn.Execute(command, new { id = i });
             }
             conn.Close();

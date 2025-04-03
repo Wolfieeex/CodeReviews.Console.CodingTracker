@@ -1,5 +1,7 @@
 using Spectre.Console;
 using System.Reflection;
+using System.Configuration;
+using System.Collections.Specialized;
 
 namespace Console.CodingTracker.Model;
 
@@ -16,8 +18,6 @@ internal class Settings
             return conn;
         }
     }
-    internal static string DatabaseName { get; private set; } = "Trackingv4";
-    internal static string GoalDatabaseName { get; private set; } = "Goals";
     internal static bool CreateMockTablebase { get; private set; } = true;
     internal static int MockTableBaseNumberOfLines { get; private set; } = 400;
     internal static int MockTableBaseMinYear { get; private set; } = 2023;

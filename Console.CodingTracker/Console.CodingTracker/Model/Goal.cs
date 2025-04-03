@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using System.Configuration;
 
 namespace Console.CodingTracker.Model;
 
@@ -55,7 +56,7 @@ internal class Goal
         {
             conn.Open();
             SqliteCommand cmd = conn.CreateCommand();
-            cmd.CommandText = $"INSERT INTO {Settings.GoalDatabaseName}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left]) VALUES (@Type, 'InProgress', @Start, @End, @GoalStartAmount, @GoalAmountLeft)";
+            cmd.CommandText = $"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left]) VALUES (@Type, 'InProgress', @Start, @End, @GoalStartAmount, @GoalAmountLeft)";
 			cmd.Parameters.AddWithValue("@Type", goalType.ToString());
 			cmd.Parameters.AddWithValue("@Start", startTime.ToString());
 			cmd.Parameters.AddWithValue("@End", endTime.ToString());
@@ -83,7 +84,6 @@ internal class Goal
         if (timeSpan.Days == 0)
         {
             days = "";
-
 		}
         else
         {

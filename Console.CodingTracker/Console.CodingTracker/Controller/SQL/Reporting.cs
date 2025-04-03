@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Spectre.Console;
+using System.Configuration;
 using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.Controller.SQL
@@ -94,7 +95,7 @@ namespace Console.CodingTracker.Controller.SQL
 
                         string commandString = "";
                         int recordCount = 0;
-                        commandString = @$"SELECT COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject}";
+                        commandString = @$"SELECT COUNT(*) FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject}";
                         if (parameters.Count != 0)
                         {
                             recordCount = conn.ExecuteScalar<int>(commandString, parameters);
@@ -126,7 +127,7 @@ namespace Console.CodingTracker.Controller.SQL
 
                             if (settings.ReportOptions[1] == true || settings.ReportOptions[2] == true || settings.ReportOptions[3] == true || settings.ReportOptions[4] == true || settings.ReportOptions[5] == true || settings.ReportOptions[6] == true)
                             {
-                                commandString = @$"SELECT * FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject}";
+                                commandString = @$"SELECT * FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject}";
                                 System.Data.IDataReader reader;
                                 if (parameters.Count != 0)
                                 {
@@ -242,7 +243,7 @@ namespace Console.CodingTracker.Controller.SQL
                         }
                         if (settings.DataOptions[1] == true)
                         {
-                            commandString = @$"SELECT COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                            commandString = @$"SELECT COUNT(*) FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                             if (parameters.Count != 0)
                             {
                                 recordCount = conn.ExecuteScalar<int>(commandString, parameters);
@@ -266,12 +267,12 @@ namespace Console.CodingTracker.Controller.SQL
                             }
                             if (settings.ReportOptions[0] == true)
                             {
-                                commandString = @$"SELECT COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                commandString = @$"SELECT COUNT(*) FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 linesData[per].Add(recordCount.ToString());
                             }
                             if (settings.ReportOptions[1] == true)
                             {
-                                commandString = @$"SELECT SUM(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                commandString = @$"SELECT SUM(""Lines of code"") FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
                                 {
                                     linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
@@ -283,7 +284,7 @@ namespace Console.CodingTracker.Controller.SQL
                             }
                             if (settings.ReportOptions[2] == true)
                             {
-                                commandString = @$"SELECT MAX(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                commandString = @$"SELECT MAX(""Lines of code"") FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
                                 {
                                     linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
@@ -295,7 +296,7 @@ namespace Console.CodingTracker.Controller.SQL
                             }
                             if (settings.ReportOptions[3] == true)
                             {
-                                commandString = @$"SELECT MIN(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                commandString = @$"SELECT MIN(""Lines of code"") FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
                                 {
                                     linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
@@ -307,7 +308,7 @@ namespace Console.CodingTracker.Controller.SQL
                             }
                             if (settings.ReportOptions[4] == true)
                             {
-                                commandString = @$"SELECT AVG(""Lines of code"") FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                commandString = @$"SELECT AVG(""Lines of code"") FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
                                 {
                                     linesData[per].Add(conn.ExecuteScalar(commandString, parameters).ToString());
@@ -324,7 +325,7 @@ namespace Console.CodingTracker.Controller.SQL
 
                                 if (recordCount == 1)
                                 {
-                                    commandString = @$"SELECT ""Lines of code"" FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                    commandString = @$"SELECT ""Lines of code"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
 
                                     if (parameters.Count != 0)
                                     {
@@ -341,7 +342,7 @@ namespace Console.CodingTracker.Controller.SQL
                                 }
                                 else
                                 {
-                                    commandString = @$"SELECT AVG(""Lines of code"") FROM (SELECT ""Lines of code"" FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 ORDER BY ""Lines of code"" LIMIT 1 + {isEven} OFFSET {(recordCount - isOdd) / 2 - isEven})";
+                                    commandString = @$"SELECT AVG(""Lines of code"") FROM (SELECT ""Lines of code"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 ORDER BY ""Lines of code"" LIMIT 1 + {isEven} OFFSET {(recordCount - isOdd) / 2 - isEven})";
                                     if (parameters.Count != 0)
                                     {
                                         dynamic variable = conn.ExecuteScalar(commandString, parameters).ToString();
@@ -358,7 +359,7 @@ namespace Console.CodingTracker.Controller.SQL
                             {
                                 if (recordCount == 1)
                                 {
-                                    commandString = @$"SELECT ""Lines of code"" FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
+                                    commandString = @$"SELECT ""Lines of code"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
 
                                     if (parameters.Count != 0)
                                     {
@@ -376,7 +377,7 @@ namespace Console.CodingTracker.Controller.SQL
                                 else
                                 {
                                     System.Data.IDataReader reader;
-                                    commandString = @$"SELECT ""Lines of code"", COUNT(*) FROM {Settings.DatabaseName} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 GROUP BY ""Lines of code"" ORDER BY COUNT(*) DESC LIMIT 2";
+                                    commandString = @$"SELECT ""Lines of code"", COUNT(*) FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1 GROUP BY ""Lines of code"" ORDER BY COUNT(*) DESC LIMIT 2";
                                     if (parameters.Count != 0)
                                     {
                                         reader = conn.ExecuteReader(commandString, parameters);
@@ -455,7 +456,7 @@ namespace Console.CodingTracker.Controller.SQL
             using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
             {
                 conn.Open();
-                string comm = @$"SELECT DISTINCT substr(""End date"", 7, 4) FROM {Settings.DatabaseName} ORDER BY substr(""End date"", 7, 4)";
+                string comm = @$"SELECT DISTINCT substr(""End date"", 7, 4) FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} ORDER BY substr(""End date"", 7, 4)";
                 System.Data.IDataReader reader = conn.ExecuteReader(comm);
                 List<string> years = new List<string>();
                 while (reader.Read())
@@ -472,7 +473,7 @@ namespace Console.CodingTracker.Controller.SQL
             using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
             {
                 conn.Open();
-                string comm = @$"SELECT DISTINCT substr(""End date"", 4, 2) FROM {Settings.DatabaseName} WHERE CAST(substr(""End date"", 7, 4) AS INTEGER) = {year} ORDER BY substr(""End date"", 4, 2)";
+                string comm = @$"SELECT DISTINCT substr(""End date"", 4, 2) FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} WHERE CAST(substr(""End date"", 7, 4) AS INTEGER) = {year} ORDER BY substr(""End date"", 4, 2)";
                 System.Data.IDataReader reader = conn.ExecuteReader(comm);
                 while (reader.Read())
                 {

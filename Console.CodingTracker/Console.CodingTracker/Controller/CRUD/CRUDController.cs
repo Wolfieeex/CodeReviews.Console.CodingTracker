@@ -119,13 +119,18 @@ internal class CRUDController
                                                                                DateTime.Now.ToString($"dd/MM/yyyy, HH:mm"),
                                                                                start,
                                                                                end,
-Helpers.CalculateDuration(start, end).ToString(),
+                                                                               Helpers.CalculateDuration(start, end).ToString(),
                                                                                lines,
                                                                                comments,
                                                                                false));
                         duration = duration.Replace(".", " days, ");
                         duration += " hours";
-                        bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?", "Add", "Return", inputColor);
+
+                        // TEMPORARY!!!!!
+						GoalSettings.UpdateGoals(lines!.Value, Helpers.CalculateDuration(start, end), ShowUserGoalUpdates);
+
+
+						bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?", "Add", "Return", inputColor);
 
                         start = null;
                         end = null;
@@ -177,7 +182,7 @@ Helpers.CalculateDuration(start, end).ToString(),
             bool trackerOn = true;
             while (trackerOn)
             {
-                bool sessionDiscarted = false;
+                bool sessionDiscarded = false;
                 option = UserInterface.DisplaySelectionUI(timer.Enabled ? $"{titleColorHex}Your session is in progress:[/]" : $"{titleColorHex}Your session is[/] {inputColorHex}paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), mainColor);
 
                 switch (option)
@@ -224,7 +229,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                     System.Console.Clear();
                                     if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
                                     {
-                                        sessionDiscarted = true;
+                                        sessionDiscarded = true;
                                         timer.Stop();
                                         timer.Close();
                                         trackerOn = false;
@@ -254,7 +259,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                             System.Console.Clear();
                                             if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
                                             {
-                                                sessionDiscarted = true;
+                                                sessionDiscarded = true;
                                                 timer.Close();
                                                 trackerOn = false;
                                                 System.Console.Clear();
@@ -262,18 +267,23 @@ Helpers.CalculateDuration(start, end).ToString(),
                                             }
                                             break;
                                         default:
-                                            Crud.InjectRecord(new CodingSession((sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
-                                                                                (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                            TimeSpan duration = TimeSpan.FromSeconds(secondsPassed);
+
+											Crud.InjectRecord(new CodingSession((sessionStart + duration).ToString($"dd/MM/yyyy, HH:mm"),
+                                                                                (sessionStart + duration).ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 sessionStart.ToString($"dd/MM/yyyy, HH:mm"),
-                                                                                (sessionStart + TimeSpan.FromSeconds(secondsPassed)).ToString($"dd/MM/yyyy, HH:mm"),
+                                                                                (sessionStart + duration).ToString($"dd/MM/yyyy, HH:mm"),
                                                                                 TimeSpan.FromSeconds(secondsPassed).ToString(),
                                                                                 numberOfLines,
                                                                                 input,
                                                                                 true));
                                             System.Console.Clear();
+
+                                            GoalSettings.UpdateGoals(numberOfLines, duration, ShowUserGoalUpdates);
+
                                             if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration {titleColorHex}{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/] Would you like to {inputColorHex}start another session[/], or {titleColorHex}return to the main menu[/]?:", "Start", "Return", inputColor))
                                             {
-                                                sessionDiscarted = true;
+                                                sessionDiscarded = true;
                                                 timer.Close();
                                                 trackerOn = false;
                                                 System.Console.Clear();
@@ -287,7 +297,7 @@ Helpers.CalculateDuration(start, end).ToString(),
                                     break;
                             }
                         }
-                        if (!sessionDiscarted)
+                        if (!sessionDiscarded)
                         {
                             System.Console.Clear();
                             DisplayTimer(secondsPassed, mainColor);
@@ -657,4 +667,73 @@ Helpers.CalculateDuration(start, end).ToString(),
         }
         return true;
     }
+    private static void ShowUserGoalUpdates(List<Goal> primarySubject, List<Goal> secondarySubject, GoalStatus status, Color color)
+    {
+		System.Console.Clear();
+
+		primarySubject ??= new List<Goal>();
+        secondarySubject ??= new List<Goal>();
+
+        string hexColor = "[#" + color.ToHex() + "]";
+
+        if (primarySubject.Count > 0)
+        {
+			if (status == GoalStatus.Completed)
+            {
+                string singularForm = $"Congratulations! You have {hexColor}completed one of your Goals![/]";
+                string pluralForm = $"Congratulations! You have {hexColor}completed {primarySubject.Count} of your goals![/]";
+                string tableTitle = primarySubject.Count == 1 ? singularForm : pluralForm;
+
+                GoalSettings.RenderGoalTable(primarySubject, tableTitle);
+			}
+            else if (status == GoalStatus.Failed)
+            {
+				string singularForm = $"Oooops! Unfortunately, you have {hexColor}failed one of your Goals...[/]";
+				string pluralForm = $"Oooops! Unfortunately, you have {hexColor}failed {primarySubject.Count} of your goals...[/]";
+				string tableTitle = primarySubject.Count == 1 ? singularForm : pluralForm;
+
+				GoalSettings.RenderGoalTable(primarySubject, tableTitle);
+			}
+            else
+            {
+                throw new ArgumentException("Goal status can only be passed as In Progress or Failed in that method.");
+            }
+        }
+        if (secondarySubject.Count > 0)
+        {
+            if (primarySubject.Count > 0)
+            {
+				System.Console.WriteLine();
+				AnsiConsole.Write(new Rule("-"));
+				System.Console.WriteLine();
+			}
+
+			if (status == GoalStatus.Completed)
+            {
+				bool choice = UserInterface.DisplayConfirmationSelectionUI(
+					"Would you like to also view goals that are close to get completed?", "yes", "no", color);
+				if (choice)
+				{
+					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be completed");
+				}
+			}
+            else if (status == GoalStatus.Failed)
+            {
+				bool choice = UserInterface.DisplayConfirmationSelectionUI(
+					"Would you like to also view goals for which you don't have much time left?", "yes", "no", color);
+				if (choice)
+				{
+					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be failed");
+				}
+			}
+			else
+			{
+				throw new ArgumentException("Goal status can only be passed as In Progress or Failed in that method.");
+			}
+
+			System.Console.WriteLine();
+			AnsiConsole.Write(new Rule("-"));
+			System.Console.WriteLine();
+		}
+	}
 }

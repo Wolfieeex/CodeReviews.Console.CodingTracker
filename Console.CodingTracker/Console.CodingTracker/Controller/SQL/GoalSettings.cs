@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
 using System.Configuration;
+using System.Reflection.PortableExecutable;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -238,7 +239,6 @@ internal static class GoalSettings
 			}
 		}
 	}
-
 	private static void DeleteGoalHistory()
 	{
 		System.Console.Clear();
@@ -252,11 +252,127 @@ internal static class GoalSettings
 		AnsiConsole.Markup($"All previous records have been erased. {titleColorHex}Press any button[/] to return to the previous menu: ");
 		System.Console.ReadKey();
 	}
+    internal static void UpdateForFailedGoals(Action<List<Goal>, List<Goal>, GoalStatus, Color> readFailedGoals)
+    {
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+			string command = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
+			SqliteCommand comm = new SqliteCommand(command);
+			SqliteDataReader reader = comm.ExecuteReader();
 
-    // Regular update timer
+			// SqliteDatabase Id for each record
+			Dictionary<int, Goal> goals = new Dictionary<int, Goal>();
+			Dictionary<int, Goal> failedGoals = new Dictionary<int, Goal>();
+			Dictionary<int, Goal> closeShaveGoals = new Dictionary<int, Goal>();
 
-    // Update after tracking a new session NOT IF injecting or updating. Only tracking by timer counts.
+			while (reader.Read())
+			{
+				if (TimeSpan.TryParse(reader.GetString(5), out _))
+					goals.Add(reader.GetInt32(0),
+						new Goal(DateTime.Parse(reader.GetString(3)),
+					DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
+					TimeSpan.Parse(reader.GetString(5)),
+						TimeSpan.Parse(reader.GetString(6))));
+				else
+					goals.Add(reader.GetInt32(0),
+						new Goal(DateTime.Parse(reader.GetString(3)),
+					DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
+					reader.GetInt32(5),
+						reader.GetInt32(6)));
+			}
+			reader.Close();
 
+			foreach (var goal in goals)
+            {
+                if (goal.Value.EndTime - DateTime.Now < TimeSpan.Zero)
+                {
+                    failedGoals.Add(goal.Key, goal.Value);
+                    command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} SET Status = 'Failed' WHERE id = {goal.Key}";
+                    comm.CommandText = command;
+                    comm.ExecuteNonQuery();
+                }
+                else if (goal.Value.EndTime - DateTime.Now < TimeSpan.FromDays(1))
+                {
+					closeShaveGoals.Add(goal.Key, goal.Value);
+				}
+            }
+
+            readFailedGoals(failedGoals.Values.ToList(), closeShaveGoals.Values.ToList(), GoalStatus.Failed, inputColor);
+		}
+    }
+    internal static void UpdateGoals(int numberOfLines, TimeSpan timeCommited, Action<List<Goal>, List<Goal>, GoalStatus, Color> actionDel)
+    {
+        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+        {
+            conn.Open();
+
+            string command = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
+            SqliteCommand comm = new SqliteCommand(command);
+            SqliteDataReader reader = comm.ExecuteReader();
+
+            // SqliteDatabase Id for each record
+            Dictionary<int, Goal> goals = new Dictionary<int, Goal>();
+			Dictionary<int, Goal> completedGoals = new Dictionary<int, Goal>();
+			Dictionary<int, Goal> closeToCompleteGoals = new Dictionary<int, Goal>();
+
+			while (reader.Read())
+            {
+                if (TimeSpan.TryParse(reader.GetString(5), out _))
+                    goals.Add(reader.GetInt32(0),
+                        new Goal(DateTime.Parse(reader.GetString(3)),
+                        DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
+                        TimeSpan.Parse(reader.GetString(5)),
+                        TimeSpan.Parse(reader.GetString(6))));
+                else
+                    goals.Add(reader.GetInt32(0),
+						new Goal(DateTime.Parse(reader.GetString(3)),
+						DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
+						reader.GetInt32(5),
+						reader.GetInt32(6)));
+			}
+            reader.Close();
+
+            foreach (var goal in goals)
+            {
+                if (goal.Value.GoalType == GoalType.Time)
+                {
+                    goal.Value.ProgrammingTimeLeft -= timeCommited;
+                    if (goal.Value.ProgrammingTimeLeft == TimeSpan.Zero)
+                    {
+                        completedGoals.Add(goal.Key, goal.Value);
+                        command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} " +
+                            $"SET ([Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed') WHERE Id = {goal.Key}";
+                        comm = new SqliteCommand(command);
+                        comm.ExecuteNonQuery();
+                    }
+                    else if (goal.Value.ProgrammingTimeLeft <= TimeSpan.FromHours(2))
+                    {
+						closeToCompleteGoals.Add(goal.Key, goal.Value);
+					}
+                }
+                else
+                {
+					goal.Value.LinesLeft -= numberOfLines;
+                    if (goal.Value.LinesLeft == 0)
+                    {
+                        completedGoals.Add(goal.Key, goal.Value);
+                        command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} " +
+                            $"SET ([Goal Amount Left] = '0', Status = 'Completed') WHERE Id = {goal.Key}";
+                        comm = new SqliteCommand(command);
+                        comm.ExecuteNonQuery();
+                    }
+                    else if (goal.Value.LinesLeft <= 200)
+                    {
+						closeToCompleteGoals.Add(goal.Key, goal.Value);
+					}
+				}
+            }
+
+            actionDel(completedGoals.Values.ToList(), closeToCompleteGoals.Values.ToList(), GoalStatus.Completed, titleColor);
+            UpdateForFailedGoals(actionDel);
+		}
+    }
     private static void DeleteGoals()
     {
         bool runDeleteMenu = true;
@@ -346,7 +462,6 @@ internal static class GoalSettings
 			}
 		}
 	}
-
     /// <summary>
     /// </summary>
     /// <param name="status"></param>
@@ -437,7 +552,41 @@ internal static class GoalSettings
             return true;
 		}
 	}
-    private static bool IndexCheck(string s, int recordNumber, out string[] indexNumbers, out string reason)
+	internal static bool RenderGoalTable(List<Goal> goals, string tableTitle)
+	{
+		System.Console.Clear();
+
+		// Table creation:
+		Table table = new Table();
+		table.AddColumns(new string[] { "Index", "Goal", "Status", "Time left", "Amount of work left" });
+		for (int i = 0; i < goals.Count; i++)
+		{
+			table.AddRow(goals[i].SetTableRow(i));
+		}
+
+		// Table formatting:
+		foreach (var col in table.Columns)
+		{
+			col.Width(col.Width + 3);
+			col.RightAligned().Padding(1, 0);
+			col.NoWrap();
+		}
+		table.Columns[0].Width(table.Columns[0].Width + 3).LeftAligned().Padding(1, 0);
+		table.Centered();
+		table.Border = TableBorder.Rounded;
+		table.ShowRowSeparators();
+		table.BorderColor(Color.BlueViolet);
+
+		table.Title(tableTitle, new Style().Foreground(Color.DeepPink1));
+
+		// Table view:
+		System.Console.Clear();
+		AnsiConsole.Write(table);
+
+		return true;
+		
+	}
+	private static bool IndexCheck(string s, int recordNumber, out string[] indexNumbers, out string reason)
     {
         reason = $"This is not in the correct format. Only use {inputColorHex}integer or integers separated by commas.[/]";
 

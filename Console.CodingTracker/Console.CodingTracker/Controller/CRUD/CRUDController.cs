@@ -129,7 +129,6 @@ internal class CRUDController
                         // TEMPORARY!!!!!
 						GoalSettings.UpdateGoals(lines!.Value, Helpers.CalculateDuration(start, end), ShowUserGoalUpdates);
 
-
 						bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?", "Add", "Return", inputColor);
 
                         start = null;

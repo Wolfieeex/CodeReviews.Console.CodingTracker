@@ -42,10 +42,6 @@ internal class Goal
     
     private string Status { get
         {
-            if (EndTime - DateTime.Now < TimeSpan.Zero)
-            {
-				return "Failed";
-			}
             if (GoalType == GoalType.Time)
             {
                 if (ProgrammingTimeLeft == TimeSpan.Zero)
@@ -60,7 +56,11 @@ internal class Goal
 					return "Completed";
 				}
 			}
-            return "InProgress";
+			if (EndTime - DateTime.Now < TimeSpan.Zero)
+			{
+				return "Failed";
+			}
+			return "In Progress";
         ;} }
 
     /// <summary>
@@ -108,7 +108,7 @@ internal class Goal
         row[0] = (index + 1).ToString();
 		row[1] = GoalType == GoalType.Lines ? "To produce a certain amount of coding lines" : "To program for a certain amount of time";
         row[2] = Status;
-        row[3] = TimeSpanView((EndTime - DateTime.Now));
+        row[3] = TimeSpanView((EndTime - DateTime.Now) < TimeSpan.Zero ? TimeSpan.Zero : (EndTime - DateTime.Now));
         row[4] = GoalType == GoalType.Lines ? LinesLeft.ToString() + " lines" : TimeSpanView(ProgrammingTimeLeft);
         return row;
     }

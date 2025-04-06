@@ -58,7 +58,8 @@ internal static class GoalSettings
                     SetNewGoal();
                     break;
                 case 2:
-                    ViewPreviousGoals();
+					UpdateForFailedGoals(GoalFailure);
+					ViewPreviousGoals();
                     break;
                 case 3:
                     DeleteGoals();
@@ -204,7 +205,8 @@ internal static class GoalSettings
         while (runViewMenu)
         {
             System.Console.Clear();
-            int? userInput = UserInterface.DisplaySelectionUI($"Here, you can {titleColorHex}view your goals[/]. First, select one of the options below: ", typeof(MenuSelections.GoalViewerMenu), inputColor);
+
+			int? userInput = UserInterface.DisplaySelectionUI($"Here, you can {titleColorHex}view your goals[/]. First, select one of the options below: ", typeof(MenuSelections.GoalViewerMenu), inputColor);
 
             string statusFilter = null;
             switch (userInput)
@@ -258,7 +260,7 @@ internal static class GoalSettings
         {
             conn.Open();
 			string command = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
-			SqliteCommand comm = new SqliteCommand(command);
+			SqliteCommand comm = new SqliteCommand(command, conn);
 			SqliteDataReader reader = comm.ExecuteReader();
 
 			// SqliteDatabase Id for each record
@@ -288,7 +290,7 @@ internal static class GoalSettings
                 if (goal.Value.EndTime - DateTime.Now < TimeSpan.Zero)
                 {
                     failedGoals.Add(goal.Key, goal.Value);
-                    command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} SET Status = 'Failed' WHERE id = {goal.Key}";
+                    command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed' WHERE id = {goal.Key}";
                     comm.CommandText = command;
                     comm.ExecuteNonQuery();
                 }
@@ -308,7 +310,7 @@ internal static class GoalSettings
             conn.Open();
 
             string command = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
-            SqliteCommand comm = new SqliteCommand(command);
+            SqliteCommand comm = new SqliteCommand(command, conn);
             SqliteDataReader reader = comm.ExecuteReader();
 
             // SqliteDatabase Id for each record
@@ -341,8 +343,8 @@ internal static class GoalSettings
                     if (goal.Value.ProgrammingTimeLeft == TimeSpan.Zero)
                     {
                         completedGoals.Add(goal.Key, goal.Value);
-                        command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} " +
-                            $"SET ([Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed') WHERE Id = {goal.Key}";
+                        command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+                            $"SET [Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed' WHERE Id = {goal.Key}";
                         comm = new SqliteCommand(command);
                         comm.ExecuteNonQuery();
                     }
@@ -358,7 +360,7 @@ internal static class GoalSettings
                     {
                         completedGoals.Add(goal.Key, goal.Value);
                         command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} " +
-                            $"SET ([Goal Amount Left] = '0', Status = 'Completed') WHERE Id = {goal.Key}";
+                            $"SET [Goal Amount Left] = '0', Status = 'Completed' WHERE Id = {goal.Key}";
                         comm = new SqliteCommand(command);
                         comm.ExecuteNonQuery();
                     }
@@ -618,5 +620,47 @@ internal static class GoalSettings
         indexNumbers = indexNumbersNoRepetition.ToArray();
 
         return true;
+    }
+    private static void GoalFailure(List<Goal> failed, List<Goal> closeToFail, GoalStatus status, Color color)
+    {
+		System.Console.Clear();
+
+		failed ??= new List<Goal>();
+		closeToFail ??= new List<Goal>();
+
+		string hexColor = "[#" + color.ToHex() + "]";
+
+		if (failed.Count > 0)
+        {
+			string singularForm = $"Oooops! Unfortunately, you have {hexColor}failed one of your Goals...[/]";
+			string pluralForm = $"Oooops! Unfortunately, you have {hexColor}failed {failed.Count} of your goals...[/]";
+			string tableTitle = failed.Count == 1 ? singularForm : pluralForm;
+
+			RenderGoalTable(failed, tableTitle);
+		}
+        if (closeToFail.Count > 0)
+        {
+            if (failed.Count > 0)
+            {
+				System.Console.WriteLine();
+				AnsiConsole.Write(new Rule("-"));
+				System.Console.WriteLine();
+			}
+
+            else if (status == GoalStatus.Failed)
+            {
+				bool choice = UserInterface.DisplayConfirmationSelectionUI(
+					"Would you like to also view goals for which you don't have much time left?", "yes", "no", color);
+				if (choice)
+				{
+					RenderGoalTable(closeToFail, $"Goal{(closeToFail.Count > 1 ? "s" : "")} that {(closeToFail.Count > 1 ? "are" : "is")} close to be failed");
+				}
+			}
+
+			System.Console.WriteLine();
+			AnsiConsole.Write(new Rule("-"));
+			System.Console.WriteLine();
+            System.Console.ReadKey();
+        }
     }
 }

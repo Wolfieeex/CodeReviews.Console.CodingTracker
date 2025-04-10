@@ -41,7 +41,9 @@ internal static class GoalSettings
 
     internal static void GoalMenu()
     {
-        bool runMenuLoop = true ;
+		UpdateForFailedGoals(GoalFailure);
+
+		bool runMenuLoop = true ;
         while (runMenuLoop)
         {
 			System.Console.Clear();
@@ -55,14 +57,13 @@ internal static class GoalSettings
                     runMenuLoop = false ;
                     continue;
                 case 1:
-                    SetNewGoal();
+					SetNewGoal();
                     break;
                 case 2:
-					UpdateForFailedGoals(GoalFailure);
 					ViewPreviousGoals();
                     break;
                 case 3:
-                    DeleteGoals();
+					DeleteGoals();
                     break;
             }
         }
@@ -138,6 +139,8 @@ internal static class GoalSettings
                 {
                     System.Console.Clear();
 
+                    DateTime deadline = DateTime.Now + timeLimit;
+
 					switch (userInputType)
 					{
 						case 1:
@@ -152,7 +155,7 @@ internal static class GoalSettings
                                 }
 
 								TimeSpan commitAmountTimeSpan = TimeSpan.Parse(commitAmountString.Replace(' ', '.'));
-								Goal goal = new Goal(DateTime.Now, timeLimit, commitAmountTimeSpan, commitAmountTimeSpan);
+								Goal goal = new Goal(DateTime.Now, deadline, commitAmountTimeSpan, commitAmountTimeSpan, "N/A");
                                 goal.AddGoalToDatabase();
                             }
                             else
@@ -172,7 +175,7 @@ internal static class GoalSettings
 									continue;
 								}
                                 int linesGoalInt = int.Parse(commitLines);
-								Goal goal = new Goal(DateTime.Now, timeLimit, linesGoalInt, linesGoalInt);
+								Goal goal = new Goal(DateTime.Now, deadline, linesGoalInt, linesGoalInt, "N/A");
 								goal.AddGoalToDatabase();
 							}
 							else
@@ -270,25 +273,27 @@ internal static class GoalSettings
 
 			while (reader.Read())
 			{
-				if (TimeSpan.TryParse(reader.GetString(5), out _))
+				if (reader.GetString(1) == "Time")
 					goals.Add(reader.GetInt32(0),
 						new Goal(DateTime.Parse(reader.GetString(3)),
-					DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
-					TimeSpan.Parse(reader.GetString(5)),
-						TimeSpan.Parse(reader.GetString(6))));
+					        DateTime.Parse(reader.GetString(4)),
+					        TimeSpan.Parse(reader.GetString(5)),
+						    TimeSpan.Parse(reader.GetString(6)),
+							reader.GetString(7)));
 				else
 					goals.Add(reader.GetInt32(0),
 						new Goal(DateTime.Parse(reader.GetString(3)),
-					DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
-					reader.GetInt32(5),
-						reader.GetInt32(6)));
+							DateTime.Parse(reader.GetString(4)),
+					        reader.GetInt32(5),
+						    reader.GetInt32(6),
+							reader.GetString(7)));
 			}
 			reader.Close();
 
 			foreach (var goal in goals)
             {
-                if (goal.Value.EndTime - DateTime.Now < TimeSpan.Zero)
-                {
+                if (goal.Value.EndTime - DateTime.Now - goal.Value.ProgrammingTimeLeft < TimeSpan.Zero)
+                {                   
                     failedGoals.Add(goal.Key, goal.Value);
                     command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed' WHERE id = {goal.Key}";
                     comm.CommandText = command;
@@ -323,13 +328,13 @@ internal static class GoalSettings
                 if (TimeSpan.TryParse(reader.GetString(5), out _))
                     goals.Add(reader.GetInt32(0),
                         new Goal(DateTime.Parse(reader.GetString(3)),
-                        DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
+						DateTime.Parse(reader.GetString(4)),
                         TimeSpan.Parse(reader.GetString(5)),
                         TimeSpan.Parse(reader.GetString(6))));
                 else
                     goals.Add(reader.GetInt32(0),
 						new Goal(DateTime.Parse(reader.GetString(3)),
-						DateTime.Parse(reader.GetString(4)) - DateTime.Parse(reader.GetString(3)),
+						DateTime.Parse(reader.GetString(4)),
 						reader.GetInt32(5),
 						reader.GetInt32(6)));
 			}
@@ -337,36 +342,44 @@ internal static class GoalSettings
 
             foreach (var goal in goals)
             {
-                if (goal.Value.GoalType == GoalType.Time)
+				Goal completeGoal;
+
+				if (goal.Value.GoalType == GoalType.Time)
                 {
                     goal.Value.ProgrammingTimeLeft -= timeCommited;
-                    if (goal.Value.ProgrammingTimeLeft == TimeSpan.Zero)
+					completeGoal = new Goal(goal.Value.StartTime, goal.Value.EndTime, goal.Value.StartProgrammingTime, goal.Value.ProgrammingTimeLeft);
+
+					if (completeGoal.ProgrammingTimeLeft == TimeSpan.Zero)
                     {
-                        completedGoals.Add(goal.Key, goal.Value);
+                        completedGoals.Add(goal.Key, completeGoal);
+
                         command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
-                            $"SET [Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed' WHERE Id = {goal.Key}";
+                            $"SET [Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed', [Finish Time] = {DateTime.Now} WHERE Id = {goal.Key}";
                         comm = new SqliteCommand(command);
                         comm.ExecuteNonQuery();
                     }
-                    else if (goal.Value.ProgrammingTimeLeft <= TimeSpan.FromHours(2))
+                    else if (completeGoal.ProgrammingTimeLeft <= TimeSpan.FromHours(2))
                     {
-						closeToCompleteGoals.Add(goal.Key, goal.Value);
+						closeToCompleteGoals.Add(goal.Key, completeGoal);
 					}
                 }
                 else
                 {
 					goal.Value.LinesLeft -= numberOfLines;
-                    if (goal.Value.LinesLeft == 0)
+					completeGoal = new Goal(goal.Value.StartTime, goal.Value.EndTime, goal.Value.StartLines, goal.Value.LinesLeft);
+
+					if (completeGoal.LinesLeft == 0)
                     {
-                        completedGoals.Add(goal.Key, goal.Value);
+						completedGoals.Add(goal.Key, completeGoal);
+
                         command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} " +
-                            $"SET [Goal Amount Left] = '0', Status = 'Completed' WHERE Id = {goal.Key}";
+                            $"SET [Goal Amount Left] = '0', Status = 'Completed', [Finish Time] = {DateTime.Now} WHERE Id = {goal.Key}";
                         comm = new SqliteCommand(command);
                         comm.ExecuteNonQuery();
                     }
-                    else if (goal.Value.LinesLeft <= 200)
+                    else if (completeGoal.LinesLeft <= 200)
                     {
-						closeToCompleteGoals.Add(goal.Key, goal.Value);
+						closeToCompleteGoals.Add(goal.Key, completeGoal);
 					}
 				}
             }
@@ -454,7 +467,7 @@ internal static class GoalSettings
 						foreach (int i in numList)
 						{
 							SqliteCommand comm = conn.CreateCommand();
-                            comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
+                            comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed', [Finish Time] = 'DEL' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
                             comm.ExecuteNonQuery();
                         }
                     }
@@ -499,22 +512,23 @@ internal static class GoalSettings
 
 			while (reader.Read())
 			{
+				DateTime startDate = DateTime.Parse(reader.GetString(3));
+				DateTime deadline = DateTime.Parse(reader.GetString(4));
+				string completionTime = reader.GetString(7);
+
 				bool isInt = int.TryParse(reader.GetString(5), out int _);
 				if (isInt)
 				{
-					DateTime startDate = DateTime.Parse(reader.GetString(3));
-					TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
 					int startGoal = reader.GetInt32(5);
 					int goalLeft = reader.GetInt32(6);
-					goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
+					goals.Add(new Goal(startDate, deadline, startGoal, goalLeft, completionTime));
 				}
 				else
 				{
-					DateTime startDate = DateTime.Parse(reader.GetString(3));
 					TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
 					TimeSpan startGoal = TimeSpan.Parse(reader.GetString(5));
 					TimeSpan goalLeft = TimeSpan.Parse(reader.GetString(6));
-					goals.Add(new Goal(startDate, timeToComplete, startGoal, goalLeft));
+					goals.Add(new Goal(startDate, deadline, startGoal, goalLeft, completionTime));
 				}
 			}
 
@@ -630,37 +644,50 @@ internal static class GoalSettings
 
 		string hexColor = "[#" + color.ToHex() + "]";
 
-		if (failed.Count > 0)
+        if (failed.Count > 0)
         {
-			string singularForm = $"Oooops! Unfortunately, you have {hexColor}failed one of your Goals...[/]";
-			string pluralForm = $"Oooops! Unfortunately, you have {hexColor}failed {failed.Count} of your goals...[/]";
-			string tableTitle = failed.Count == 1 ? singularForm : pluralForm;
+            string singularForm = $"Oooops! Unfortunately, you have {hexColor}failed one of your Goals...[/]";
+            string pluralForm = $"Oooops! Unfortunately, you have {hexColor}failed {failed.Count} of your goals...[/]";
+            string tableTitle = failed.Count == 1 ? singularForm : pluralForm;
+            RenderGoalTable(failed, tableTitle);
 
-			RenderGoalTable(failed, tableTitle);
-		}
-        if (closeToFail.Count > 0)
-        {
-            if (failed.Count > 0)
+            if (closeToFail.Count == 0)
+            {
+                System.Console.WriteLine();
+                AnsiConsole.Write(new Rule("-"));
+                AnsiConsole.Markup($"Press any button {inputColorHex}to continue:[/] ");
+                System.Console.ReadKey();
+            }
+            else
             {
 				System.Console.WriteLine();
 				AnsiConsole.Write(new Rule("-"));
-				System.Console.WriteLine();
-			}
-
-            else if (status == GoalStatus.Failed)
-            {
-				bool choice = UserInterface.DisplayConfirmationSelectionUI(
-					"Would you like to also view goals for which you don't have much time left?", "yes", "no", color);
-				if (choice)
+				AnsiConsole.Markup($"Press any button {inputColorHex}to continue:[/] ");
+				System.Console.ReadKey();
+				bool userViewChoice = UserInterface.DisplayConfirmationSelectionUI(
+	            "Would you like to view goals for which you don't have much time left?", "yes", "no", color);
+				if (userViewChoice)
 				{
 					RenderGoalTable(closeToFail, $"Goal{(closeToFail.Count > 1 ? "s" : "")} that {(closeToFail.Count > 1 ? "are" : "is")} close to be failed");
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {inputColorHex}to continue:[/] ");
+					System.Console.ReadKey();
 				}
 			}
-
-			System.Console.WriteLine();
-			AnsiConsole.Write(new Rule("-"));
-			System.Console.WriteLine();
-            System.Console.ReadKey();
-        }
+		}
+        else if (closeToFail.Count > 0)
+        {
+			bool userViewChoice = UserInterface.DisplayConfirmationSelectionUI(
+				"Would you like to view goals for which you don't have much time left?", "yes", "no", color);
+			if (userViewChoice)
+			{
+				RenderGoalTable(closeToFail, $"Goal{(closeToFail.Count > 1 ? "s" : "")} that {(closeToFail.Count > 1 ? "are" : "is")} close to be failed");
+				System.Console.WriteLine();
+				AnsiConsole.Write(new Rule("-"));
+				AnsiConsole.Markup($"Press any button {inputColorHex}to continue:[/] ");
+				System.Console.ReadKey();
+			}
+		}
     }
 }

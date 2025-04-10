@@ -21,7 +21,14 @@ internal class Goal
 	public GoalType GoalType { get; init; }
 	public DateTime StartTime { get; init; }
 	public DateTime EndTime { get; init; }
-
+    private TimeSpan _timeLeft;
+    public TimeSpan TimeLeft
+    {
+        get
+        {
+            return (EndTime - DateTime.Now) < TimeSpan.Zero ? TimeSpan.Zero : (EndTime - DateTime.Now);
+        }
+    }
 	public TimeSpan StartProgrammingTime { get; init; }
 	private TimeSpan _programmingTimeLeft;
 	public TimeSpan ProgrammingTimeLeft { get => _programmingTimeLeft; set {
@@ -29,19 +36,22 @@ internal class Goal
 				_programmingTimeLeft = TimeSpan.Zero;
             else
 				_programmingTimeLeft = value; } }
-	
     public int StartLines { get; init; }
 	private int _linesLeft;
 	public int LinesLeft { get => _linesLeft; set
         {
-            if (_linesLeft <= 0)
+            if (value <= 0)
 				_linesLeft = 0;
             else
 				_linesLeft = value;
         } }
-    
+    public string FinishTime { get; init; }
     private string Status { get
         {
+            if (FinishTime == "DEL")
+            {
+                return "Failed";
+            }
             if (GoalType == GoalType.Time)
             {
                 if (ProgrammingTimeLeft == TimeSpan.Zero)
@@ -56,48 +66,78 @@ internal class Goal
 					return "Completed";
 				}
 			}
-			if (EndTime - DateTime.Now < TimeSpan.Zero)
-			{
+            if (EndTime - DateTime.Now - ProgrammingTimeLeft < TimeSpan.Zero)
+            {
 				return "Failed";
 			}
+
 			return "In Progress";
         ;} }
 
     /// <summary>
     /// Creates a goal with time of programming span type, the 2nd parameter accepts the time in which goal needs to be completed.
     /// </summary>
-    public Goal(DateTime startTime, TimeSpan timeToComplete, TimeSpan startProgrammingTime, TimeSpan programmingTimeLeft)
+    public Goal(DateTime startTime, DateTime deadline, TimeSpan startProgrammingTime, TimeSpan programmingTimeLeft)
     {
         this.StartTime = startTime;
-		EndTime = startTime + timeToComplete;
+		EndTime = deadline;
 		this.StartProgrammingTime = startProgrammingTime;
 		this.ProgrammingTimeLeft = programmingTimeLeft;
 		GoalType = GoalType.Time;
+        FinishTime = "N/A";
     }
 
-    /// <summary>
-    /// Creates a goal with number of lines produced type, the 2nd parameter accepts the time in which goal needs to be completed.
-    /// </summary>
-    public Goal(DateTime startTime, TimeSpan timeToComplete, int startLines, int linesLeft)
+	public Goal(DateTime startTime, DateTime deadline, TimeSpan startProgrammingTime, TimeSpan programmingTimeLeft, string finishingTime)
+	{
+		this.StartTime = startTime;
+		EndTime = deadline;
+		this.StartProgrammingTime = startProgrammingTime;
+		this.ProgrammingTimeLeft = programmingTimeLeft;
+		GoalType = GoalType.Time;
+        FinishTime = finishingTime;
+	}
+
+	/// <summary>
+	/// Creates a goal with number of lines produced type, the 2nd parameter accepts the time in which goal needs to be completed.
+	/// </summary>
+	public Goal(DateTime startTime, DateTime deadline, int startLines, int linesLeft)
     {
 		this.StartTime = startTime;
-		EndTime = startTime + timeToComplete;
+		EndTime = deadline;
         this.StartLines = startLines;
 		this.LinesLeft = linesLeft;
 		GoalType = GoalType.Lines;
-    }
+		FinishTime = "N/A";
+
+		StartProgrammingTime = TimeSpan.Zero;
+		ProgrammingTimeLeft = TimeSpan.Zero;
+	}
+	public Goal(DateTime startTime, DateTime deadline, int startLines, int linesLeft, string finishingTime)
+	{
+		this.StartTime = startTime;
+		EndTime = deadline;
+		this.StartLines = startLines;
+		this.LinesLeft = linesLeft;
+		GoalType = GoalType.Lines;
+		FinishTime = finishingTime;
+
+        StartProgrammingTime = TimeSpan.Zero;
+        ProgrammingTimeLeft = TimeSpan.Zero;
+	}
+
 	public void AddGoalToDatabase()
     {
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
             SqliteCommand cmd = conn.CreateCommand();
-            cmd.CommandText = $"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left]) VALUES (@Type, 'InProgress', @Start, @End, @GoalStartAmount, @GoalAmountLeft)";
+            cmd.CommandText = $"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time]) VALUES (@Type, 'InProgress', @Start, @End, @GoalStartAmount, @GoalAmountLeft, @Finishtime)";
 			cmd.Parameters.AddWithValue("@Type", GoalType.ToString());
 			cmd.Parameters.AddWithValue("@Start", StartTime.ToString());
 			cmd.Parameters.AddWithValue("@End", EndTime.ToString());
 			cmd.Parameters.AddWithValue("@GoalStartAmount", GoalType == GoalType.Lines ? StartLines : StartProgrammingTime);
 			cmd.Parameters.AddWithValue("@GoalAmountLeft", GoalType == GoalType.Lines ? LinesLeft : ProgrammingTimeLeft);
+			cmd.Parameters.AddWithValue("@Finishtime", $"N/A");
 			cmd.ExecuteNonQuery();
 		}
     }

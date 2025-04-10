@@ -126,9 +126,6 @@ internal class CRUDController
                         duration = duration.Replace(".", " days, ");
                         duration += " hours";
 
-                        // TEMPORARY!!!!!
-						GoalSettings.UpdateGoals(lines!.Value, Helpers.CalculateDuration(start, end), ShowUserGoalUpdates);
-
 						bool addAnotherRecord = UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration [#{inputColor.ToHex()}]{duration} has been added![/]\nWould you like to [#{titleColor.ToHex()}]add another record[/], or [#{mainColor.ToHex()}]return to the main menu[/]?", "Add", "Return", inputColor);
 
                         start = null;
@@ -171,11 +168,14 @@ internal class CRUDController
 
             DateTime sessionStart = DateTime.Now;
 
+            Stopwatch stopwatch = new Stopwatch();
             System.Timers.Timer timer = new System.Timers.Timer(1000);
+            long milisecondsPassed = 0;
 
             timer.Elapsed += TimerEvent;
             timer.AutoReset = true;
 
+            stopwatch.Start();
             timer.Enabled = true;
 
             bool trackerOn = true;
@@ -187,11 +187,12 @@ internal class CRUDController
                 switch (option)
                 {
                     case 0:
-                        timer.Enabled = !timer.Enabled;
-                        break;
+                        TimerPauseStart();
+						break;
                     case 1:
-                        timer.Stop();
-                        if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
+						TimerPauseStart(true);
+
+						if (UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}discard this session?[/]", "yes", "no", inputColor))
                         {
                             timer.Close();
                             trackerOn = false;
@@ -199,12 +200,14 @@ internal class CRUDController
                             break;
                         }
                         System.Console.Clear();
+
+						TimerPauseStart();
                         DisplayTimer(secondsPassed, mainColor);
-                        timer.Start();
-                        break;
+						break;
                     case 2:
-                        timer.Stop();
-                        System.Console.Clear();
+						TimerPauseStart(true);
+
+						System.Console.Clear();
                         if (!(UserInterface.DisplayConfirmationSelectionUI($"Are you sure you want to {inputColorHex}end this session?[/]", "no", "yes", inputColor)))
                         {
 
@@ -300,17 +303,38 @@ internal class CRUDController
                         {
                             System.Console.Clear();
                             DisplayTimer(secondsPassed, mainColor);
-                            timer.Start();
-                        }
+							TimerPauseStart();
+						}
                         break;
                 }
             }
 
             void TimerEvent(object source, ElapsedEventArgs e)
             {
-                secondsPassed++;
+				timer.Stop();
+				secondsPassed++;
                 DisplayTimer(secondsPassed, mainColor);
+                timer.Interval = 1000;
+                timer.Start();
             }
+
+            void TimerPauseStart(bool forceStop = false)
+            {
+                if (timer.Enabled)
+                {
+					milisecondsPassed = stopwatch.ElapsedMilliseconds;
+					stopwatch.Reset();
+					stopwatch.Stop();
+                    double newInterval = timer.Interval - (milisecondsPassed % 1000) + 1 <= 0 ? 0 : timer.Interval - (milisecondsPassed % 1000) + 1;
+					timer.Interval = timer.Interval - (milisecondsPassed % 1000) + 1;
+					timer.Enabled = false;
+				}
+				else if (!forceStop)
+				{
+					timer.Enabled = true;
+                    stopwatch.Start();
+				}
+			}
         }
 
         void DisplayTimer(int seconds, Color color)
@@ -684,6 +708,7 @@ internal class CRUDController
                 string tableTitle = primarySubject.Count == 1 ? singularForm : pluralForm;
 
                 GoalSettings.RenderGoalTable(primarySubject, tableTitle);
+
 			}
             else if (status == GoalStatus.Failed)
             {
@@ -698,7 +723,10 @@ internal class CRUDController
                 throw new ArgumentException("Goal status can only be passed as In Progress or Failed in that method.");
             }
         }
-        if (secondarySubject.Count > 0)
+
+        bool userchoice = false;
+
+		if (secondarySubject.Count > 0)
         {
             if (primarySubject.Count > 0)
             {
@@ -709,18 +737,18 @@ internal class CRUDController
 
 			if (status == GoalStatus.Completed)
             {
-				bool choice = UserInterface.DisplayConfirmationSelectionUI(
+				userchoice = UserInterface.DisplayConfirmationSelectionUI(
 					"Would you like to also view goals that are close to get completed?", "yes", "no", color);
-				if (choice)
+				if (userchoice)
 				{
 					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be completed");
 				}
 			}
             else if (status == GoalStatus.Failed)
             {
-				bool choice = UserInterface.DisplayConfirmationSelectionUI(
+				userchoice = UserInterface.DisplayConfirmationSelectionUI(
 					"Would you like to also view goals for which you don't have much time left?", "yes", "no", color);
-				if (choice)
+				if (userchoice)
 				{
 					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be failed");
 				}
@@ -729,10 +757,16 @@ internal class CRUDController
 			{
 				throw new ArgumentException("Goal status can only be passed as In Progress or Failed in that method.");
 			}
-
-			System.Console.WriteLine();
-			AnsiConsole.Write(new Rule("-"));
-			System.Console.WriteLine();
 		}
+
+        if ((secondarySubject.Count > 0 || primarySubject.Count > 0) && userchoice)
+        {
+            System.Console.WriteLine();
+            AnsiConsole.Write(new Rule("-"));
+            System.Console.WriteLine();
+        }
+
+		AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+		System.Console.ReadKey();
 	}
 }

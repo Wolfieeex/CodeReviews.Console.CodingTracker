@@ -56,7 +56,8 @@ internal class ProgramSetup
                                  'Start Date' TEXT,
                                  'End Date' TEXT,
                                  'Start Goal Amount' TEXT,
-                                 'Goal Amount Left' TEXT
+                                 'Goal Amount Left' TEXT,
+                                 'Finish Time' TEXT
                                  )";
             new SqliteCommand(connComm, connection).ExecuteNonQuery();
 
@@ -187,6 +188,8 @@ internal class ProgramSetup
     }
     internal static void CreateGoalMockTablebase()
     {
+        int SettingsMultiplier = 10;
+
         List<Goal> goalList = new List<Goal>();
 
         string Status;
@@ -195,12 +198,14 @@ internal class ProgramSetup
         string EndDate;
         string GoalAmount;
         string GoalAmountLeft;
+        string FinishingTime;
 
         Random random = new Random();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3 * SettingsMultiplier; i++)
         {
-            Status = "InProgress"; 
+            Status = "InProgress";
+            FinishingTime = "N/A";
 
 			TimeSpan timeSpan1 = new TimeSpan(random.Next(0,181), random.Next(0, 60), random.Next(0, 60), 0);
             TimeSpan doneTimeSpan1 = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)timeSpan1.TotalMilliseconds, 0.4f));
@@ -228,21 +233,21 @@ internal class ProgramSetup
 
 				TimeSpan totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days));
 				GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
-				GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling((float)(totalGoal.TotalSeconds * (timeSpan1.TotalSeconds / leftTimeSpan1.TotalSeconds)))).ToString();
+				GoalAmountLeft = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)leftTimeSpan1.TotalMilliseconds, 0.6f)).ToString();
 			}
 
             using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
             {
                 conn.Open();
 
-                string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left])
-                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}')";
+                string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
+                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}', '{FinishingTime}')";
 
                 conn.Execute(command);
             }
 		}
 
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 2 * SettingsMultiplier; i++)
 		{
 			Status = random.Next(0, 2) == 0 ? "Failed" : "Completed";
 
@@ -269,11 +274,13 @@ internal class ProgramSetup
 
                 if (Status == "Failed")
                 {
+					FinishingTime = "N/A";
 					GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / timeSpan1.TotalSeconds / 2))).ToString();
 				}
 				else
                 {
-                    GoalAmountLeft = "0";
+                    FinishingTime = StartDate + doneTimeSpan1;
+					GoalAmountLeft = "0";
 				}
 			}
 			else
@@ -285,11 +292,13 @@ internal class ProgramSetup
 
 				if (Status == "Failed")
 				{
+					FinishingTime = "N/A";
 					GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling((float)(totalGoal.TotalSeconds * (timeSpan1.TotalSeconds / leftTimeSpan1.TotalSeconds / 2)))).ToString();
 				}
 				else
 				{
 					GoalAmountLeft = "0";
+					FinishingTime = StartDate + doneTimeSpan1;
 				}
 			}
 
@@ -297,8 +306,8 @@ internal class ProgramSetup
 			{
 				conn.Open();
 
-				string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left])
-                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}')";
+				string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
+                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}', '{FinishingTime}')";
 
 				conn.Execute(command);
 			}

@@ -5,6 +5,7 @@ using Spectre.Console;
 using Microsoft.Data.Sqlite;
 using System.Configuration;
 using System.Reflection.PortableExecutable;
+using System.Globalization;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -133,21 +134,41 @@ internal static class GoalSettings
                         timeLimit = DateTime.Now.AddYears(1) - DateTime.Now;
                         break;
                 }
+				System.Console.Clear();
 
-                bool runGoalAmountMenu = true;
+				bool runGoalAmountMenu = true;
                 while (runGoalAmountMenu)
                 {
-                    System.Console.Clear();
-
                     DateTime deadline = DateTime.Now + timeLimit;
 
 					switch (userInputType)
 					{
 						case 1:
 							dynamic commitAmount = UserInterface.DisplayTextUI($"Please {inputColorHex}input total time[/] you want to commit into programming in the {inputColorHex}\"d hh:ss\"[/] format in the {ViewTimeSpan(timeLimit.ToString())} timeframe: ", TextUIOptions.TimeSpanOnly, titleColor, goalSetterTitle: true);
-                            if (commitAmount != null)
+							string commitAmountString = commitAmount.ToString();
+
+                            TimeSpan commitTimeSpan = TimeSpan.Parse(commitAmountString.Replace(' ', '.') + @":00");
+							if (commitAmount != null)
                             {
-                                string commitAmountString = commitAmount.ToString();
+                                if (commitTimeSpan.Days > 2)
+                                {
+                                    if (timeLimit < commitTimeSpan)
+                                    {
+										AnsiConsole.Markup($"You cannot possibly {titleColorHex}program for more time than you have time left to do it![/]\n");
+										continue;
+									}
+									else if (timeLimit * ((double)2 / 3) < commitTimeSpan)
+                                    {
+                                        AnsiConsole.Markup($"Give yourself {titleColorHex}at least 8 hours of sleep daily![/] Don't work too hard!\n");
+										continue;
+									}
+								}
+                                else if (timeLimit < commitTimeSpan)
+                                {
+                                    AnsiConsole.Markup($"You cannot possibly {titleColorHex}program for more time than you have time left to do it![/]\n");
+									continue;
+								}
+
                                 if (commitAmountString.ToLower() == "e" || commitAmountString == "")
                                 {
 									runGoalAmountMenu = false;
@@ -293,9 +314,18 @@ internal static class GoalSettings
 			foreach (var goal in goals)
             {
                 if (goal.Value.EndTime - DateTime.Now - goal.Value.ProgrammingTimeLeft < TimeSpan.Zero)
-                {                   
+                {
+                    if (goal.Value.EndTime - DateTime.Now < TimeSpan.Zero)
+                    {
+                        goal.Value.FinishTime = "DDL";
+					}
+                    else
+                    {
+						goal.Value.FinishTime = "IMP";
+					}
+                    
                     failedGoals.Add(goal.Key, goal.Value);
-                    command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed' WHERE id = {goal.Key}";
+                    command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed', [Finish Time] = '{goal.Value.FinishTime}' WHERE id = {goal.Key}";
                     comm.CommandText = command;
                     comm.ExecuteNonQuery();
                 }
@@ -325,7 +355,7 @@ internal static class GoalSettings
 
 			while (reader.Read())
             {
-                if (TimeSpan.TryParse(reader.GetString(5), out _))
+                if (reader.GetString(5).Contains(':'))
                     goals.Add(reader.GetInt32(0),
                         new Goal(DateTime.Parse(reader.GetString(3)),
 						DateTime.Parse(reader.GetString(4)),
@@ -349,38 +379,52 @@ internal static class GoalSettings
                     goal.Value.ProgrammingTimeLeft -= timeCommited;
 					completeGoal = new Goal(goal.Value.StartTime, goal.Value.EndTime, goal.Value.StartProgrammingTime, goal.Value.ProgrammingTimeLeft);
 
-					if (completeGoal.ProgrammingTimeLeft == TimeSpan.Zero)
+                    if (completeGoal.ProgrammingTimeLeft == TimeSpan.Zero)
                     {
-                        completedGoals.Add(goal.Key, completeGoal);
+						completeGoal.FinishTime = DateTime.Now.ToString();
+						completedGoals.Add(goal.Key, completeGoal);
 
-                        command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
-                            $"SET [Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed', [Finish Time] = {DateTime.Now} WHERE Id = {goal.Key}";
-                        comm = new SqliteCommand(command);
-                        comm.ExecuteNonQuery();
+                        comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+                            $"SET [Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed', [Finish Time] = '{DateTime.Now}' WHERE Id = {goal.Key}";
                     }
                     else if (completeGoal.ProgrammingTimeLeft <= TimeSpan.FromHours(2))
                     {
+						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+							$"SET [Goal Amount Left] = '{completeGoal.ProgrammingTimeLeft.ToString()}' WHERE Id = {goal.Key}";
 						closeToCompleteGoals.Add(goal.Key, completeGoal);
+                    }
+                    else
+                    {
+						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+							$"SET [Goal Amount Left] = '{completeGoal.ProgrammingTimeLeft.ToString()}' WHERE Id = {goal.Key}";
 					}
-                }
+					comm.ExecuteNonQuery();
+				}
                 else
                 {
 					goal.Value.LinesLeft -= numberOfLines;
 					completeGoal = new Goal(goal.Value.StartTime, goal.Value.EndTime, goal.Value.StartLines, goal.Value.LinesLeft);
 
-					if (completeGoal.LinesLeft == 0)
+                    if (completeGoal.LinesLeft == 0)
                     {
+						completeGoal.FinishTime = DateTime.Now.ToString();
 						completedGoals.Add(goal.Key, completeGoal);
 
-                        command = $"UPDATE {ConfigurationManager.AppSettings.Get("DatabaseName")} " +
-                            $"SET [Goal Amount Left] = '0', Status = 'Completed', [Finish Time] = {DateTime.Now} WHERE Id = {goal.Key}";
-                        comm = new SqliteCommand(command);
-                        comm.ExecuteNonQuery();
+						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+                            $"SET [Goal Amount Left] = '0', Status = 'Completed', [Finish Time] = '{DateTime.Now}' WHERE Id = {goal.Key}";
                     }
                     else if (completeGoal.LinesLeft <= 200)
                     {
+						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+							$"SET [Goal Amount Left] = '{completeGoal.LinesLeft}' WHERE Id = {goal.Key}";
 						closeToCompleteGoals.Add(goal.Key, completeGoal);
+                    }
+                    else
+                    {
+						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+							$"SET [Goal Amount Left] = '{completeGoal.LinesLeft}' WHERE Id = {goal.Key}";
 					}
+					comm.ExecuteNonQuery();
 				}
             }
 
@@ -534,7 +578,7 @@ internal static class GoalSettings
 
 			// Table creation:
 			Table table = new Table();
-			table.AddColumns(new string[] { "Index", "Goal", "Status", "Time left", "Amount of work left" });
+            table.AddColumns(goals[0].SetTableColumn());
 			for (int i = 0; i < goals.Count; i++)
 			{
 				table.AddRow(goals[i].SetTableRow(i));
@@ -574,7 +618,7 @@ internal static class GoalSettings
 
 		// Table creation:
 		Table table = new Table();
-		table.AddColumns(new string[] { "Index", "Goal", "Status", "Time left", "Amount of work left" });
+		table.AddColumns(goals[0].SetTableColumn());
 		for (int i = 0; i < goals.Count; i++)
 		{
 			table.AddRow(goals[i].SetTableRow(i));
@@ -596,7 +640,6 @@ internal static class GoalSettings
 		table.Title(tableTitle, new Style().Foreground(Color.DeepPink1));
 
 		// Table view:
-		System.Console.Clear();
 		AnsiConsole.Write(table);
 
 		return true;
@@ -665,7 +708,7 @@ internal static class GoalSettings
 				AnsiConsole.Markup($"Press any button {inputColorHex}to continue:[/] ");
 				System.Console.ReadKey();
 				bool userViewChoice = UserInterface.DisplayConfirmationSelectionUI(
-	            "Would you like to view goals for which you don't have much time left?", "yes", "no", color);
+	            "Would you also like to view goals for which you don't have much time left?", "yes", "no", color);
 				if (userViewChoice)
 				{
 					RenderGoalTable(closeToFail, $"Goal{(closeToFail.Count > 1 ? "s" : "")} that {(closeToFail.Count > 1 ? "are" : "is")} close to be failed");

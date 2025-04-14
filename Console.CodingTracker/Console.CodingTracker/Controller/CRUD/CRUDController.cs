@@ -279,9 +279,9 @@ internal class CRUDController
                                                                                 numberOfLines,
                                                                                 input,
                                                                                 true));
-                                            System.Console.Clear();
 
                                             GoalSettings.UpdateGoals(numberOfLines, duration, ShowUserGoalUpdates);
+                                            System.Console.Clear();
 
                                             if (!UserInterface.DisplayConfirmationSelectionUI($"Coding session of duration {titleColorHex}{TimeSpan.FromSeconds(secondsPassed).ToString()} has been added![/] Would you like to {inputColorHex}start another session[/], or {titleColorHex}return to the main menu[/]?:", "Start", "Return", inputColor))
                                             {
@@ -699,74 +699,103 @@ internal class CRUDController
 
         string hexColor = "[#" + color.ToHex() + "]";
 
-        if (primarySubject.Count > 0)
+        if (status == GoalStatus.Completed)
         {
-			if (status == GoalStatus.Completed)
+            if (primarySubject.Count > 0)
             {
-                string singularForm = $"Congratulations! You have {hexColor}completed one of your Goals![/]";
-                string pluralForm = $"Congratulations! You have {hexColor}completed {primarySubject.Count} of your goals![/]";
-                string tableTitle = primarySubject.Count == 1 ? singularForm : pluralForm;
+				string singularForm = $"Congratulations! You have {hexColor}completed one of your Goals![/]";
+				string pluralForm = $"Congratulations! You have {hexColor}completed {primarySubject.Count} of your goals![/]";
+				string tableTitle = primarySubject.Count == 1 ? singularForm : pluralForm;
 
-                GoalSettings.RenderGoalTable(primarySubject, tableTitle);
+				GoalSettings.RenderGoalTable(primarySubject, tableTitle);
 
+                if (secondarySubject.Count > 0)
+                {
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+					System.Console.ReadKey();
+					bool userchoice = UserInterface.DisplayConfirmationSelectionUI(
+	                    "Would you like to also view goals that are close to get completed?", "yes", "no", color);
+					if (userchoice)
+					{
+						GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be completed");
+						System.Console.WriteLine();
+						AnsiConsole.Write(new Rule("-"));
+						AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+						System.Console.ReadKey();
+					}
+				}
+                else
+                {
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+					System.Console.ReadKey();
+				}
 			}
-            else if (status == GoalStatus.Failed)
+            else if (secondarySubject.Count > 0)
             {
+				bool userViewChoice = UserInterface.DisplayConfirmationSelectionUI(
+						"Would you like to view goals that are close to get completed?", "yes", "no", color);
+				if (userViewChoice)
+				{
+					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be completed");
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+					System.Console.ReadKey();
+				}
+			}
+        }
+        else
+        {
+			if (primarySubject.Count > 0)
+			{
 				string singularForm = $"Oooops! Unfortunately, you have {hexColor}failed one of your Goals...[/]";
 				string pluralForm = $"Oooops! Unfortunately, you have {hexColor}failed {primarySubject.Count} of your goals...[/]";
 				string tableTitle = primarySubject.Count == 1 ? singularForm : pluralForm;
 
 				GoalSettings.RenderGoalTable(primarySubject, tableTitle);
-			}
-            else
-            {
-                throw new ArgumentException("Goal status can only be passed as In Progress or Failed in that method.");
-            }
-        }
 
-        bool userchoice = false;
-
-		if (secondarySubject.Count > 0)
-        {
-            if (primarySubject.Count > 0)
-            {
-				System.Console.WriteLine();
-				AnsiConsole.Write(new Rule("-"));
-				System.Console.WriteLine();
-			}
-
-			if (status == GoalStatus.Completed)
-            {
-				userchoice = UserInterface.DisplayConfirmationSelectionUI(
-					"Would you like to also view goals that are close to get completed?", "yes", "no", color);
-				if (userchoice)
+				if (secondarySubject.Count > 0)
 				{
-					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be completed");
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+					System.Console.ReadKey();
+					bool userchoice = UserInterface.DisplayConfirmationSelectionUI(
+				        "Would you like to view goals for which you don't have much time left?", "yes", "no", color);
+					if (userchoice)
+					{
+						GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be failed");
+						System.Console.WriteLine();
+						AnsiConsole.Write(new Rule("-"));
+						AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+						System.Console.ReadKey();
+					}
+				}
+				else
+				{
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+					System.Console.ReadKey();
 				}
 			}
-            else if (status == GoalStatus.Failed)
-            {
-				userchoice = UserInterface.DisplayConfirmationSelectionUI(
-					"Would you like to also view goals for which you don't have much time left?", "yes", "no", color);
-				if (userchoice)
+			else if (secondarySubject.Count > 0)
+			{
+				bool userViewChoice = UserInterface.DisplayConfirmationSelectionUI(
+				"Would you like to view goals for which you don't have much time left?", "yes", "no", color);
+				if (userViewChoice)
 				{
 					GoalSettings.RenderGoalTable(secondarySubject, $"Goal{(secondarySubject.Count > 1 ? "s" : "")} that {(secondarySubject.Count > 1 ? "are" : "is")} close to be failed");
+					System.Console.WriteLine();
+					AnsiConsole.Write(new Rule("-"));
+					AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
+					System.Console.ReadKey();
 				}
-			}
-			else
-			{
-				throw new ArgumentException("Goal status can only be passed as In Progress or Failed in that method.");
-			}
+			}   
 		}
-
-        if ((secondarySubject.Count > 0 || primarySubject.Count > 0) && userchoice)
-        {
-            System.Console.WriteLine();
-            AnsiConsole.Write(new Rule("-"));
-            System.Console.WriteLine();
-        }
-
-		AnsiConsole.Markup($"Press any button {hexColor}to continue:[/] ");
-		System.Console.ReadKey();
 	}
 }

@@ -45,7 +45,7 @@ internal class Goal
             else
 				_linesLeft = value;
         } }
-    public string FinishTime { get; init; }
+    public string FinishTime { get; set; }
     private string Status { get
         {
             if (FinishTime == "DEL")
@@ -145,14 +145,54 @@ internal class Goal
     {
         string[] row = new string[5];
 
-        row[0] = (index + 1).ToString();
-		row[1] = GoalType == GoalType.Lines ? "To produce a certain amount of coding lines" : "To program for a certain amount of time";
-        row[2] = Status;
-        row[3] = TimeSpanView((EndTime - DateTime.Now) < TimeSpan.Zero ? TimeSpan.Zero : (EndTime - DateTime.Now));
-        row[4] = GoalType == GoalType.Lines ? LinesLeft.ToString() + " lines" : TimeSpanView(ProgrammingTimeLeft);
+        if (Status == "Completed")
+        {
+			row[0] = (index + 1).ToString();
+			row[1] = GoalType == GoalType.Lines ? "To produce a certain amount of coding lines" : "To program for a certain amount of time";
+			row[2] = TimeSpanView(DateTime.Parse(FinishTime) - StartTime);
+			row[3] = GoalType == GoalType.Lines ? StartLines.ToString() + " lines" : TimeSpanView(StartProgrammingTime);
+			row[4] = FinishTime;
+		}
+        else if (Status == "Failed")
+        {
+			row[0] = (index + 1).ToString();
+			row[1] = GoalType == GoalType.Lines ? "To produce a certain amount of coding lines" : "To program for a certain amount of time";
+			row[2] = GoalType switch
+			{
+				GoalType.Lines => ((StartLines - (double)LinesLeft + 0.0000001f) / StartLines).ToString("p2"),
+				GoalType.Time => ((StartProgrammingTime - ProgrammingTimeLeft + TimeSpan.FromSeconds(1)) / StartProgrammingTime).ToString("p2"),
+				_ => "Unspecified"
+			};
+			row[3] = GoalType == GoalType.Lines ? LinesLeft.ToString() + " lines" : TimeSpanView(ProgrammingTimeLeft);
+			row[4] = FinishTime switch
+			{
+				"DEL" => "Deleted by user",
+				"DDL" => "Deadline reached",
+				"IMP" => "Not enough time to complete",
+				_ => "Unknown reason"
+			};
+		}
+        else
+        {
+			row[0] = (index + 1).ToString();
+			row[1] = GoalType == GoalType.Lines ? "To produce a certain amount of coding lines" : "To program for a certain amount of time";
+			row[2] = EndTime.ToString();
+			row[3] = TimeSpanView((EndTime - DateTime.Now) < TimeSpan.Zero ? TimeSpan.Zero : (EndTime - DateTime.Now));
+			row[4] = GoalType == GoalType.Lines ? LinesLeft.ToString() + " lines" : TimeSpanView(ProgrammingTimeLeft);
+		}
+			
         return row;
     }
-    private string TimeSpanView(TimeSpan timeSpan)
+	public string[] SetTableColumn()
+	{
+        if (Status == "Completed")
+            return new string[]{ "Index", "Goal", "Completed in", "Goal achieved", "Completion date" };
+        else if (Status == "Failed")
+			return new string[]{ "Index", "Goal", "Completion progress", "Goal amount left", "Reason for fail" };
+        else
+			return new string[] { "Index", "Goal", "Deadline date", "Time left", "Amount of work left" };
+	}
+	private string TimeSpanView(TimeSpan timeSpan)
     {
         string days;
         if (timeSpan.Days == 0)

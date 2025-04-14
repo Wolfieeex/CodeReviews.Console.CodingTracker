@@ -251,16 +251,16 @@ internal class ProgramSetup
 		{
 			Status = random.Next(0, 2) == 0 ? "Failed" : "Completed";
 
-			TimeSpan timeSpan1 = new TimeSpan(random.Next(0, 181), random.Next(0, 60), random.Next(0, 60), 0);
-			TimeSpan doneTimeSpan1 = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)timeSpan1.TotalMilliseconds, 0.4f));
-			TimeSpan leftTimeSpan1 = timeSpan1 - doneTimeSpan1;
+			TimeSpan goalDuration = new TimeSpan(random.Next(0, 181), random.Next(0, 60), random.Next(0, 60), 0);
+			TimeSpan doneTimeSpan1 = TimeSpan.FromMilliseconds(Math.Ceiling((double)RandomExponentialValueInRange(1, (long)goalDuration.TotalMilliseconds, 0.4f)));
+			TimeSpan leftTimeSpan1 = goalDuration - doneTimeSpan1;
 
             TimeSpan inThePastAmount = new TimeSpan(random.Next(0, 61), random.Next(0, 60), random.Next(0, 60), 0);
 
             DateTime deadline = DateTime.Now - inThePastAmount;
 			EndDate = deadline.ToString("dd/MM/yyyy HH:mm:ss");
 
-            DateTime startDate = deadline - timeSpan1;
+            DateTime startDate = deadline - goalDuration;
 			StartDate = startDate.ToString("dd/MM/yyyy HH:mm:ss");
 
 			int taskType = random.Next(0, 2);
@@ -269,17 +269,17 @@ internal class ProgramSetup
 			{
 				GoalType = "Lines";
 
-				int totalGoal = random.Next(20, 101) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days);
+				int totalGoal = random.Next(10, 101) * (goalDuration.Days < 1 ? 1 : goalDuration.Days);
 				GoalAmount = totalGoal.ToString();
 
                 if (Status == "Failed")
                 {
-					FinishingTime = "N/A";
-					GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / timeSpan1.TotalSeconds / 2))).ToString();
+					FinishingTime = "DDL";
+					GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / goalDuration.TotalSeconds / 2))).ToString();
 				}
 				else
                 {
-                    FinishingTime = StartDate + doneTimeSpan1;
+                    FinishingTime = (startDate + doneTimeSpan1).ToString();
 					GoalAmountLeft = "0";
 				}
 			}
@@ -287,20 +287,25 @@ internal class ProgramSetup
 			{
 				GoalType = "Time";
 
-				TimeSpan totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (timeSpan1.Days < 1 ? 1 : timeSpan1.Days));
-				GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
+                TimeSpan totalGoal;
 
 				if (Status == "Failed")
 				{
-					FinishingTime = "N/A";
-					GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling((float)(totalGoal.TotalSeconds * (timeSpan1.TotalSeconds / leftTimeSpan1.TotalSeconds / 2)))).ToString();
+					totalGoal = TimeSpan.FromSeconds(RandomExponentialValueInRange(2, goalDuration.Seconds, 0.5f));
+					FinishingTime = "DDL";
+					GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling(RandomExponentialValueInRange(1, totalGoal.Seconds, 0.6f))).ToString();
 				}
 				else
 				{
+					totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (goalDuration.Days < 1 ? 1 : goalDuration.Days));
 					GoalAmountLeft = "0";
-					FinishingTime = StartDate + doneTimeSpan1;
+					FinishingTime = (startDate + doneTimeSpan1).ToString();
 				}
+
+                GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
 			}
+
+
 
 			using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
 			{

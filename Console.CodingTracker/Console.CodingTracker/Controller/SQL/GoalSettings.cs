@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
 using System.Configuration;
-using System.Reflection.PortableExecutable;
-using System.Globalization;
 
 namespace Console.CodingTracker.Controller.SQL;
 

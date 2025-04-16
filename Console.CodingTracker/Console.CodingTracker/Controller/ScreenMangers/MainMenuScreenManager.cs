@@ -3,6 +3,7 @@ using Console.CodingTracker.MenuSelections;
 using Console.CodingTracker.Controller.SQL; 
 using Console.CodingTracker.View;
 using Spectre.Console;
+using System.Configuration;
 
 namespace Console.CodingTracker.Controller.ScreenMangers;
 
@@ -10,7 +11,7 @@ internal class MainMenuScreenManager
 {
     internal static void S_Mainmenu()
     {
-        bool menuLoop = true;
+		bool menuLoop = true;
         while (menuLoop)
         {
             System.Console.Clear();

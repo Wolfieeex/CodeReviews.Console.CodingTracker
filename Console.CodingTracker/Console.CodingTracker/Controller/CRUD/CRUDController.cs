@@ -54,7 +54,7 @@ internal class CRUDController
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs($"Track your {titleColorHex}new session[/]{(valuesNotInserted ? " (please fill in all non-optional values to proceed)" : "")}:", typeof(MenuSelections.TrackNewSession), titleColor, mainColor, inputColor , dic, $"{Settings.optionalsCompleted}AddRecord[/]", blockEndOption, $"{Settings.optionalsNotCompleted}The start date of your session must be earlier than the end date of your session[/]");
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs($"Track your {titleColorHex}new session[/]{(valuesNotInserted ? $" (please fill in all non-optional values to proceed). {inputColorHex}Please note, that injected sections will not count towards your goals. You need to track your new session by timer in this app to progress your goals[/]" : "")}:", typeof(MenuSelections.TrackNewSession), titleColor, mainColor, inputColor , dic, $"{Settings.optionalsCompleted}AddRecord[/]", blockEndOption, $"{Settings.optionalsNotCompleted}The start date of your session must be earlier than the end date of your session[/]");
             }
 
             catch (Exception ex)
@@ -162,21 +162,24 @@ internal class CRUDController
                 return;
             }
             System.Console.Clear();
+
             int secondsPassed = 0;
-            int timeRemaining = 0;
+            int previousMilisecondsPassed = 0;
+
             DisplayTimer(secondsPassed, mainColor);
+
 
             DateTime sessionStart = DateTime.Now;
 
             Stopwatch stopwatch = new Stopwatch();
-            System.Timers.Timer timer = new System.Timers.Timer(1000);
-            long milisecondsPassed = 0;
+            System.Timers.Timer timer = new System.Timers.Timer(100);
 
             timer.Elapsed += TimerEvent;
             timer.AutoReset = true;
 
-            stopwatch.Start();
             timer.Enabled = true;
+            stopwatch.Start();
+            timer.Start();
 
             bool trackerOn = true;
             while (trackerOn)
@@ -202,7 +205,6 @@ internal class CRUDController
                         System.Console.Clear();
 
 						TimerPauseStart();
-                        DisplayTimer(secondsPassed, mainColor);
 						break;
                     case 2:
 						TimerPauseStart(true);
@@ -302,7 +304,6 @@ internal class CRUDController
                         if (!sessionDiscarded)
                         {
                             System.Console.Clear();
-                            DisplayTimer(secondsPassed, mainColor);
 							TimerPauseStart();
 						}
                         break;
@@ -311,29 +312,41 @@ internal class CRUDController
 
             void TimerEvent(object source, ElapsedEventArgs e)
             {
-				timer.Stop();
-				secondsPassed++;
-                DisplayTimer(secondsPassed, mainColor);
-                timer.Interval = 1000;
-                timer.Start();
-            }
+                int currentMilisecondsPassed =  previousMilisecondsPassed + (int)stopwatch.ElapsedMilliseconds;
 
-            void TimerPauseStart(bool forceStop = false)
-            {
-                if (timer.Enabled)
+                if (currentMilisecondsPassed / 1000 != secondsPassed)
                 {
-					milisecondsPassed = stopwatch.ElapsedMilliseconds;
-					stopwatch.Reset();
-					stopwatch.Stop();
-                    double newInterval = timer.Interval - (milisecondsPassed % 1000) + 1 <= 0 ? 0 : timer.Interval - (milisecondsPassed % 1000) + 1;
-					timer.Interval = timer.Interval - (milisecondsPassed % 1000) + 1;
-					timer.Enabled = false;
+					secondsPassed = currentMilisecondsPassed / 1000;
+                    DisplayTimer(secondsPassed, mainColor);
 				}
-				else if (!forceStop)
-				{
-					timer.Enabled = true;
-                    stopwatch.Start();
+			}
+
+            void TimerPauseStart(bool alwaysSetToPause = false)
+            {
+                if (stopwatch.IsRunning && timer.Enabled)
+                {
+                    stopwatch.Stop();
+                    timer.Stop();
+                    
+					previousMilisecondsPassed = previousMilisecondsPassed + (int)stopwatch.ElapsedMilliseconds;
+					if (previousMilisecondsPassed / 1000 != secondsPassed)
+					{
+						DisplayTimer(previousMilisecondsPassed / 1000, mainColor);
+					}
 				}
+                else if (!stopwatch.IsRunning && !timer.Enabled)
+                {
+                    if (!alwaysSetToPause)
+                    {
+						DisplayTimer(previousMilisecondsPassed / 1000, mainColor);
+						stopwatch.Restart();
+						timer.Start();
+					}
+                }
+                else
+                {
+                    throw new ApplicationException("Both stopwatch and timer need to be running or not running at the same time. One of them rioted.");
+                }
 			}
         }
 
@@ -408,7 +421,7 @@ internal class CRUDController
             System.Console.Clear();
 
             bool quitMenu = false;
-            FilterDetails filters = FilterController.FilterRecords($"You are currently using {titleColorHex}update record method[/]. ", ref quitMenu, titleColor, mainColor, inputColor);
+            FilterDetails filters = FilterController.FilterRecords($"You are currently using {titleColorHex}update record method[/]. {inputColorHex}Updates will not count towards your goals. [/]", ref quitMenu, titleColor, mainColor, inputColor);
             if (quitMenu)
             {
                 break;

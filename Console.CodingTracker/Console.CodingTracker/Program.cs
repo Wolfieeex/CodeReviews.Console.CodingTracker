@@ -5,8 +5,9 @@ using Console.CodingTracker.Model;
 try
 {
     TemporaryData.InitializeLastFilter();
-    ProgramSetup.InstantiateDatabase();
-    ProgramSetup.ConsoleSettings();
+    (bool mainDb, bool goalDb) = ProgramSetup.InstantiateDatabase();
+    ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);
+	ProgramSetup.ConsoleSettings();
     MainMenuScreenManager.S_Mainmenu();
 }
 catch (Exception ex)
@@ -15,3 +16,4 @@ catch (Exception ex)
     System.Console.WriteLine(ex.Message);
     System.Console.WriteLine(ex.StackTrace);
 }
+

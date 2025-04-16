@@ -4,15 +4,21 @@ using Dapper;
 using System.Text;
 using Console.CodingTracker.Controller.SQL;
 using System.Configuration;
-using System;
+using Console.CodingTracker.Controller;
+using Console.CodingTracker.Controller.ScreenMangers;
+using Spectre.Console;
+using System.Buffers.Text;
 
 namespace Console.CodingTracker.Controller;
 
 internal class ProgramSetup
 {
-    internal static void InstantiateDatabase()
+    internal static (bool, bool) InstantiateDatabase()
     {
-        using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
+		bool createdMainDb = false;
+		bool createdGoalDb = false;
+
+		using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
 
@@ -33,7 +39,7 @@ internal class ProgramSetup
             System.Data.IDataReader reader = conn.ExecuteReader(commString);
 
             bool isDbNull = false;
-            if (!reader.Read())
+            if (!reader.Read() && bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
             {
                 isDbNull = true;
             }
@@ -42,7 +48,8 @@ internal class ProgramSetup
 
             if (Settings.CreateMockTablebase && isDbNull)
             {
-                CreateMockTablebase();
+                createdMainDb = true;
+				CreateMockTablebase();
             }
         }
 
@@ -65,7 +72,7 @@ internal class ProgramSetup
 			System.Data.IDataReader reader = connection.ExecuteReader(connComm);
 
 			bool isDbNull = false;
-			if (!reader.Read())
+			if (!reader.Read() && bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
 			{
 				isDbNull = true;
 			}
@@ -74,9 +81,12 @@ internal class ProgramSetup
 
 			if (Settings.CreateMockTablebase && isDbNull)
 			{
+				createdGoalDb = true;
 				CreateGoalMockTablebase();
 			}
         }
+        
+        return (createdMainDb, createdGoalDb);
     }
     internal static void CreateMockTablebase()
     {
@@ -291,9 +301,9 @@ internal class ProgramSetup
 
 				if (Status == "Failed")
 				{
-					totalGoal = TimeSpan.FromSeconds(RandomExponentialValueInRange(2, goalDuration.Seconds, 0.5f));
+					totalGoal = TimeSpan.FromSeconds(RandomExponentialValueInRange(2, (long)goalDuration.TotalSeconds, 0.5f));
 					FinishingTime = "DDL";
-					GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling(RandomExponentialValueInRange(1, totalGoal.Seconds, 0.6f))).ToString();
+					GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling(RandomExponentialValueInRange(1, (long)totalGoal.TotalSeconds, 0.6f))).ToString();
 				}
 				else
 				{
@@ -347,4 +357,29 @@ internal class ProgramSetup
 
         return num >= roll ? true : false;
     }
+
+	internal static void DisplayDevOptionSetting(bool main, bool goal)
+	{
+        if (main)
+        {
+			if (bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
+			{
+                AnsiConsole.Markup("[yellow italic]A mock database was created and populated with random sessions inserted.[/]\n");
+			}
+		}
+        if (goal)
+        {
+			if (bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
+			{
+				AnsiConsole.Markup("[yellow italic]A mock database was created and populated with random goals inserted.[/]\n");
+			}
+		}
+        if (main || goal)
+		{
+            AnsiConsole.Markup("\nThis was done based on a fact that you have dev options enabled." +
+				" If you want to change this setting, go to \"App.config\" file and change \"DeveloperOptions\" to \"false\"." +
+                "\n[yellow]Press any key to continue: [/]");
+            System.Console.ReadKey();
+		}
+	}
 }

@@ -1,11 +1,9 @@
 # Coding Tracker
 ## Brief Documentation
 ### What is coding tracker?
-The coding tracker was created for programmers who want to take their work organization to a next level. 
-The program offers several fatures that allow user tracking and view their programming sessions. It uses CRUD Model, which stands for Create-Read-Update-Delete. 
-This means that user is fully in charge of the database of their sessions. Those can be tracked using built-in timer or inserted manually by the user. 
-Then, they can be editted. For example, the user might want to update their previous session by changing the amount of programming lines they procuced.
-They can also view and analyse their previous sessions and decide about next steps in their career. If there is some old or no longer needed data,
-it can be removed completely from the database history.
+The Coding Tracker is the ultimate productivity companion for devs who want some insight into their workflow. Built on a simple Create–Read–Update–Delete (CRUD) model, it gives you total control over every programming session you log. Start the built‑in timer when you dive into your code, or add sessions manually if you prefer. Then, whenever you need to amend an entry, for example, updating the number of lines you wrote, you can edit it in seconds. When it’s time to reflect, the Tracker’s reports lay out your past work in an easy-to-read format, helping you identify patterns, spot weaknesses, and plan your future steps. And if an old record no longer serves you, just remove it. This is your database, and so your rules.
 
-The client can also set goals by using another fantastic feature of this application. As deadlines approach, the user needs to 
+On top of session logging, Coding Tracker helps you stay focused on your goals. Set milestones for your projects, and watch as each new coding session automatically brings you closer to, or warns you of, upcoming deadlines. When you’re approaching completion, you’ll get a heads‑up. If circumstances change, simply remove any goal you no longer need. No matter how your projects evolve, Coding Tracker keeps your planning as dynamic as your development.
+
+### Features
+1) 

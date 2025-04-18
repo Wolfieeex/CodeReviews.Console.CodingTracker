@@ -7,22 +7,28 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
 
 ### Features
 1) #### Session injection- adding coding session manually 
-   * This menu allows you to record a session that you didn't track using built-in timer. Before proceeding, mandatory fields, which are the starting and end date of the session, need to be filled in. The number of lines and additional comments are optional fields, but are recommended to be filled-in. This will ensure that all data is crystal-clear and ready to be reviewed in future.
-   * All fields have appropriate data validation, forcing user to input data in specific formats. Thanks to this, all data is consistent and there are no surpises while dealing with a database. All fields can be updated and their value can be removed. The program also prevents user from inserting their session if start date occurs later than the end date.
-   * After programming session is added, it will start existing in the database. One think to note is that inserting session manually will not update user's goals.
+   * Use this menu to record a session you didn’t track with the built‑in timer. The start and end dates are required. Optional but recommended: number of lines and comments—these make future reviews clearer.
+   * Each field is validated to enforce the correct format, so the database stays clean and consistent. You can update or clear any field, and the program blocks entries whose start date is after the end date.
+   * Once saved, the session is written to the database. Manually added sessions do not update goals.
+    _Menu screenshot_
    * **Menu screenshot**
 2) #### Session timer tracking
-   * This feature lets you start the timer while you start programming. Big timer will be displayed on the middle of the console counting seconds. You can pause it whenever it fits you.
-   * The programming session can be also discarted if no longer needed.
-   * When you finish your coding for the day, you must insert the number of lines and comments for your session. Then a new record will appear in your database.
+   * Start the timer when you begin coding; a large timer appears in the centre of the console and counts seconds. You can pause it at any time.
+   * You can discard a running session if you decide not to keep it.
+   * When you finish, enter the number of lines and comments. A new record is then added to the database.
 3) #### Goal features
-   * You can insert new Goals to your database and decide whether you want to track how many coding lines you procudes or how much time you spent on programming in a given time frame. You can also choose deadline for your target.
-   * If you need to view your previous goals, whether they are failed, completed or in progress, you can render a data table for them containing all vital information. The history of your previous goals can be deleted, if no longer needed.
-   * There will be time, when you will no longer need to track a certain goal. Simply delete it using feature in goal menu.
+   * Add goals to track either lines of code produced or time spent coding within a chosen timeframe, and optionally set a deadline.
+   * View previous goals—failed, completed, or in progress—in a data table that shows all key details. You can delete goal history you no longer need.
+   * When a goal is no longer relevant, simply delete it from the Goals menu.
 4) #### Filtering
-   * Have you ever been it a situation where you had to look at enormous amount of data just to find that one value you were intersted in? Whenever you want to create report, delete, update or view database, you can freely filter out records that you don't require. This includes but is not limited to comments, lines of programming, start and the end of the session. No more endless browsing through hundreds of records.
-   * You can also choose by which column you want to order your data, whether it's supposed to be ascending or descending.
+   * When creating reports, deleting, updating, or viewing data, filter out records you don’t need—by comments, lines, start/end dates, and more—so you never wade through unnecessary entries.
+   * Sort by any column in ascending or descending order.
 5) #### Delete menu
-   * Here the user can get rid of session records if no longer needed. Firsly, filter out any records you don't want to select from. Next, select index (or indexes seperated by comma). You will be asked if you are sure to delete them (this operation is irreversible).
+   * Remove session records you no longer want. First filter the records, then select the index (or comma‑separated indexes). You’ll be asked to confirm before deletion; the action is irreversible.
 6) #### Update menu
-   *
+   * Entered something incorrectly? Filter to locate the record, choose its index, and amend any field.
+7) #### Report menu
+   * Analyse your coding activity at a deeper level: create reports that calculate sums, medians, averages, and more. Group data by year, month, week, or day, then apply additional filters as needed.
+   * After the report is displayed, you can save it as a CSV for archiving or further analysis.
+8) #### View menu
+   * Similar to the Report menu, but shows raw records only—no aggregation or transformation.

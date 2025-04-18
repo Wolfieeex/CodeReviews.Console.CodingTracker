@@ -20,4 +20,9 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
    * If you need to view your previous goals, whether they are failed, completed or in progress, you can render a data table for them containing all vital information. The history of your previous goals can be deleted, if no longer needed.
    * There will be time, when you will no longer need to track a certain goal. Simply delete it using feature in goal menu.
 4) #### Filtering
-   * In certain situations user will have to 
+   * Have you ever been it a situation where you had to look at enormous amount of data just to find that one value you were intersted in? Whenever you want to create report, delete, update or view database, you can freely filter out records that you don't require. This includes but is not limited to comments, lines of programming, start and the end of the session. No more endless browsing through hundreds of records.
+   * You can also choose by which column you want to order your data, whether it's supposed to be ascending or descending.
+5) #### Delete menu
+   * Here the user can get rid of session records if no longer needed. Firsly, filter out any records you don't want to select from. Next, select index (or indexes seperated by comma). You will be asked if you are sure to delete them (this operation is irreversible).
+6) #### Update menu
+   *

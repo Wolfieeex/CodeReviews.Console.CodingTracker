@@ -33,4 +33,7 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
 8) #### View menu
    * Similar to the Report menu, but shows raw records only— no aggregation or transformation.
 ### Things I learned
-*
+* Dapper
+* Sqlite
+* Spectre Console
+* C# Documentation

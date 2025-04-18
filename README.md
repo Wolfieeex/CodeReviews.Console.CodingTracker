@@ -16,4 +16,8 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
    * The programming session can be also discarted if no longer needed.
    * When you finish your coding for the day, you must insert the number of lines and comments for your session. Then a new record will appear in your database.
 3) #### Goal features
-4) 
+   * You can insert new Goals to your database and decide whether you want to track how many coding lines you procudes or how much time you spent on programming in a given time frame. You can also choose deadline for your target.
+   * If you need to view your previous goals, whether they are failed, completed or in progress, you can render a data table for them containing all vital information. The history of your previous goals can be deleted, if no longer needed.
+   * There will be time, when you will no longer need to track a certain goal. Simply delete it using feature in goal menu.
+4) #### Filtering
+   * In certain situations user will have to 

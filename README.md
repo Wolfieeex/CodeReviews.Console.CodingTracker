@@ -43,5 +43,7 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
   * Using intermediate database commands, such as _HAVING, OFFSET + LIMIT_ to find median and modal values
 * Spectre Console
   * Drawing user multi and single selection UI to switch between a variety of menus
-  * Utilising datatables 
+  * Utilising datatables to show results of the reports and present selected data when changing or deleting it
+  * 
 * C# Documentation
+  * 

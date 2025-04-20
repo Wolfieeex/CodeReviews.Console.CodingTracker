@@ -32,8 +32,16 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
    * After the report is displayed, you can save it as a .csv format for archiving or further analysis.
 8) #### View menu
    * Similar to the Report menu, but shows raw records only— no aggregation or transformation.
-### Things I learned
-* Dapper
+### Things I learned during this project
+* Dapper ORM
+  * Using queries using both anonymous types and objects
+  * Adding paramaters to queries and assigning their values
 * Sqlite
+  * Injection of multiple conditions into SQL query to create Filtering Class
+  * Using Sqlite functions, such as _INSTR_ or _SUBSTR_ to manipulate query data (such as dates and time span) for compability reasons
+  * Utilising subqueries for specific reader requests
+  * Using intermediate database commands, such as _HAVING, OFFSET + LIMIT_ to find median and modal values
 * Spectre Console
+  * Drawing user multi and single selection UI to switch between a variety of menus
+  * Utilising datatables 
 * C# Documentation

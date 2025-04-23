@@ -34,16 +34,21 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
    * Similar to the Report menu, but shows raw records only— no aggregation or transformation.
 ### Things I learned during this project
 * Dapper ORM
-  * Using queries using both anonymous types and objects
-  * Adding paramaters to queries and assigning their values
+  * Crafted queries against both anonymous types and plain objects.
+  * Parameterized statements with clean value binding.
 * Sqlite
-  * Injection of multiple conditions into SQL query to create Filtering Class
-  * Using Sqlite functions, such as _INSTR_ or _SUBSTR_ to manipulate query data (such as dates and time span) for compability reasons
-  * Utilising subqueries for specific reader requests
-  * Using intermediate database commands, such as _HAVING, OFFSET + LIMIT_ to find median and modal values
+  * Built a Filtering class to inject multiple WHERE clauses dynamically.
+  * Used INSTR() & SUBSTR() to massage dates and time spans for cross-platform compatibility.
+  * Composed subqueries to satisfy specialized reader requests.
+  * Employed HAVING, OFFSET + LIMIT to calculate medians and modes.
 * Spectre Console
-  * Drawing user multi and single selection UI to switch between a variety of menus
-  * Utilising datatables to show results of the reports and present selected data when changing or deleting it
-  * 
+  * Designed multi- and single-select menus for smooth navigation.
+  * Rendered results in interactive DataTables (and enabled in-place edits/deletions).
+  * Applied colors, borders, and text styles to highlight key information.
 * C# Documentation
-  * 
+  * Leveraged pattern matching to validate user input.
+  * Experimented with advanced regex for robust text formatting.
+### Things that I would like to improve
+* Further split large classes and their helpers into separate files to keep each one focused and maintainable.
+* Refactor repeated code blocks by harnessing polymorphism—design base classes or interfaces so shared logic can be reused with minimal tweaks.
+* Simplify TimeSpan handling by accepting a database-ready input format up front, or centralize conversion in one utility to avoid redundant parsing.

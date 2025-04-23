@@ -34,21 +34,21 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
    * Similar to the Report menu, but shows raw records only— no aggregation or transformation.
 ### Things I learned during this project
 * Dapper ORM
-  * Crafted queries against both anonymous types and plain objects.
-  * Parameterized statements with clean value binding.
+  * Crafted queries against both anonymous types and class objects.
+  * Used dynamic parameters for advanced filters.
 * Sqlite
   * Built a Filtering class to inject multiple WHERE clauses dynamically.
-  * Used INSTR() & SUBSTR() to massage dates and time spans for cross-platform compatibility.
-  * Composed subqueries to satisfy specialized reader requests.
-  * Employed HAVING, OFFSET + LIMIT to calculate medians and modes.
+  * Used modules such as INSTR() & SUBSTR() to compare dates and time spans with different formats.
+  * Composed subqueries to satisfy specialized reader requests, for example while using UPTADE query with additional filters.
+  * Employed HAVING, OFFSET + LIMIT to calculate medians and modes for the report class.
 * Spectre Console
   * Designed multi- and single-select menus for smooth navigation.
-  * Rendered results in interactive DataTables (and enabled in-place edits/deletions).
+  * Rendered results in interactive DataTables (and enabled in-place edits/updates/deletions).
   * Applied colors, borders, and text styles to highlight key information.
 * C# Documentation
   * Leveraged pattern matching to validate user input.
   * Experimented with advanced regex for robust text formatting.
 ### Things that I would like to improve
-* Further split large classes and their helpers into separate files to keep each one focused and maintainable.
+* Further split large classes and their helpers into separate files to keep each one focused and maintainable. _Some classes, that initially seemed straightforward and easy, grew into "God classes" that became then very difficult to seperate._
 * Refactor repeated code blocks by harnessing polymorphism—design base classes or interfaces so shared logic can be reused with minimal tweaks.
-* Simplify TimeSpan handling by accepting a database-ready input format up front, or centralize conversion in one utility to avoid redundant parsing.
+* Simplify TimeSpan handling by accepting a database-ready input format up front from the user, or centralize conversion in one helper class to avoid redundant parsing.

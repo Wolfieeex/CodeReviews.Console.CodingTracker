@@ -48,6 +48,8 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
 * C# Documentation
   * Leveraged pattern matching to validate user input.
   * Experimented with advanced regex for robust text formatting.
+  * Handiling of stopwatch and timer classes.
+  * Implementing configuration file
 ### Things that I would like to improve
 * Further split large classes and their helpers into separate files to keep each one focused and maintainable. _Some classes, that initially seemed straightforward and easy, grew into "God classes" that became then very difficult to seperate._
 * Refactor repeated code blocks by harnessing polymorphism—design base classes or interfaces so shared logic can be reused with minimal tweaks.

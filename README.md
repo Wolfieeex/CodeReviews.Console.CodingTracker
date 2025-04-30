@@ -53,3 +53,6 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
 * Further split large classes and their helpers into separate files to keep each one focused and maintainable. _Some classes, that initially seemed straightforward and easy, grew into "God classes" that became then very difficult to seperate._
 * Refactor repeated code blocks by utilising base classes along with polymorphed ones or interfaces so shared logic can be reused with minimal tweaks.
 * Simplify TimeSpan handling by accepting a database-ready input format up front from the user, or centralize conversion in one helper class to avoid uneccessary parsing.
+* Much more frequent employment of Screen Managers that control the View flow and seperate 
+### To sum up
+

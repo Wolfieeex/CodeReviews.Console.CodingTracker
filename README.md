@@ -10,14 +10,13 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
    * Use this menu to record a session you didn’t track with the built‑in timer. The start and end dates are required. Optional but recommended: number of lines and comments—these make future reviews clearer.
    * Each field is validated to enforce the correct format, so the database stays clean and consistent. You can update or clear any field by using special inputs, and the program blocks entries whose start date is after the end date.
    * Once saved, the session is written to the database. Important! Manually added sessions do not update goals.
-   * 
-    _Menu screenshot_
 2) #### Session timer tracking
    * Start the timer when you begin coding; a large timer appears in the centre of the console and counts seconds. You can pause it at any time.
    * You can discard a running session if you decide not to keep it.
    * When you finish, enter the number of lines and comments. A new record is then added to the database.
+   * Finally, the application will show you the progress of your goals, and ones that you are close to be completed or failed.
 3) #### Goal features
-   * Add goals to track either lines of code produced or time spent coding within a chosen timeframe. Set a deadline from presents, or create a custom one, as you wish.
+   * Add goals to track either lines of code produced or time spent coding within a chosen timeframe. Set a deadline from presets, or create a custom one, as you wish.
    * View previous goals, whether they are failed, completed, or in progres in a data table that shows all key details. You can delete goal history you no longer need.
    * When a goal is no longer relevant, simply delete it from the Goals menu.
 4) #### Filtering
@@ -48,9 +47,9 @@ On top of session logging, Coding Tracker helps you stay focused on your goals. 
 * C# Documentation
   * Leveraged pattern matching to validate user input.
   * Experimented with advanced regex for robust text formatting.
-  * Handiling of stopwatch and timer classes.
+  * Handling of stopwatch and timer classes.
   * Implementing configuration file
 ### Things that I would like to improve
 * Further split large classes and their helpers into separate files to keep each one focused and maintainable. _Some classes, that initially seemed straightforward and easy, grew into "God classes" that became then very difficult to seperate._
-* Refactor repeated code blocks by harnessing polymorphism—design base classes or interfaces so shared logic can be reused with minimal tweaks.
-* Simplify TimeSpan handling by accepting a database-ready input format up front from the user, or centralize conversion in one helper class to avoid redundant parsing.
+* Refactor repeated code blocks by utilising base classes along with polymorphed ones or interfaces so shared logic can be reused with minimal tweaks.
+* Simplify TimeSpan handling by accepting a database-ready input format up front from the user, or centralize conversion in one helper class to avoid uneccessary parsing.

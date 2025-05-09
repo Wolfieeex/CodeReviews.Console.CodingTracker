@@ -21,7 +21,7 @@ internal class FilterScreenManager
         switch (userOption)
         {
             case -1:
-                TemporaryData.lastFilter = filterDetails;
+                TemporaryData.LastFilter = filterDetails;
                 runFilterMenuLoop = false;
                 break;
             case 0:
@@ -40,7 +40,7 @@ internal class FilterScreenManager
                         MaxDuration = null,
                         WasTimerTracked = null
                     };
-                    TemporaryData.lastFilter = filterDetails;
+                    TemporaryData.LastFilter = filterDetails;
                 }
                 break;
             case 1:
@@ -132,7 +132,7 @@ internal class FilterScreenManager
         switch (userOption)
         {
             case -1:
-                TemporaryData.lastFilter = filterDetails;
+                TemporaryData.LastFilter = filterDetails;
                 runFilterMenuLoop = false;
                 break;
             case 0:
@@ -151,7 +151,7 @@ internal class FilterScreenManager
                         MaxDuration = null,
                         WasTimerTracked = null
                     };
-                    TemporaryData.lastFilter = filterDetails;
+                    TemporaryData.LastFilter = filterDetails;
                 }
                 break;
             case 1:

@@ -203,7 +203,6 @@ internal class Tables
 
 			for (int j = 0; j < lineLength; j++)
             {
-                int padding = 5;
                 string cell = "";
                 string csvCell = "";
 
@@ -287,7 +286,6 @@ internal class Tables
         table.BorderColor(Color.BlueViolet);
         System.Console.Clear();
         AnsiConsole.Write(table);
-        string finishingText = "Report printed. Press any button to return to the report menu: ";
         AnsiConsole.Write(new Rule("-"));
 		AnsiConsole.Write(new Markup($"Report printed. {titleHex}Insert \"s\" to save it[/] or {inputHex}any other text to return to the report menu[/]: "));
         string lineInput = System.Console.ReadLine();

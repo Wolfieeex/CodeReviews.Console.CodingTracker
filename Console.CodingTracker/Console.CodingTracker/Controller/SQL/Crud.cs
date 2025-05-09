@@ -16,7 +16,9 @@ internal class Crud
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
-            string commString = @$"INSERT INTO '{ConfigurationManager.AppSettings.Get("DatabaseName")}' 
+            string databaseName = ConfigurationManager.AppSettings.Get("DatabaseName");
+
+			string commString = @$"INSERT INTO '{databaseName}' 
                                 ('Creation date', 'Last update date', 'Start date', 'End date', Duration, 'Lines of code', Comments, 'Was Timer Tracked')
                                 VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments, @Timer)";
             var newRow = new { Creation = session.CreationDate, Update = session.LastUpdateDate, Start = session.StartDate, End = session.EndDate, session.Duration, Lines = session.NumberOfLines.HasValue ? session.NumberOfLines : -1, Comments = string.IsNullOrEmpty(session.Comments) ? "" : session.Comments, Timer = session.WasTimerTracked ? 1 : 0 };
@@ -93,7 +95,6 @@ internal class Crud
                 reader = conn.ExecuteReader(commandString);
             }
 
-            int counter = 0;
             while (reader.Read())
             {
                 records.Add(new CodingSession(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.GetString(7), reader.GetInt32(8) == 1 ? true : false));

@@ -35,7 +35,8 @@ internal class Goal
             if (value <= TimeSpan.Zero)
 				_programmingTimeLeft = TimeSpan.Zero;
             else
-				_programmingTimeLeft = value; } }
+				_programmingTimeLeft = value; } 
+	}
     public int StartLines { get; init; }
 	private int _linesLeft;
 	public int LinesLeft { get => _linesLeft; set
@@ -44,7 +45,8 @@ internal class Goal
 				_linesLeft = 0;
             else
 				_linesLeft = value;
-        } }
+        } 
+	}
     public string FinishTime { get; set; }
     private string Status { get
         {
@@ -72,7 +74,8 @@ internal class Goal
 			}
 
 			return "In Progress";
-        ;} }
+        } 
+	}
 
     /// <summary>
     /// Creates a goal with time of programming span type, the 2nd parameter accepts the time in which goal needs to be completed.
@@ -129,9 +132,11 @@ internal class Goal
     {
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
-            conn.Open();
+			string goalDatabaseName = ConfigurationManager.AppSettings.Get("GoalDatabaseName");
+
+			conn.Open();
             SqliteCommand cmd = conn.CreateCommand();
-            cmd.CommandText = $"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time]) VALUES (@Type, 'InProgress', @Start, @End, @GoalStartAmount, @GoalAmountLeft, @Finishtime)";
+            cmd.CommandText = $"INSERT INTO {goalDatabaseName}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time]) VALUES (@Type, 'InProgress', @Start, @End, @GoalStartAmount, @GoalAmountLeft, @Finishtime)";
 			cmd.Parameters.AddWithValue("@Type", GoalType.ToString());
 			cmd.Parameters.AddWithValue("@Start", StartTime.ToString());
 			cmd.Parameters.AddWithValue("@End", EndTime.ToString());

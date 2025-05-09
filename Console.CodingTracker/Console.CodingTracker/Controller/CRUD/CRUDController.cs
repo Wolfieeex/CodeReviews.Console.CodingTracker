@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Console.CodingTracker.Controller.CRUD;
 
-internal class CRUDController
+internal class CrudController
 {
     internal static void AddNewSessionManually()
     {
@@ -17,7 +17,6 @@ internal class CRUDController
         Color inputColor = Color.LightGoldenrod3;
 
         string titleColorHex = $"[#{titleColor.ToHex()}]";
-        string mainColorHex = $"[#{mainColor.ToHex()}]";
         string inputColorHex = $"[#{inputColor.ToHex()}]";
 
         string? start = null;
@@ -54,7 +53,7 @@ internal class CRUDController
             int? userOption = null;
             try
             {
-                userOption = UserInterface.DisplaySelectionUIWithUserInputs($"Track your {titleColorHex}new session[/]{(valuesNotInserted ? $" (please fill in all non-optional values to proceed). {inputColorHex}Please note, that injected sections will not count towards your goals. You need to track your new session by timer in this app to progress your goals[/]" : "")}:", typeof(MenuSelections.TrackNewSession), titleColor, mainColor, inputColor , dic, $"{Settings.optionalsCompleted}AddRecord[/]", blockEndOption, $"{Settings.optionalsNotCompleted}The start date of your session must be earlier than the end date of your session[/]");
+                userOption = UserInterface.DisplaySelectionUIWithUserInputs($"Track your {titleColorHex}new session[/]{(valuesNotInserted ? $" (please fill in all non-optional values to proceed). {inputColorHex}Please note, that injected sections will not count towards your goals. You need to track your new session by timer in this app to progress your goals[/]" : "")}:", typeof(MenuSelections.TrackNewSession), titleColor, mainColor, inputColor , dic, $"{Settings.OptionalsCompleted}AddRecord[/]", blockEndOption, $"{Settings.OptionalsNotCompleted}The start date of your session must be earlier than the end date of your session[/]");
             }
 
             catch (Exception ex)

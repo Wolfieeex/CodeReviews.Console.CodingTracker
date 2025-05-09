@@ -4,10 +4,7 @@ using Dapper;
 using System.Text;
 using Console.CodingTracker.Controller.SQL;
 using System.Configuration;
-using Console.CodingTracker.Controller;
-using Console.CodingTracker.Controller.ScreenMangers;
 using Spectre.Console;
-using System.Buffers.Text;
 
 namespace Console.CodingTracker.Controller;
 
@@ -22,7 +19,8 @@ internal class ProgramSetup
         {
             conn.Open();
 
-            string commString = $@"CREATE TABLE IF NOT EXISTS '{ConfigurationManager.AppSettings.Get("DatabaseName")}' (
+            string dataBaseName = ConfigurationManager.AppSettings.Get("DatabaseName");
+			string commString = $@"CREATE TABLE IF NOT EXISTS '{dataBaseName}' (
                                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 'Creation date' TEXT,
                                 'Last update date' TEXT,
@@ -199,8 +197,6 @@ internal class ProgramSetup
     internal static void CreateGoalMockTablebase()
     {
         int SettingsMultiplier = 10;
-
-        List<Goal> goalList = new List<Goal>();
 
         string Status;
         string GoalType;

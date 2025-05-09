@@ -215,7 +215,7 @@ internal static class GoalSettings
     }
     private static string ViewTimeSpan(string initialString)
     {
-		initialString = Regex.Replace(initialString.ToString(), @"(d\+)\s|\.", match =>
+		initialString = Regex.Replace(initialString, @"(d\+)\s|\.", match =>
 		{
 			return match.Groups[1].Value == "1" ? "1 day " : match.Groups[1].Value + " days ";
 		});
@@ -508,8 +508,9 @@ internal static class GoalSettings
 
 						foreach (int i in numList)
 						{
+                            string databaseName = ConfigurationManager.AppSettings.Get("GoalDatabaseName");
 							SqliteCommand comm = conn.CreateCommand();
-                            comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed', [Finish Time] = 'DEL' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
+                            comm.CommandText = $"UPDATE {databaseName} SET Status = 'Failed', [Finish Time] = 'DEL' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
                             comm.ExecuteNonQuery();
                         }
                     }
@@ -567,7 +568,6 @@ internal static class GoalSettings
 				}
 				else
 				{
-					TimeSpan timeToComplete = DateTime.Parse(reader.GetString(4)) - DateTime.Now;
 					TimeSpan startGoal = TimeSpan.Parse(reader.GetString(5));
 					TimeSpan goalLeft = TimeSpan.Parse(reader.GetString(6));
 					goals.Add(new Goal(startDate, deadline, startGoal, goalLeft, completionTime));
@@ -687,6 +687,8 @@ internal static class GoalSettings
 
         if (failed.Count > 0)
         {
+            string x = status.ToString();
+            x = "";
             string singularForm = $"Oooops! Unfortunately, you have {hexColor}failed one of your Goals...[/]";
             string pluralForm = $"Oooops! Unfortunately, you have {hexColor}failed {failed.Count} of your goals...[/]";
             string tableTitle = failed.Count == 1 ? singularForm : pluralForm;

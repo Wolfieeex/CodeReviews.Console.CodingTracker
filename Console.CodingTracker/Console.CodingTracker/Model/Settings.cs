@@ -1,7 +1,5 @@
 using Spectre.Console;
 using System.Reflection;
-using System.Configuration;
-using System.Collections.Specialized;
 
 namespace Console.CodingTracker.Model;
 
@@ -27,6 +25,6 @@ internal class Settings
     internal static TimeSpan MaxUpdateTimeVariation { get; private set; } = new TimeSpan(0, 0, 1, 0);
     internal static TimeSpan MinEndTimeVariation { get; private set; } = new TimeSpan(0, 2, 0, 0);
     internal static TimeSpan MaxEndTimeVariation { get; private set; } = new TimeSpan(0, 0, 15, 0);
-    internal static string optionalsCompleted { get; private set; } = $"[#{Color.GreenYellow.ToHex()}]";
-    internal static string optionalsNotCompleted { get; private set; } = $"[#{Color.Red3_1.ToHex()}]";
+    internal static string OptionalsCompleted { get; private set; } = $"[#{Color.GreenYellow.ToHex()}]";
+    internal static string OptionalsNotCompleted { get; private set; } = $"[#{Color.Red3_1.ToHex()}]";
 }

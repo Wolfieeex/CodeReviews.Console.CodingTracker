@@ -3,7 +3,6 @@ using Console.CodingTracker.MenuSelections;
 using Console.CodingTracker.Controller.SQL; 
 using Console.CodingTracker.View;
 using Spectre.Console;
-using System.Configuration;
 
 namespace Console.CodingTracker.Controller.ScreenMangers;
 
@@ -24,25 +23,25 @@ internal class MainMenuScreenManager
             switch (userOption)
             {
                 case 0:
-                    CRUDController.AddNewSessionManually();
+                    CrudController.AddNewSessionManually();
                     break;
                 case 1:
-                    CRUDController.TrackNewSession();
+                    CrudController.TrackNewSession();
                     break;
                 case 2:
                     GoalSettings.GoalMenu();
                     break;
                 case 3:
-                    CRUDController.ViewPreviousSessions();
+                    CrudController.ViewPreviousSessions();
                     break;
                 case 4:
                     CRUD.Reporting.GenerateReport();
                     break;
                 case 5:
-                    CRUDController.UpdateSessionDetails();
+                    CrudController.UpdateSessionDetails();
                     break;
                 case 6:
-                    CRUDController.DeleteSession();
+                    CrudController.DeleteSession();
                     break;
                 case 7:
                     System.Console.Clear();

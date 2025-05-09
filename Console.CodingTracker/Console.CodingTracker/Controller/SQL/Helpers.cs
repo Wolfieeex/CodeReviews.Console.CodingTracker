@@ -20,7 +20,8 @@ internal static class Helpers
             System.Data.IDataReader idr;
             for (int i = 0; i < index.Count; i++)
             {
-                string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {ConfigurationManager.AppSettings.Get("DatabaseName")} WHERE @id = Id";
+                string databaseName = ConfigurationManager.AppSettings.Get("DatabaseName");
+                string retreiveDatesCommand = @$"SELECT ""Start date"", ""End date"" FROM {databaseName} WHERE @id = Id";
                 idr = conn.ExecuteReader(retreiveDatesCommand, new
                 {
                     id = index[i]

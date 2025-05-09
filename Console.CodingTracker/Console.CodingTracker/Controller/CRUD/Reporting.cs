@@ -32,11 +32,10 @@ internal class Reporting
         Color inputColor = Color.SlateBlue1;
 
         string titleColorHex = "[#" + titleColor.ToHex() + "]";
-        string mainColorHex = "[#" + mainColor.ToHex() + "]";
         string inputColorHex = "[#" + inputColor.ToHex() + "]";
 
-		ReportSettings reportSettings = TemporaryData.reportSettings;
-        FilterDetails filterDetails = TemporaryData.lastFilter;
+		ReportSettings reportSettings = TemporaryData.ReportConfiguration;
+        FilterDetails filterDetails = TemporaryData.LastFilter;
         reportSettings.FilterDetails = filterDetails;
 
         string? reportOptionsString = null;
@@ -57,11 +56,11 @@ internal class Reporting
             {
                 if (Enum.GetNames(typeof(ReportOptions)).Length != reportSettings.ReportOptions.Length)
                 {
-                    throw new DataMisalignedException("ReportOptions Enum must have the same length as reportSettings.ReportOptions array length.");
+                    throw new DataMisalignedException("ReportOptions Enum must have the same length as ReportConfiguration.ReportOptions array length.");
                 }
                 if (Enum.GetNames(typeof(SummationOptions)).Length != reportSettings.DataOptions.Length)
                 {
-                    throw new DataMisalignedException("SummationOptions Enum must have the same length as reportSettings.DataOptions array length.");
+                    throw new DataMisalignedException("SummationOptions Enum must have the same length as ReportConfiguration.DataOptions array length.");
                 }
 
                 if (reportSettings.ReportOptions != null)
@@ -130,15 +129,15 @@ internal class Reporting
                 { Enum.GetName((ReportMenu)3), PeriodSelectionString }
             };
 
-            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs($"\nYou are currently in the {titleColorHex}report generation menu[/]. ", typeof(ReportMenu), titleColor, mainColor, inputColor, reportMenuDic, $"{Settings.optionalsCompleted}Run report[/]", false);
+            int? userInput = UserInterface.DisplaySelectionUIWithUserInputs($"\nYou are currently in the {titleColorHex}report generation menu[/]. ", typeof(ReportMenu), titleColor, mainColor, inputColor, reportMenuDic, $"{Settings.OptionalsCompleted}Run report[/]", false);
 
             bool[] tempOptions;
             switch (userInput)
             {
                 case -1:
                     reportSettings.FilterDetails = filterDetails;
-                    TemporaryData.reportSettings = reportSettings;
-                    TemporaryData.lastFilter = filterDetails;
+                    TemporaryData.ReportConfiguration = reportSettings;
+                    TemporaryData.LastFilter = filterDetails;
 
                     Dictionary<string, List<string>> DurationTable = new Dictionary<string, List<string>>();
                     Dictionary<string, List<string>> LinesTable = new Dictionary<string, List<string>>();
@@ -186,8 +185,8 @@ internal class Reporting
                     break;
                 case 4:
                     loopReportMenu = false;
-                    TemporaryData.reportSettings = reportSettings;
-                    TemporaryData.lastFilter = filterDetails;
+                    TemporaryData.ReportConfiguration = reportSettings;
+                    TemporaryData.LastFilter = filterDetails;
                     break;
             }
         }

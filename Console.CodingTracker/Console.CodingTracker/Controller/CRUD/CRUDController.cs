@@ -474,7 +474,6 @@ internal class CrudController
         Color mainColor = Color.Orange1;
 
         string titleColorHex = $"[#{titleColor.ToHex()}]";
-        string mainColorHex = $"[#{mainColor.ToHex()}]";
 
         bool updateWhile = true;
         while (updateWhile)

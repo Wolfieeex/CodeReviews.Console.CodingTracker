@@ -1,5 +1,4 @@
 namespace Console.CodingTracker.MenuSelections;
-
 internal enum MainMenu
 {
     AddRecordManually,

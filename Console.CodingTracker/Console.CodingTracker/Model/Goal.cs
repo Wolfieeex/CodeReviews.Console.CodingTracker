@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.Sqlite;
-using System.Configuration;
 
 namespace Console.CodingTracker.Model;
 
@@ -132,7 +131,7 @@ internal class Goal
     {
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
-			string goalDatabaseName = ConfigurationManager.AppSettings.Get("GoalDatabaseName");
+			string goalDatabaseName = System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName");
 
 			conn.Open();
             SqliteCommand cmd = conn.CreateCommand();

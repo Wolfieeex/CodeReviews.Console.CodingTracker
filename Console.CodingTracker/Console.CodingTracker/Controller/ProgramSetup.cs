@@ -3,7 +3,6 @@ using Console.CodingTracker.Model;
 using Dapper;
 using System.Text;
 using Console.CodingTracker.Controller.SQL;
-using System.Configuration;
 using Spectre.Console;
 
 namespace Console.CodingTracker.Controller;
@@ -19,7 +18,7 @@ internal class ProgramSetup
         {
             conn.Open();
 
-            string dataBaseName = ConfigurationManager.AppSettings.Get("DatabaseName");
+            string dataBaseName = System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName");
 			string commString = $@"CREATE TABLE IF NOT EXISTS '{dataBaseName}' (
                                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 'Creation date' TEXT,
@@ -33,11 +32,11 @@ internal class ProgramSetup
                                 )";
             new SqliteCommand(commString, conn).ExecuteNonQuery();
 
-            commString = $"SELECT * FROM '{ConfigurationManager.AppSettings.Get("DatabaseName")}'";
+            commString = $"SELECT * FROM '{System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")}'";
             System.Data.IDataReader reader = conn.ExecuteReader(commString);
 
             bool isDbNull = false;
-            if (!reader.Read() && bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
+            if (!reader.Read() && bool.Parse(System.Configuration.ConfigurationManager.AppSettings.Get("DeveloperOptions")))
             {
                 isDbNull = true;
             }
@@ -54,7 +53,7 @@ internal class ProgramSetup
         using (SqliteConnection connection = new SqliteConnection(Settings.ConnectionString))
         {
             connection.Open();
-            string connComm = @$"CREATE TABLE IF NOT EXISTS {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} (
+            string connComm = @$"CREATE TABLE IF NOT EXISTS {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} (
                                  Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                  Goal TEXT,
                                  Status TEXT,
@@ -66,11 +65,11 @@ internal class ProgramSetup
                                  )";
             new SqliteCommand(connComm, connection).ExecuteNonQuery();
 
-			connComm = $"SELECT * FROM '{ConfigurationManager.AppSettings.Get("GoalDatabaseName")}'";
+			connComm = $"SELECT * FROM '{System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")}'";
 			System.Data.IDataReader reader = connection.ExecuteReader(connComm);
 
 			bool isDbNull = false;
-			if (!reader.Read() && bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
+			if (!reader.Read() && bool.Parse(System.Configuration.ConfigurationManager.AppSettings.Get("DeveloperOptions")))
 			{
 				isDbNull = true;
 			}
@@ -246,7 +245,7 @@ internal class ProgramSetup
             {
                 conn.Open();
 
-                string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
+                string command = @$"INSERT INTO {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
                                   VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}', '{FinishingTime}')";
 
                 conn.Execute(command);
@@ -317,7 +316,7 @@ internal class ProgramSetup
 			{
 				conn.Open();
 
-				string command = @$"INSERT INTO {ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
+				string command = @$"INSERT INTO {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
                                   VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}', '{FinishingTime}')";
 
 				conn.Execute(command);
@@ -353,19 +352,18 @@ internal class ProgramSetup
 
         return num >= roll ? true : false;
     }
-
 	internal static void DisplayDevOptionSetting(bool main, bool goal)
 	{
         if (main)
         {
-			if (bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
+			if (bool.Parse(System.Configuration.ConfigurationManager.AppSettings.Get("DeveloperOptions")))
 			{
                 AnsiConsole.Markup("[yellow italic]A mock database was created and populated with random sessions inserted.[/]\n");
 			}
 		}
         if (goal)
         {
-			if (bool.Parse(ConfigurationManager.AppSettings.Get("DeveloperOptions")))
+			if (bool.Parse(System.Configuration.ConfigurationManager.AppSettings.Get("DeveloperOptions")))
 			{
 				AnsiConsole.Markup("[yellow italic]A mock database was created and populated with random goals inserted.[/]\n");
 			}

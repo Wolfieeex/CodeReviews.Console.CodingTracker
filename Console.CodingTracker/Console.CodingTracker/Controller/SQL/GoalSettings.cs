@@ -3,7 +3,6 @@ using Console.CodingTracker.Model;
 using System.Text.RegularExpressions;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
-using System.Configuration;
 
 namespace Console.CodingTracker.Controller.SQL;
 
@@ -270,7 +269,7 @@ internal static class GoalSettings
 		{
 			conn.Open();
 			SqliteCommand comm = conn.CreateCommand();
-			comm.CommandText = $"DELETE FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'Completed' OR Status = 'Failed'";
+			comm.CommandText = $"DELETE FROM {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'Completed' OR Status = 'Failed'";
 			comm.ExecuteNonQuery();
 		}
 		AnsiConsole.Markup($"All previous records have been erased. {titleColorHex}Press any button[/] to return to the previous menu: ");
@@ -281,7 +280,7 @@ internal static class GoalSettings
         using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
         {
             conn.Open();
-			string command = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
+			string command = $"SELECT * FROM {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
 			SqliteCommand comm = new SqliteCommand(command, conn);
 			SqliteDataReader reader = comm.ExecuteReader();
 
@@ -323,7 +322,7 @@ internal static class GoalSettings
 					}
                     
                     failedGoals.Add(goal.Key, goal.Value);
-                    command = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed', [Finish Time] = '{goal.Value.FinishTime}' WHERE id = {goal.Key}";
+                    command = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} SET Status = 'Failed', [Finish Time] = '{goal.Value.FinishTime}' WHERE id = {goal.Key}";
                     comm.CommandText = command;
                     comm.ExecuteNonQuery();
                 }
@@ -342,7 +341,7 @@ internal static class GoalSettings
         {
             conn.Open();
 
-            string command = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
+            string command = $"SELECT * FROM {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
             SqliteCommand comm = new SqliteCommand(command, conn);
             SqliteDataReader reader = comm.ExecuteReader();
 
@@ -382,18 +381,18 @@ internal static class GoalSettings
 						completeGoal.FinishTime = DateTime.Now.ToString();
 						completedGoals.Add(goal.Key, completeGoal);
 
-                        comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+                        comm.CommandText = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
                             $"SET [Goal Amount Left] = '{TimeSpan.Zero.ToString()}', Status = 'Completed', [Finish Time] = '{DateTime.Now}' WHERE Id = {goal.Key}";
                     }
                     else if (completeGoal.ProgrammingTimeLeft <= TimeSpan.FromHours(2))
                     {
-						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+						comm.CommandText = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
 							$"SET [Goal Amount Left] = '{completeGoal.ProgrammingTimeLeft.ToString()}' WHERE Id = {goal.Key}";
 						closeToCompleteGoals.Add(goal.Key, completeGoal);
                     }
                     else
                     {
-						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+						comm.CommandText = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
 							$"SET [Goal Amount Left] = '{completeGoal.ProgrammingTimeLeft.ToString()}' WHERE Id = {goal.Key}";
 					}
 					comm.ExecuteNonQuery();
@@ -408,18 +407,18 @@ internal static class GoalSettings
 						completeGoal.FinishTime = DateTime.Now.ToString();
 						completedGoals.Add(goal.Key, completeGoal);
 
-						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+						comm.CommandText = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
                             $"SET [Goal Amount Left] = '0', Status = 'Completed', [Finish Time] = '{DateTime.Now}' WHERE Id = {goal.Key}";
                     }
                     else if (completeGoal.LinesLeft <= 200)
                     {
-						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+						comm.CommandText = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
 							$"SET [Goal Amount Left] = '{completeGoal.LinesLeft}' WHERE Id = {goal.Key}";
 						closeToCompleteGoals.Add(goal.Key, completeGoal);
                     }
                     else
                     {
-						comm.CommandText = $"UPDATE {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
+						comm.CommandText = $"UPDATE {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} " +
 							$"SET [Goal Amount Left] = '{completeGoal.LinesLeft}' WHERE Id = {goal.Key}";
 					}
 					comm.ExecuteNonQuery();
@@ -451,7 +450,7 @@ internal static class GoalSettings
                 {
                     conn.Open();
                     SqliteCommand comm = conn.CreateCommand();
-                    comm.CommandText = $"SELECT COUNT(*) FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
+                    comm.CommandText = $"SELECT COUNT(*) FROM {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress'";
                     recordsCount = Convert.ToInt32(comm.ExecuteScalar());
                 }
 
@@ -508,9 +507,9 @@ internal static class GoalSettings
 
 						foreach (int i in numList)
 						{
-                            string databaseName = ConfigurationManager.AppSettings.Get("GoalDatabaseName");
+                            string databaseName = System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName");
 							SqliteCommand comm = conn.CreateCommand();
-                            comm.CommandText = $"UPDATE {databaseName} SET Status = 'Failed', [Finish Time] = 'DEL' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
+                            comm.CommandText = $"UPDATE {databaseName} SET Status = 'Failed', [Finish Time] = 'DEL' WHERE Status = 'InProgress' AND Id = ( SELECT Id FROM {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = 'InProgress' LIMIT 1 OFFSET {i - 1} )";
                             comm.ExecuteNonQuery();
                         }
                     }
@@ -534,7 +533,7 @@ internal static class GoalSettings
 		{
 			conn.Open();
 			SqliteCommand comm = conn.CreateCommand();
-			comm.CommandText = $"SELECT * FROM {ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = '{status ??= "-1"}'";
+			comm.CommandText = $"SELECT * FROM {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")} WHERE Status = '{status ??= "-1"}'";
 			SqliteDataReader reader = comm.ExecuteReader();
 
 			if (!reader.HasRows)

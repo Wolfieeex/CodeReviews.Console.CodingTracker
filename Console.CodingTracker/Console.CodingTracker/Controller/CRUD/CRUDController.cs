@@ -411,7 +411,6 @@ internal class CrudController
         Color inputColor = Color.Orange3;
 
         string titleColorHex = $"[#{titleColor.ToHex()}]";
-        string mainColorHex = $"[#{mainColor.ToHex()}]";
         string inputColorHex = $"[#{inputColor.ToHex()}]";
 
         bool updateMenuRun = true;
@@ -473,7 +472,6 @@ internal class CrudController
     {
         Color titleColor = Color.DarkOrange3;
         Color mainColor = Color.Orange1;
-        Color inputColor = Color.Orange3;
 
         string titleColorHex = $"[#{titleColor.ToHex()}]";
         string mainColorHex = $"[#{mainColor.ToHex()}]";

@@ -34,7 +34,8 @@ internal class Goal
             if (value <= TimeSpan.Zero)
 				_programmingTimeLeft = TimeSpan.Zero;
             else
-				_programmingTimeLeft = value; } 
+				_programmingTimeLeft = value; 
+		} 
 	}
     public int StartLines { get; init; }
 	private int _linesLeft;

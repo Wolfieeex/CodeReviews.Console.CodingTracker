@@ -648,7 +648,6 @@ internal class CrudController
     internal static bool DeletionMenu(List<CodingSession> sessions, Color titleColor, Color mainColor, Color inputColor)
     {
         string titleColorHex = $"[#{titleColor.ToHex()}]";
-        string mainColorHex = $"[#{mainColor.ToHex()}]";
         string inputColorHex = $"[#{inputColor.ToHex()}]";
 
         bool deletionWhile = true;

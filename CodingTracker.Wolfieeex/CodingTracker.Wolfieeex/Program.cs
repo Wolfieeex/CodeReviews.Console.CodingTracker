@@ -10,6 +10,7 @@ try
 	TemporaryData.SetFilterSettingsToDefaultSettings();
 
 	(bool mainDb, bool goalDb) = ProgramSetup.InstantiateDatabase();
+	
 	ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);
 	ProgramSetup.ConsoleSettings();
 	MainMenuScreenManager.S_Mainmenu();

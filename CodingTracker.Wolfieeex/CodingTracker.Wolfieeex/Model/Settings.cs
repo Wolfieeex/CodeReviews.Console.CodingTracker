@@ -5,6 +5,7 @@ namespace CodingTracker.Wolfieeex.Model;
 
 internal class Settings
 {
+    // This needs to be OUTSIDE project directory
     public static string ConnectionString
     {
         get

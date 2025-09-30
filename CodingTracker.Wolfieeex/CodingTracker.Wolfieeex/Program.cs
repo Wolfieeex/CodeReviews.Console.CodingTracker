@@ -1,12 +1,13 @@
 ﻿using CodingTracker.Wolfieeex.Controller;
+using CodingTracker.Wolfieeex.Model;
 using Console.CodingTracker.Controller;
 using Console.CodingTracker.Controller.ScreenMangers;
-using Console.CodingTracker.Model;
 
 try
 {
 	var dataAccess = new DataInitializer();
 
+	// Still working on that lol
 	TemporaryData.SetFilterSettingsToDefaultSettings();
 
 	(bool mainDb, bool goalDb) = ProgramSetup.InstantiateDatabase();

@@ -1,49 +1,8 @@
-﻿namespace Console.CodingTracker.Model;
-internal enum ReportMenu
-{
-    OptionalApplyFilters,
-    ReportOptions,
-    DataOptions,
-    PeriodSelection,
-    ReturnToMainMenu
-}
-internal enum SummationOptions
-{
-    Durations,
-    Lines
-}
-internal enum ReportOptions
-{
-    CountRecords,
-    SumRecords,
-    FindMaximalValues,
-    FindMinimalValues,
-    FindMeanValues,
-    FindMedianValues,
-    FindModalValues
-}
-internal enum ReportSortationPeriod
-{
-    Yearly,
-    Monthly,
-    Weekly,
-    Daily
-}
-internal enum Months
-{
-    January,
-    February,
-    March,
-    April,
-    May,
-    June,
-    July,
-    August,
-    September,
-    October,
-    November,
-    December
-}
+﻿using static CodingTracker.Wolfieeex.Model.ReportingEnums;
+
+namespace CodingTracker.Wolfieeex.Model;
+
+// Create a struct for both ReportOptions and DataOptions. Explain more in detail using correct name the rest of the fields.
 internal class ReportSettings
 {
     internal FilterDetails FilterDetails { get; set; }

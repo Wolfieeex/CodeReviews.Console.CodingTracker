@@ -6,23 +6,6 @@ using System.Text.RegularExpressions;
 
 namespace Console.CodingTracker.Controller.CRUD;
 
-public enum SortingOrder
-{
-    Ascending,
-    Descending
-}
-internal enum SortingBy
-{
-    CreationDate,
-    UpdateDate,
-    StartDate,
-    EndDate,
-    Duration,
-    NumberOfLines,
-    Comment,
-    WasTimerTracked
-}
-
 internal class Reporting
 {
     internal static void GenerateReport()

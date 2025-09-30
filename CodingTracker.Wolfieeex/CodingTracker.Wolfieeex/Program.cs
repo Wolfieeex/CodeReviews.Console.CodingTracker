@@ -6,11 +6,13 @@ try
 {
 	var dataAccess = new DataInitializer();
 
-	// Still working on that lol
+	// Done
 	TemporaryData.SetFilterSettingsToDefaultSettings();
 
+	// In Progress
 	(bool mainDb, bool goalDb) = ProgramSetup.InstantiateDatabase();
 	
+	// Untouched
 	ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);
 	ProgramSetup.ConsoleSettings();
 	MainMenuScreenManager.S_Mainmenu();

@@ -2,12 +2,12 @@
 
 namespace CodingTracker.Wolfieeex.Controller;
 
-internal abstract class DbConnectionProvider
+public abstract class DbConnectionProvider
 {
-	private string connectionString { get; init; }
-	private string mainTable { get; init; }
-	private string goalTable { get; init; }
-	private bool createMockDatabases { get; init; }
+	protected string connectionString { get; init; }
+	protected string mainTableName { get; init; }
+	protected string goalTableName { get; init; }
+	protected bool createMockDatabases { get; init; }
 	
 	public DbConnectionProvider()
 	{
@@ -16,8 +16,8 @@ internal abstract class DbConnectionProvider
 			.Build();
 
 		connectionString = configuration.GetSection("ConnectionStrings")["DefaultConnection"];
-		mainTable = configuration.GetSection("DatabaseTableNames")["CodingTrackingDatabase"];
-		mainTable = configuration.GetSection("DatabaseTableNames")["GoalTrackingDatabase"];
+		mainTableName = configuration.GetSection("DatabaseTableNames")["CodingTrackingDatabase"];
+		goalTableName = configuration.GetSection("DatabaseTableNames")["GoalTrackingDatabase"];
 		createMockDatabases = Convert.ToBoolean(configuration.GetSection("DeveloperOptions")["CreateMockDatabasesIfNone"]);
 	}
 }

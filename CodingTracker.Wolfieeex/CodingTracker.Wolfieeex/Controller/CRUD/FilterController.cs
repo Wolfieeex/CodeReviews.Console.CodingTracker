@@ -1,11 +1,12 @@
-﻿using Console.CodingTracker.Controller.ScreenMangers;
-using Console.CodingTracker.Model;
-using Console.CodingTracker.View;
+﻿using static CodingTracker.Wolfieeex.Model.ReportingEnums;
+using CodingTracker.Wolfieeex.Model;
+using CodingTracker.Wolfieeex.View;
+using CodingTracker.Wolfieeex.Controller.ScreenMangers;
 using Spectre.Console;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Console.CodingTracker.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.CRUD;
 internal class FilterController
 {
     internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu, Color titleColor, Color mainColor, Color inputColor)

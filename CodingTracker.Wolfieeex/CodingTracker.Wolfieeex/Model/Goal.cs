@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 
-namespace Console.CodingTracker.Model;
+namespace CodingTracker.Wolfieeex.Model;
 
 public enum GoalStatus
 {

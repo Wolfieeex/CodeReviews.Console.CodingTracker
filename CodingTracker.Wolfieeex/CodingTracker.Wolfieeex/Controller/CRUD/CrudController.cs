@@ -1,12 +1,12 @@
-﻿using Console.CodingTracker.View;
-using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.View;
+using CodingTracker.Wolfieeex.Model;
 using Spectre.Console;
 using System.Timers;
 using System.Text.RegularExpressions;
-using Console.CodingTracker.Controller.SQL;
+using CodingTracker.Wolfieeex.Controller.SQL;
 using System.Diagnostics;
 
-namespace Console.CodingTracker.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.CRUD;
 
 internal class CrudController
 {
@@ -390,7 +390,7 @@ internal class CrudController
             List<CodingSession> sessions = Crud.GetRecords(Filter);
             if (sessions != null && sessions.Any())
             {
-                Tables.DrawDatatable(sessions, Filter.ViewOptions);
+                Tables.DrawDatatable(sessions, Filter.ViewOptions.InfoToBoolArray());
                 AnsiConsole.Write(new Markup($"\n[#{titleColor.ToHex()}]Press any key[/] to return to previous menu:").Centered());
             }
             else if (Filter == null)
@@ -434,7 +434,7 @@ internal class CrudController
                 continue;
             }
 
-            bool[] viewOptions = filters.ViewOptions;
+            bool[] viewOptions = filters.ViewOptions.InfoToBoolArray();
             Tables.DrawDatatable(sessions, viewOptions);
             System.Console.WriteLine();
             int reason = 0;
@@ -610,7 +610,7 @@ internal class CrudController
                 continue;
             }
 
-            bool[] viewOptions = filters.ViewOptions;
+            bool[] viewOptions = filters.ViewOptions.InfoToBoolArray();
             Tables.DrawDatatable(sessions, viewOptions);
             System.Console.WriteLine();
             int reason = 0;

@@ -1,4 +1,4 @@
-﻿namespace Console.CodingTracker.Model;
+﻿namespace CodingTracker.Wolfieeex.Model;
 
 internal class CodingSession
 {

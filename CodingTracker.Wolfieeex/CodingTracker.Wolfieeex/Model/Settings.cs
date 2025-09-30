@@ -1,7 +1,7 @@
 using Spectre.Console;
 using System.Reflection;
 
-namespace Console.CodingTracker.Model;
+namespace CodingTracker.Wolfieeex.Model;
 
 internal class Settings
 {

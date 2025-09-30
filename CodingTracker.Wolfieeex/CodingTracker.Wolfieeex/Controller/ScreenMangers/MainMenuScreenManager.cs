@@ -1,10 +1,9 @@
-﻿using Console.CodingTracker.Controller.CRUD;
-using Console.CodingTracker.MenuSelections;
-using Console.CodingTracker.Controller.SQL; 
-using Console.CodingTracker.View;
+﻿using CodingTracker.Wolfieeex.Controller.CRUD;
+using CodingTracker.Wolfieeex.Controller.SQL; 
+using CodingTracker.Wolfieeex.View;
 using Spectre.Console;
 
-namespace Console.CodingTracker.Controller.ScreenMangers;
+namespace CodingTracker.Wolfieeex.Controller.ScreenMangers;
 
 internal class MainMenuScreenManager
 {

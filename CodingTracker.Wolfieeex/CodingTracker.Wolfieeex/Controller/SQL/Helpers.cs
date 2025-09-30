@@ -1,8 +1,8 @@
-﻿using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Console.CodingTracker.Controller.SQL;
+namespace CodingTracker.Wolfieeex.Controller.SQL;
 
 internal static class Helpers
 {

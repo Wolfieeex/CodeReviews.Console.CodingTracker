@@ -1,11 +1,11 @@
 ﻿using Microsoft.Data.Sqlite;
-using Console.CodingTracker.Model;
+using CodingTracker.Wolfieeex.Model;
 using Dapper;
 using System.Text;
-using Console.CodingTracker.Controller.SQL;
+using CodingTracker.Wolfieeex.Controller.SQL;
 using Spectre.Console;
 
-namespace Console.CodingTracker.Controller;
+namespace CodingTracker.Wolfieeex.Controller;
 
 internal class ProgramSetup
 {

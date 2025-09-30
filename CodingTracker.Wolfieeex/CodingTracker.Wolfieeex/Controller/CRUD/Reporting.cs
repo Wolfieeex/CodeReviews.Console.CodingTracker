@@ -1,10 +1,11 @@
-﻿using Console.CodingTracker.Controller.ScreenMangers;
-using Console.CodingTracker.Model;
-using Console.CodingTracker.View;
+﻿using CodingTracker.Wolfieeex.Controller.ScreenMangers;
+using CodingTracker.Wolfieeex.Model;
+using CodingTracker.Wolfieeex.View;
 using Spectre.Console;
 using System.Text.RegularExpressions;
+using static CodingTracker.Wolfieeex.Model.ReportingEnums;
 
-namespace Console.CodingTracker.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.CRUD;
 
 internal class Reporting
 {

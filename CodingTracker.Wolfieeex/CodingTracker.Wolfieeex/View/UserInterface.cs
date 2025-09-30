@@ -1,10 +1,9 @@
-﻿using Console.CodingTracker.Controller.SQL;
+﻿using CodingTracker.Wolfieeex.Controller.SQL;
 using Spectre.Console;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Console.CodingTracker.Model;
 
-namespace Console.CodingTracker.View;
+namespace CodingTracker.Wolfieeex.View;
 
 public enum TextUIOptions
 {

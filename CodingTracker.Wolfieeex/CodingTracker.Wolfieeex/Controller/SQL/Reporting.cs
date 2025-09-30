@@ -1,10 +1,11 @@
-﻿using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Spectre.Console;
 using System.Text.RegularExpressions;
+using static CodingTracker.Wolfieeex.Model.ReportingEnums;
 
-namespace Console.CodingTracker.Controller.SQL
+namespace CodingTracker.Wolfieeex.Controller.SQL
 {
     internal class Reporting
     {

@@ -45,6 +45,7 @@ internal class ReportingEnums
 		FindMedianValues,
 		FindModalValues
 	}
+
 	internal enum ReportSortationPeriod
 	{
 		Yearly,
@@ -52,6 +53,7 @@ internal class ReportingEnums
 		Weekly,
 		Daily
 	}
+
 	internal enum Months
 	{
 		January,

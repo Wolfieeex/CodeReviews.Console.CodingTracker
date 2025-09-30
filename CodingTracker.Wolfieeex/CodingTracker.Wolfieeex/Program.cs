@@ -1,7 +1,6 @@
 ﻿using CodingTracker.Wolfieeex.Controller;
 using CodingTracker.Wolfieeex.Model;
-using Console.CodingTracker.Controller;
-using Console.CodingTracker.Controller.ScreenMangers;
+using CodingTracker.Wolfieeex.Controller.ScreenMangers;
 
 try
 {

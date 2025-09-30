@@ -1,11 +1,11 @@
-﻿using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.Model;
 using Spectre.Console;
-using System.Collections.Generic;
+using static CodingTracker.Wolfieeex.Model.ReportingEnums;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Console.CodingTracker.View;
+namespace CodingTracker.Wolfieeex.View;
 
 enum ReportTableTitles
 {

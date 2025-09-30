@@ -10,6 +10,7 @@ struct FieldsToViewOnDataTable
 	public bool NumberOfLines;
 	public bool Comments;
 	public bool WasSessionTrackedByTimer;
+	public bool IsInitialized = false;
 
 	public FieldsToViewOnDataTable(bool[] values)
 	{
@@ -24,6 +25,7 @@ struct FieldsToViewOnDataTable
 		NumberOfLines = values[5];
 		Comments = values[6];
 		WasSessionTrackedByTimer = values[7];
+		IsInitialized = true;
 	}
 
 	public bool[] InfoToBoolArray()

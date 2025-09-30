@@ -140,9 +140,9 @@ internal class Tables
         table.AddColumn("[yellow]Data type:[/]");
         for (int i = 0; i < names.Length; i++)
         {
-            if (settings.ReportOptions.Length > interval)
+            if (settings.ReportOptions.InfoToBoolArray().Length > interval)
             {
-                if (settings.ReportOptions[interval] == true)
+                if (settings.ReportOptions.InfoToBoolArray()[interval] == true)
                 {
                     csvTable.Append(csvNames[i] + ":;");
                     table.AddColumn(names[i]);
@@ -169,7 +169,7 @@ internal class Tables
 
             string data = "";
             string csvData = "\"";
-            if (settings.DataOptions[0] == true)
+            if (settings.DataOptions.InfoToBoolArray()[0] == true)
             {
                 AddPeriod(ref linePeriod, settings, DurationTable.ElementAt(i).Key);
                 csvLinePeriod = linePeriod + ";";
@@ -177,7 +177,7 @@ internal class Tables
 				data += "[blue]Time span -->[/]";
                 csvData += "Time span";
 
-				if (settings.DataOptions[1] == true)
+				if (settings.DataOptions.InfoToBoolArray()[1] == true)
                 {
                     data += "\n[green]Lines number -->[/]";
 					csvData += "\nLines number";
@@ -206,18 +206,18 @@ internal class Tables
                 string cell = "";
                 string csvCell = "";
 
-                if (settings.DataOptions[0] == true)
+                if (settings.DataOptions.InfoToBoolArray()[0] == true)
                 {
                     csvCell += "\"";
 					cell = DurationTable.ElementAt(i).Value[j];
 					csvCell += DurationTable.ElementAt(i).Value[j];
 
-					if (j != 0 || settings.ReportOptions[0] == false)
+					if (j != 0 || settings.ReportOptions.InfoToBoolArray()[0] == false)
                     {
                         cell = cell.Insert(0, "[blue]");
                         cell += "[/]";
                     }
-                    if (settings.DataOptions[1] == true)
+                    if (settings.DataOptions.InfoToBoolArray()[1] == true)
                     {
                         if (LinesTable.ElementAt(i).Value.Count == 0)
                         {
@@ -236,7 +236,7 @@ internal class Tables
                                 cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
 								csvCell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
 							}
-                            if (j != 0 || settings.ReportOptions[0] == false)
+                            if (j != 0 || settings.ReportOptions.InfoToBoolArray()[0] == false)
                             {
                                 cell = cell.Insert(0, "[green]");
                                 cell += "[/]";
@@ -258,7 +258,7 @@ internal class Tables
                         cell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
 						csvCell += "\n" + String.Format("{0:0.##}", decimal.Parse(LinesTable.ElementAt(i).Value[j]));
 					}
-                    if (j != 0 || settings.ReportOptions[0] == false)
+                    if (j != 0 || settings.ReportOptions.InfoToBoolArray()[0] == false)
                     {
                         cell = cell.Insert(0, "[green]");
                         cell += "[/]";

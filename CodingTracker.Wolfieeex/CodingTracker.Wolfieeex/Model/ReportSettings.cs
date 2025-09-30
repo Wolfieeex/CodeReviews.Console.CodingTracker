@@ -11,8 +11,9 @@ struct ReportCalculationsToDisplay
     public bool FindMeanValues;
     public bool FindMedianValues;
     public bool FindModalValues;
+    public bool IsInitialized = false;
 
-   public ReportCalculationsToDisplay(bool[] values)
+    public ReportCalculationsToDisplay(bool[] values)
     {
         if (values == null || values.Length != 7)
             throw new ArgumentException("Array of bool sent to create struct ReportCalculationsToDisplay must contain exactly 7 boolean values in its array.");
@@ -24,6 +25,7 @@ struct ReportCalculationsToDisplay
         FindMeanValues = values[4];
         FindMedianValues = values[5];
         FindModalValues = values[6];
+        IsInitialized = true;
     }
 
     public bool[] InfoToBoolArray()
@@ -45,6 +47,7 @@ struct TypeOfDataChosenToCalculateReport
 {
     public bool Duration;
     public bool Lines;
+    public bool IsInitialized = false;
 
     public TypeOfDataChosenToCalculateReport(bool[] values)
     {
@@ -53,6 +56,7 @@ struct TypeOfDataChosenToCalculateReport
 
         Duration = values[0];
         Lines = values[1];
+        IsInitialized = true;
     }
 
     public bool[] InfoToBoolArray()

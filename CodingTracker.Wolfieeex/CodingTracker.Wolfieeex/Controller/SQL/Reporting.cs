@@ -111,9 +111,9 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                             continue;
                         }
 
-                        if (settings.DataOptions[0] == true)
+                        if (settings.DataOptions.InfoToBoolArray()[0] == true)
                         {
-                            if (settings.ReportOptions[0] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[0] == true)
                             {
                                 if (parameters.Count != 0)
                                 {
@@ -125,7 +125,12 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 }
                             }
 
-                            if (settings.ReportOptions[1] == true || settings.ReportOptions[2] == true || settings.ReportOptions[3] == true || settings.ReportOptions[4] == true || settings.ReportOptions[5] == true || settings.ReportOptions[6] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[1] == true
+                            || settings.ReportOptions.InfoToBoolArray()[2] == true
+                             || settings.ReportOptions.InfoToBoolArray()[3] == true
+                              || settings.ReportOptions.InfoToBoolArray()[4] == true
+                               || settings.ReportOptions.InfoToBoolArray()[5] == true
+                                || settings.ReportOptions.InfoToBoolArray()[6] == true)
                             {
                                 commandString = @$"SELECT * FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject}";
                                 System.Data.IDataReader reader;
@@ -146,7 +151,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 reader.Close();
                             }
 
-                            if (settings.ReportOptions[1] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[1] == true)
                             {
                                 TimeSpan totalDuration = TimeSpan.FromSeconds(0);
                                 foreach (var record in records)
@@ -155,7 +160,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 }
                                 durationData[per].Add(TimeSpanToPresentableString(totalDuration));
                             }
-                            if (settings.ReportOptions[2] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[2] == true)
                             {
                                 TimeSpan maxDuration = TimeSpan.MinValue;
                                 foreach (var record in records)
@@ -167,7 +172,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 }
                                 durationData[per].Add(TimeSpanToPresentableString(maxDuration));
                             }
-                            if (settings.ReportOptions[3] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[3] == true)
                             {
                                 TimeSpan minDuration = TimeSpan.MaxValue;
                                 foreach (var record in records)
@@ -179,7 +184,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 }
                                 durationData[per].Add(TimeSpanToPresentableString(minDuration));
                             }
-                            if (settings.ReportOptions[4] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[4] == true)
                             {
                                 TimeSpan totalDuration = TimeSpan.FromSeconds(0);
                                 foreach (var record in records)
@@ -189,7 +194,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 totalDuration = totalDuration / records.Count;
                                 durationData[per].Add(TimeSpanToPresentableString(totalDuration));
                             }
-                            if (settings.ReportOptions[5] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[5] == true)
                             {
                                 if (records.Count == 1)
                                 {
@@ -208,7 +213,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                     durationData[per].Add(TimeSpanToPresentableString(TimeSpan.Parse(records[(records.Count - 1) / 2].Duration)));
                                 }
                             }
-                            if (settings.ReportOptions[6] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[6] == true)
                             {
                                 if (records.Count == 1)
                                 {
@@ -241,7 +246,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 }
                             }
                         }
-                        if (settings.DataOptions[1] == true)
+                        if (settings.DataOptions.InfoToBoolArray()[1] == true)
                         {
                             commandString = @$"SELECT COUNT(*) FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                             if (parameters.Count != 0)
@@ -255,7 +260,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                             if (recordCount == 0)
                             {
                                 int reportOptionsCount = 0;
-                                foreach (bool b in settings.ReportOptions)
+                                foreach (bool b in settings.ReportOptions.InfoToBoolArray())
                                 {
                                     reportOptionsCount++;
                                 }
@@ -265,12 +270,12 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                 }
                                 continue;
                             }
-                            if (settings.ReportOptions[0] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[0] == true)
                             {
                                 commandString = @$"SELECT COUNT(*) FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 linesData[per].Add(recordCount.ToString());
                             }
-                            if (settings.ReportOptions[1] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[1] == true)
                             {
                                 commandString = @$"SELECT SUM(""Lines of code"") FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
@@ -282,7 +287,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                     linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
                                 }
                             }
-                            if (settings.ReportOptions[2] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[2] == true)
                             {
                                 commandString = @$"SELECT MAX(""Lines of code"") FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
@@ -294,7 +299,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                     linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
                                 }
                             }
-                            if (settings.ReportOptions[3] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[3] == true)
                             {
                                 commandString = @$"SELECT MIN(""Lines of code"") FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
@@ -306,7 +311,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                     linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
                                 }
                             }
-                            if (settings.ReportOptions[4] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[4] == true)
                             {
                                 commandString = @$"SELECT AVG(""Lines of code"") FROM {System.Configuration.ConfigurationManager.AppSettings.Get("DatabaseName")} {whereFilterInject}{whereReportInject} AND ""Lines of code"" <> -1";
                                 if (parameters.Count != 0)
@@ -318,7 +323,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                     linesData[per].Add(conn.ExecuteScalar(commandString).ToString());
                                 }
                             }
-                            if (settings.ReportOptions[5] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[5] == true)
                             {
                                 int isOdd = recordCount % 2;
                                 int isEven = isOdd == 1 ? 0 : 1;
@@ -355,7 +360,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL
                                     }
                                 }
                             }
-                            if (settings.ReportOptions[6] == true)
+                            if (settings.ReportOptions.InfoToBoolArray()[6] == true)
                             {
                                 if (recordCount == 1)
                                 {

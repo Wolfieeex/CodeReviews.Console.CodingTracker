@@ -5,7 +5,7 @@ namespace Console.CodingTracker.Model;
 internal class TemporaryData
 {
     internal static FilterDetails LastFilter { get; set; }
-    internal static void InitializeLastFilter()
+    internal static void SetFilterSettingsToDefaultSettings()
     {
         LastFilter = new FilterDetails()
         {

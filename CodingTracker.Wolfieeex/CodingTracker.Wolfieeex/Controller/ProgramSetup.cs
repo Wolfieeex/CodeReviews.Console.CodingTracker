@@ -371,7 +371,7 @@ internal class ProgramSetup
         if (main || goal)
 		{
             AnsiConsole.Markup("\nThis was done based on a fact that you have dev options enabled." +
-				" If you want to change this setting, go to \"App.config\" file and change \"DeveloperOptions\" to \"false\"." +
+				" If you want to change this setting, go to \"appsettings.json\" file and change \"DeveloperOptions\" to \"False\"." +
                 "\n[yellow]Press any key to continue: [/]");
             System.Console.ReadKey();
 		}

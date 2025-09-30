@@ -1,9 +1,21 @@
 namespace Console.CodingTracker.Model;
 
+public struct ViewOptions
+{
+    bool CreationDate;
+    bool LastUpdateWasOn;
+    bool StartDatetime;
+    bool EndDateTime;
+    bool Duration;
+    bool NumberOfLines;
+    bool Comments;
+    bool WasSessionTrackedByTimer;
+}
+
 internal class FilterDetails
 {
     public SortingDetails SortingDetails { get; set; }
-    public bool[] ViewOptions { get; set; }
+    public ViewOptions ViewOptions { get; set; }
     public string? FromDate { get; set; }
     public string? ToDate { get; set; }
     public string? MinLines { get; set; }

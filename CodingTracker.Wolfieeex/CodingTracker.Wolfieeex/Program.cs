@@ -13,10 +13,10 @@ try
 	DataInitializer dataInitializer = new DataInitializer();
 	bool mainDbWasInitiated = dataInitializer.InstantiateMainDatabase();
 	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
-	
-	// Untouched
 	ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);
 	ProgramSetup.ConsoleSettings();
+	
+	// Untouched
 	MainMenuScreenManager.S_Mainmenu();
 }
 catch (Exception ex)

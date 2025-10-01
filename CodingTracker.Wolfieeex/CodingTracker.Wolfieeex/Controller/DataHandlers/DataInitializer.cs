@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
 using CodingTracker.Wolfieeex.Model;
-
 using Dapper;
 
 namespace CodingTracker.Wolfieeex.Controller;
@@ -39,7 +38,7 @@ internal class DataInitializer : DbConnectionProvider
         if (codingSessions.Count() == 0 && devOptionsSetUpMockDatabases)
         {
             DatatableSeeder seeder = new DatatableSeeder();
-            CreateMockTablebase();
+            seeder.CreateMockTablebase();
             createdMainDb = true;
         }
         return createdMainDb;
@@ -68,8 +67,9 @@ internal class DataInitializer : DbConnectionProvider
 
         if (goals.Count() == 0 && devOptionsSetUpMockDatabases)
         {
+            DatatableSeeder seeder = new DatatableSeeder();
+            seeder.CreateGoalMockTablebase();
             createdGoalMockDb = true;
-            CreateGoalMockTablebase();
         }
         return createdGoalMockDb;
     }

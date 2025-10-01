@@ -17,9 +17,10 @@ public abstract class DbConnectionProvider
 			.AddJsonFile("appsettings.json")
 			.Build();
 
-		connectionString = configuration.GetSection("ConnectionStrings")["DefaultConnection"];
-		mainTableName = configuration.GetSection("DatabaseTableNames")["CodingTrackingDatabase"];
-		goalTableName = configuration.GetSection("DatabaseTableNames")["GoalTrackingDatabase"];
-		createMockDatabases = Convert.ToBoolean(configuration.GetSection("DeveloperOptions")["CreateMockDatabasesIfNone"]);
+		string connectionString = configuration.GetValue<string>("ConnectionStrings:DefaultConnection");
+		string mainTableName = configuration.GetValue<string>("DatabaseTableNames:CodingTracking");
+		string goalTableName = configuration.GetValue<string>("DatabaseTableNames:GoalTracking");
+		bool createMockDatabases = configuration.GetValue<bool>("DeveloperOptions:CreateMockDatabasesIfNone");
+
 	}
 }

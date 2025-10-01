@@ -1,4 +1,6 @@
-namespace CodingTracker.Wolfieeex.Controller.DataHandlers;
+using Microsoft.Extensions.Configuration;
+
+namespace CodingTracker.Wolfieeex.Controller;
 
 internal class DatatableSeeder
 {
@@ -232,8 +234,6 @@ internal class DatatableSeeder
 
                 GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
             }
-
-
 
             using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
             {

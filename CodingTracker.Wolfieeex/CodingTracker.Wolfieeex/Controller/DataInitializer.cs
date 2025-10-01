@@ -83,3 +83,4 @@ internal class DataInitializer : DbConnectionProvider
         System.Data.IDataReader reader = connection.ExecuteReader(commandText);
     }
 }
+

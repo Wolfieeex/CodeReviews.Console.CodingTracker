@@ -2,7 +2,7 @@
 
 internal class CodingSession
 {
-    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, string wasTimerTracked = "false")
     {
         CreationDate = creation;
         LastUpdateDate = lastUpdate;
@@ -13,9 +13,9 @@ internal class CodingSession
         Comments = comments;
         WasTimerTracked = wasTimerTracked;
     }
-    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, string wasTimerTracked = "false")
     {
-        Key = key;
+        Id = key;
         CreationDate = creation;
         LastUpdateDate = lastUpdate;
         StartDate = start;
@@ -25,7 +25,7 @@ internal class CodingSession
         Comments = comments;
         WasTimerTracked = wasTimerTracked;
     }
-    internal int Key { get; set;}
+    internal int Id { get; set;}
     // AI generated
     internal static string[] ProgrammingComments { get; set; } = 
         {
@@ -312,5 +312,5 @@ internal class CodingSession
     internal string Duration { get; set; }
     internal int? NumberOfLines { get; set; }
     internal string? Comments { get; set; }
-    internal bool WasTimerTracked { get; set; }
+    internal string WasTimerTracked { get; set; }
 }

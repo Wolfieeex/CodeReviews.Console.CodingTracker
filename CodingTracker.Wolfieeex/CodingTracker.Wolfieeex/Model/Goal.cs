@@ -2,18 +2,7 @@
 
 namespace CodingTracker.Wolfieeex.Model;
 
-public enum GoalStatus
-{
-    Completed,
-    InProgress,
-    Failed,
-}
 
-public enum GoalType
-{
-    Time,
-    Lines
-}
 
 internal class Goal
 {

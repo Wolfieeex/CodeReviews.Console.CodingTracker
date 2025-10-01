@@ -487,7 +487,7 @@ internal class CrudController
             {
 
                 case 0:
-                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the start of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\"[/] format. ", TextUIOptions.StartDate, mainColor, sessions.Select(x => x.Key).ToList());
+                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the start of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\"[/] format. ", TextUIOptions.StartDate, mainColor, sessions.Select(x => x.Id).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -496,13 +496,13 @@ internal class CrudController
                     {
                         break;
                     }
-                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateStartDate);
+                    Crud.UpdateRecords(sessions.Select(x => x.Id).ToList(), temp, MenuSelections.UpdateMenu.UpdateStartDate);
                     foreach (CodingSession s in sessions)
                     {
                         s.StartDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
                     }
-                    List<string> durations = Helpers.GetDurations(sessions.Select(x => x.Key).ToList());
+                    List<string> durations = Helpers.GetDurations(sessions.Select(x => x.Id).ToList());
                     for (int i = 0; i < sessions.Count; i++)
                     {
                         sessions[i].Duration = durations[i];
@@ -510,7 +510,7 @@ internal class CrudController
                     break;
 
                 case 1:
-                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the end of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\"[/] format. ", TextUIOptions.EndDate, mainColor, sessions.Select(x => x.Key).ToList());
+                    temp = UserInterface.DisplayTextUI($"Please insert {titleColorHex}the end of the session[/] in {titleColorHex}\"dd/mm/yyyy, hh:mm\"[/] format. ", TextUIOptions.EndDate, mainColor, sessions.Select(x => x.Id).ToList());
                     if (temp.ToLower() == "e")
                     {
                         break;
@@ -519,13 +519,13 @@ internal class CrudController
                     {
                         break;
                     }
-                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp, MenuSelections.UpdateMenu.UpdateEndDate);
+                    Crud.UpdateRecords(sessions.Select(x => x.Id).ToList(), temp, MenuSelections.UpdateMenu.UpdateEndDate);
                     foreach (CodingSession s in sessions)
                     {
                         s.EndDate = temp.Trim();
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
                     }
-                    durations = Helpers.GetDurations(sessions.Select(x => x.Key).ToList());
+                    durations = Helpers.GetDurations(sessions.Select(x => x.Id).ToList());
                     for (int i = 0; i < sessions.Count; i++)
                     {
                         sessions[i].Duration = durations[i];
@@ -550,7 +550,7 @@ internal class CrudController
                         temp = null;
                     }
 
-                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
+                    Crud.UpdateRecords(sessions.Select(x => x.Id).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
                     foreach (CodingSession s in sessions)
                     {
                         s.NumberOfLines = temp == null ? null : int.Parse(temp);
@@ -565,7 +565,7 @@ internal class CrudController
                     }
                     temp = string.IsNullOrEmpty(temp) ? temp : temp.Trim();
 
-                    Crud.UpdateRecords(sessions.Select(x => x.Key).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateComments);
+                    Crud.UpdateRecords(sessions.Select(x => x.Id).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateComments);
                     foreach (CodingSession s in sessions)
                     {
                         s.Comments = temp;
@@ -664,7 +664,7 @@ internal class CrudController
                     bool confirmation = UserInterface.DisplayConfirmationSelectionUI($"{titleColorHex}Are you sure you want to delete {demonstrative}?[/]", "Yes", "No", Color.Red);
                     if (confirmation)
                     {
-                        Crud.DeleteRecords(sessions.Select(x => x.Key).ToList());
+                        Crud.DeleteRecords(sessions.Select(x => x.Id).ToList());
                         AnsiConsole.Markup($"Deletion of {sessions.Count} record{(sessions.Count > 1 ? "s" : "")} completed. {inputColorHex}Press any key[/] to return to the previous menu: ");
                         System.Console.ReadKey();
                         return true;

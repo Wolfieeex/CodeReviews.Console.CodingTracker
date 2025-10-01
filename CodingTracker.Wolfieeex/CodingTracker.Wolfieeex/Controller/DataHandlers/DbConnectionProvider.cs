@@ -4,14 +4,16 @@ namespace CodingTracker.Wolfieeex.Controller;
 
 public abstract class DbConnectionProvider
 {
+	protected static string ConnectionString = "Data Source=CodingTracker.db";
 	protected string connectionString { get; init; }
 	protected string mainTableName { get; init; }
 	protected string goalTableName { get; init; }
 	protected bool createMockDatabases { get; init; }
+	protected IConfiguration configuration { get; init; }
 	
 	public DbConnectionProvider()
 	{
-		IConfiguration configuration = new ConfigurationBuilder()
+		configuration = new ConfigurationBuilder()
 			.AddJsonFile("appsettings.json")
 			.Build();
 

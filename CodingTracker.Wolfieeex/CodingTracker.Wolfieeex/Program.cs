@@ -10,7 +10,9 @@ try
 	TemporaryData.SetFilterSettingsToDefaultSettings();
 
 	// In Progress
-	(bool mainDb, bool goalDb) = ProgramSetup.InstantiateDatabase();
+	DataInitializer dataInitializer = new DataInitializer();
+	bool mainDbWasInitiated = dataInitializer.InstantiateMainDatabase();
+	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
 	
 	// Untouched
 	ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);

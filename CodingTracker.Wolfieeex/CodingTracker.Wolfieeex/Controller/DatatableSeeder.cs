@@ -1,5 +1,6 @@
 using static CodingTracker.Wolfieeex.Controller.MathHelpers;
 using Microsoft.Extensions.Configuration;
+using CodingTracker.Wolfieeex.Model;
 
 namespace CodingTracker.Wolfieeex.Controller;
 
@@ -11,29 +12,16 @@ internal class DatatableSeeder
 
     internal void CreateMainMockTablebase()
     {
-        int minYear = configuration.GetValue<int>("MockDatabaseOptions:BaseMinYear");
-        int numOfLines = configuration.GetValue<int>("MockDatabaseOptions:BaseNumberOfLines");
+        SeederSettings seederSettings = new SeederSettings();
 
-        int minSessionTime = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:BaseMinTime").TotalSeconds;
-        int maxSessionTime = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:BaseMaxTime").TotalSeconds;
+        long minYearTicks = new DateTime(seederSettings.minYear, 1, 1, 0, 0, 0).Ticks;
+        long maxYearTicks = DateTime.Now.Subtract(TimeSpan.FromSeconds(seederSettings.maxSessionTime) + TimeSpan.FromSeconds(seederSettings.maxEndTimeVariation)).Ticks;
 
-        int minUpdateVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MinUpdateTimeVariation").TotalSeconds;
-        int maxUpdateVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MaxUpdateTimeVariation").TotalSeconds;
-
-        int minEndTimeVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MinEndTimeVariation").TotalSeconds;
-        int maxEndTimeVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MaxEndTimeVariation").TotalSeconds;
-
-        double chanceThatWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasUpdated");
-        double chanceThatWasCommented = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasCommented");
-        double chanceThatWasTimerTracked = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasTimerTracked");
-        double chanceThatLineWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatLineWasUpdated");
-
-        long minYearTicks = new DateTime(minYear, 1, 1, 0, 0, 0).Ticks;
-        long maxYearTicks = DateTime.Now.Subtract(Settings.MockTableBaseMaxTime).Ticks; //?
-
-        for (int i = 0; i < numOfLines; i++)
+        for (int i = 0; i < seederSettings.numOfLines; i++)
         {
-            string CreationDate = "";
+            Random ran = new Random();
+
+            
             string LastUpdateDate = "";
             string StartDate = "";
             string EndDate = "";
@@ -43,38 +31,39 @@ internal class DatatableSeeder
             bool WasTimerTracked = false;
 
             long creationTick = RandomExponentialValueInRange(minYearTicks, maxYearTicks, 0.85);
-
-            long duration = RandomExponentialValueInRange(minSessionTime, maxSessionTime, 1);
+            long duration = RandomExponentialValueInRange(seederSettings.minSessionTime, seederSettings.maxSessionTime, 1);
             TimeSpan timeSpanduration = new TimeSpan(0, 0, (int)duration);
 
             DateTime start = new DateTime(creationTick);
             DateTime end = start.Add(timeSpanduration);
             DateTime creation = end;
-            DateTime update;
+            DateTime update = end;
 
-            if (PercentageChanceGenerator(chanceThatWasUpdated))
+            if (PercentageChanceGenerator(seederSettings.chanceThatWasUpdated))
             {
-                int updateVariation = (int)RandomExponentialValueInRange((long)minUpdateVariation, (long)maxUpdateVariation, 0.1);
+                int updateVariation = (int)RandomExponentialValueInRange((long)seederSettings.minUpdateVariation, (long)seederSettings.maxUpdateVariation, 0.1);
                 TimeSpan timeSpanUpdateVariation = new TimeSpan(0, 0, updateVariation);
 
+                // End time will be later than the creation date of the record
                 if (PercentageChanceGenerator(0.5))
                 {
-                    int endTimeVariation = (int)RandomExponentialValueInRange((long)minEndTimeVariation, (long)maxEndTimeVariation, 0.4);
+                    int endTimeVariation = (int)RandomExponentialValueInRange((long)seederSettings.minEndTimeVariation, (long)seederSettings.maxEndTimeVariation, 0.4);
                     TimeSpan timeSpanEndTimeVariation = new TimeSpan(0, 0, endTimeVariation);
 
                     end = end.Add(timeSpanEndTimeVariation);
                 }
+                // End time will be earlier than the creation date of the record
                 else
                 {
+                    // Make sure, that after the update, session time is no lesser than the minimal session time
                     bool timeSpanIsNegative = true;
                     while (timeSpanIsNegative)
                     {
-                        int endTimeVariation = (int)RandomExponentialValueInRange((long)minEndTimeVariation, (long)maxEndTimeVariation, 0.4);
+                        int endTimeVariation = (int)RandomExponentialValueInRange((long)seederSettings.minEndTimeVariation, (long)seederSettings.maxEndTimeVariation, 0.4);
                         TimeSpan timeSpanEndTimeVariation = new TimeSpan(0, 0, endTimeVariation);
                         DateTime temptEnd = end;
-
                         temptEnd = end.Subtract(timeSpanEndTimeVariation);
-                        if (temptEnd - start > new TimeSpan(0, 0, minSessionTime))
+                        if (temptEnd - start > new TimeSpan(0, 0, seederSettings.minSessionTime))
                         {
                             end = temptEnd;
                             timeSpanIsNegative = false;
@@ -84,41 +73,30 @@ internal class DatatableSeeder
                 }
                 update = end.Add(timeSpanUpdateVariation);
             }
-            else
-            {
-                update = end;
-            }
 
-            CreationDate = creation.ToString($"dd/MM/yyyy, HH:MM");
-            LastUpdateDate = update.ToString($"dd/MM/yyyy, HH:MM");
-            StartDate = start.ToString($"dd/MM/yyyy, HH:MM");
-            EndDate = end.ToString($"dd/MM/yyyy, HH:MM");
+            string CreationDate = creation.ToString();
+            LastUpdateDate = update.ToString();
+            StartDate = start.ToString();
+            EndDate = end.ToString();
             Duration = (end - start).ToString();
 
-            if (PercentageChanceGenerator(chanceThatLineWasUpdated))
-            {
-                NumberOfLines = (int)RandomExponentialValueInRange(0, (long)numOfLines, 0.9);
-            }
-            else
-            {
-                NumberOfLines = -1;
-            }
+            if (PercentageChanceGenerator(seederSettings.chanceThatLineWasUpdated))
+                NumberOfLines = (int)RandomExponentialValueInRange(0, seederSettings.numOfLines, 0.9);
 
-            Random ran = new Random();
-            double ifCommentRoll = ran.NextDouble();
-            if (ifCommentRoll < chanceThatWasCommented)
+            if (PercentageChanceGenerator(seederSettings.chanceThatWasCommented))
             {
+                
                 int commentRoll = ran.Next(0, CodingSession.ProgrammingComments.Length);
                 Comments = CodingSession.ProgrammingComments[commentRoll];
             }
             double TimerRoll = ran.NextDouble();
-            WasTimerTracked = TimerRoll > chanceThatWasTimerTracked ? false : true;
+            WasTimerTracked = TimerRoll > seederSettings.chanceThatWasTimerTracked ? false : true;
 
             CodingSession session = new CodingSession(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines, Comments, WasTimerTracked);
-
             Crud.InjectRecord(session);
         }
     }
+
     internal void CreateGoalMockTablebase()
     {
         int SettingsMultiplier = 10;
@@ -236,15 +214,13 @@ internal class DatatableSeeder
                 GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
             }
 
-            using (SqliteConnection conn = new SqliteConnection(Settings.ConnectionString))
-            {
-                conn.Open();
+            using SqliteConnection conn = new SqliteConnection(Settings.ConnectionString)
+            conn.Open();
 
-                string command = @$"INSERT INTO {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
-                                  VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}', '{FinishingTime}')";
-
-                conn.Execute(command);
-            }
+            string command = @$"INSERT INTO {System.Configuration.ConfigurationManager.AppSettings.Get("GoalDatabaseName")}(Goal, Status, [Start Date], [End Date], [Start Goal Amount], [Goal Amount Left], [Finish Time])
+                                VALUES ('{GoalType}', '{Status}', '{startDate}', '{deadline}', '{GoalAmount}', '{GoalAmountLeft}', '{FinishingTime}')";
+            conn.Execute(command);
+            
         }
     }
 }

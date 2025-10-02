@@ -1,5 +1,8 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using CodingTracker.Wolfieeex.Model;
+using Spectre.Console;
+using System.Text;
 using Dapper;
 
 namespace CodingTracker.Wolfieeex.Controller;
@@ -38,7 +41,7 @@ internal class DataInitializer : DbConnectionProvider
         if (codingSessions.Count() == 0 && devOptionsSetUpMockDatabases)
         {
             DatatableSeeder seeder = new DatatableSeeder();
-            seeder.CreateMockTablebase();
+            seeder.CreateMainMockTablebase();
             createdMainDb = true;
         }
         return createdMainDb;
@@ -72,6 +75,28 @@ internal class DataInitializer : DbConnectionProvider
             createdGoalMockDb = true;
         }
         return createdGoalMockDb;
+    }
+
+    internal void SetDefaultSettings(bool mainDbWasInitiated, bool goalDbWasInitiated)
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+        Console.SetWindowSize(Console.LargestWindowWidth, System.Console.LargestWindowHeight);
+
+        bool devOptionsForMockDatabasesEnabled = configuration.GetValue<bool>("DeveloperOptions:CreateMockDatabasesIfNone");
+
+        if (mainDbWasInitiated && devOptionsForMockDatabasesEnabled)
+            AnsiConsole.Markup("[yellow italic]A mock database was created and populated with random sessions inserted.[/]\n");
+                
+        if (goalDbWasInitiated && devOptionsForMockDatabasesEnabled)
+            AnsiConsole.Markup("[yellow italic]A mock database was created and populated with random goals inserted.[/]\n");
+
+        if ((mainDbWasInitiated || goalDbWasInitiated) && devOptionsForMockDatabasesEnabled)
+        {
+            AnsiConsole.Markup("\nThis was done based on a fact that you have dev options enabled." +
+                " If you want to change this setting, go to \"appsettings.json\" file and change \"DeveloperOptions:CreateMockDatabasesIfNone\" to \"False\"." +
+                "\n[yellow]Press any key to continue: [/]");
+            System.Console.ReadKey();
+        }
     }
 }
 

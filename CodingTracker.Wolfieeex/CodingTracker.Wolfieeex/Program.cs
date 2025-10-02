@@ -6,23 +6,20 @@ try
 {
 	var dataAccess = new DataInitializer();
 
-	// Done
+	// Filter should automatically, upon constructing, set itself to its default value!!!
 	TemporaryData.SetFilterSettingsToDefaultSettings();
-
-	// In Progress
 	DataInitializer dataInitializer = new DataInitializer();
 	bool mainDbWasInitiated = dataInitializer.InstantiateMainDatabase();
 	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
-	ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);
-	ProgramSetup.ConsoleSettings();
+	dataInitializer.SetDefaultSettings(mainDbWasInitiated, goalDbWasInitiated);
 	
-	// Untouched
+	// In Progress
 	MainMenuScreenManager.S_Mainmenu();
 }
 catch (Exception ex)
 {
-	System.Console.Clear();
-	System.Console.WriteLine(ex.Message);
-	System.Console.WriteLine(ex.StackTrace);
+	Console.Clear();
+	Console.WriteLine(ex.Message);
+	Console.WriteLine(ex.StackTrace);
 }
 

@@ -1,3 +1,4 @@
+using static CodingTracker.Wolfieeex.Controller.MathHelpers;
 using Microsoft.Extensions.Configuration;
 
 namespace CodingTracker.Wolfieeex.Controller;
@@ -8,7 +9,7 @@ internal class DatatableSeeder
             .AddJsonFile("appsettings.json")
             .Build();
 
-    internal void CreateMockTablebase()
+    internal void CreateMainMockTablebase()
     {
         int minYear = configuration.GetValue<int>("MockDatabaseOptions:BaseMinYear");
         int numOfLines = configuration.GetValue<int>("MockDatabaseOptions:BaseNumberOfLines");
@@ -28,9 +29,9 @@ internal class DatatableSeeder
         double chanceThatLineWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatLineWasUpdated");
 
         long minYearTicks = new DateTime(minYear, 1, 1, 0, 0, 0).Ticks;
-        long maxYearTicks = DateTime.Now.Subtract(Settings.MockTableBaseMaxTime).Ticks;
+        long maxYearTicks = DateTime.Now.Subtract(Settings.MockTableBaseMaxTime).Ticks; //?
 
-        for (int i = 0; i < Settings.MockTableBaseNumberOfLines; i++)
+        for (int i = 0; i < numOfLines; i++)
         {
             string CreationDate = "";
             string LastUpdateDate = "";

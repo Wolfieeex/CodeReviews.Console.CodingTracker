@@ -553,7 +553,7 @@ internal class CrudController
                     Crud.UpdateRecords(sessions.Select(x => x.Id).ToList(), temp == null ? "" : temp, MenuSelections.UpdateMenu.UpdateNumberOfLines);
                     foreach (CodingSession s in sessions)
                     {
-                        s.NumberOfLines = temp == null ? null : int.Parse(temp);
+                        s.LinesOfCode = temp == null ? null : int.Parse(temp);
                         s.LastUpdateDate = DateTime.Now.ToString("dd/MM/yyyy, HH:mm");
                     }
                     break;

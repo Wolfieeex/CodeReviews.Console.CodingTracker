@@ -4,7 +4,7 @@ namespace CodingTracker.Wolfieeex.Model;
 
 internal class SeederSettings
 {
-    private IConfiguration configuration { get; init }
+    private IConfiguration configuration { get; init; }
     public int minYear { get; set; }
     public int numOfLines { get; set; }
     public int minSessionTime { get; set; }

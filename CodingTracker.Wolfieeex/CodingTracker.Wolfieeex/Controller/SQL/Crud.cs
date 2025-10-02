@@ -117,9 +117,9 @@ internal class Crud
                     break;
                 case SortingBy.NumberOfLines:
                     if (sortingOrder == SortingOrder.Ascending)
-                        records = records.OrderBy(x => x.NumberOfLines).ToList();
+                        records = records.OrderBy(x => x.LinesOfCode).ToList();
                     else
-                        records = records.OrderByDescending(x => x.NumberOfLines).ToList();
+                        records = records.OrderByDescending(x => x.LinesOfCode).ToList();
                     break;
                 case SortingBy.Comment:
                     if (sortingOrder == SortingOrder.Ascending)

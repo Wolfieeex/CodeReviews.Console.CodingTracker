@@ -6,10 +6,7 @@ namespace CodingTracker.Wolfieeex.Controller.SQL;
 
 internal static class Helpers
 {
-    public static TimeSpan CalculateDuration(string s, string e)
-    {
-        return DateTime.Parse(e) - DateTime.Parse(s);
-    }
+    
     internal static List<string> GetDurations(List<int> index)
     {
         List<string> durations = new();

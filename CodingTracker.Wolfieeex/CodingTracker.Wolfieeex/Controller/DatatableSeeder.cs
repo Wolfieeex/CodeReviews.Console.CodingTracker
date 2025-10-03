@@ -77,8 +77,7 @@ internal class DatatableSeeder
 
             if (PercentageChanceGenerator(seederSettings.chanceThatWasCommented))
             {
-                int commentRoll = ran.Next(0, CodingSession.ProgrammingComments.Length);
-                session.Comments = CodingSession.ProgrammingComments[commentRoll];
+                session.Comments = seederSettings.GenerateRandomComment();
             }
             double TimerRoll = ran.NextDouble();
             session.WasTimerTracked = TimerRoll > seederSettings.chanceThatWasTimerTracked ? "false" : "true";
@@ -135,10 +134,16 @@ internal class DatatableSeeder
 
             TimeSpan inThePastAmount = new TimeSpan(random.Next(0, maxGoalDistanceInThePastInDays + 1), 1, 0, 0);
 
-            int lineGoal;
-            TimeSpan timeGoal;
+            int linesGoal = random.Next(minLinesGoal, maxLinesGoal);
+            TimeSpan timeGoal = TimeSpan.FromMinutes(random.Next((int)minTimeGoal.TotalMinutes, (int)maxTimeGoal.TotalMinutes));
+            int remainingGoalLines = random.Next(0, linesGoal);
+            TimeSpan remainingGoalTime = TimeSpan.FromMinutes(random.Next(1, (int)timeGoal.TotalMinutes));
 
-            userGoal.StartDate = userGoal.Status switch
+			TimeSpan maxTimeOfCompletion = ((DateTime.Parse(userGoal.StartDate) + goalTimeLength) - (DateTime.Parse(userGoal.StartDate) + timeGoal));
+			TimeSpan minTimeOfCompletion = maxTimeOfCompletion / 2;
+            TimeSpan timeOfCompletion = TimeSpan.FromMinutes(random.Next((int)minTimeOfCompletion.TotalMinutes, (int)maxTimeOfCompletion.TotalMinutes));
+
+			userGoal.StartDate = userGoal.Status switch
             {
                 "InProgress" => (DateTime.Now - doneTimeSpan).ToString(),
                 "Completed" => (DateTime.Now - inThePastAmount - goalTimeLength).ToString(),
@@ -152,26 +157,26 @@ internal class DatatableSeeder
             };
             userGoal.StartingGoal = (userGoal.GoalType, userGoal.Status) switch
             {
-                ("Lines", "InProgress") =>
-                ("Time", "InProgress") =>
-                ("Lines", "Completed") =>
-                ("Time", "Completed") =>
-                ("Lines", "Failed") =>
-                ("Time", "Failed") =>
-            };
+                ("Lines", "InProgress") => linesGoal.ToString(),
+                ("Time", "InProgress") => timeGoal.ToString(),
+				("Lines", "Completed") => linesGoal.ToString(),
+				("Time", "Completed") => timeGoal.ToString(),
+				("Lines", "Failed") => linesGoal.ToString(),
+				("Time", "Failed") => timeGoal.ToString()
+			};
             userGoal.RemainingGoal = (userGoal.GoalType, userGoal.Status) switch
             {
-                ("Lines", "InProgress") =>
-                ("Time", "InProgress") =>
-                ("Lines", "Completed") =>
-                ("Time", "Completed") =>
-                ("Lines", "Failed") =>
-                ("Time", "Failed") =>
-            };
+                ("Lines", "InProgress") => remainingGoalLines.ToString(),
+				("Time", "InProgress") => remainingGoalTime.ToString(),
+				("Lines", "Completed") => "Goal achiveved!",
+                ("Time", "Completed") => "Goal achiveved!",
+				("Lines", "Failed") => remainingGoalLines.ToString(),
+				("Time", "Failed") => remainingGoalTime.ToString()
+			};
             userGoal.FinishingDate = userGoal.Status switch
             {
                 "InProgress" => "Still in progress",
-                "Completed" =>
+                "Completed" => (DateTime.Parse(userGoal.StartDate) + timeGoal + timeOfCompletion).ToString(),
                 "Failed" => (DateTime.Now - inThePastAmount).ToString()
             };
         }

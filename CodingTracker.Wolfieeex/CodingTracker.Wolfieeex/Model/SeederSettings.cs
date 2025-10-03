@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace CodingTracker.Wolfieeex.Model;
 
@@ -17,6 +18,7 @@ internal class SeederSettings
     public double chanceThatWasCommented { get; set; }
     public double chanceThatWasTimerTracked { get; set; }
     public double chanceThatLineWasUpdated { get; set; }
+    public string[] programmingComments { get; set; }
 
     public SeederSettings()
     {
@@ -37,6 +39,14 @@ internal class SeederSettings
         chanceThatWasTimerTracked = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasTimerTracked");
         chanceThatLineWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatLineWasUpdated");
 
-        
+        string json = File.ReadAllText("comments.json");
+        programmingComments = JsonSerializer.Deserialize<string[]>(json);
+    }
+
+    public string GenerateRandomComment()
+    {
+        Random random = new Random();
+        int index = random.Next(0, programmingComments.Length);
+        return programmingComments[index];
     }
 }

@@ -1,32 +1,40 @@
-﻿namespace Console.CodingTracker.Model;
+﻿namespace CodingTracker.Wolfieeex.Model;
 
 internal class CodingSession
 {
-    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public CodingSession() { }
+    public CodingSession(string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, string wasTimerTracked = "false")
     {
         CreationDate = creation;
         LastUpdateDate = lastUpdate;
         StartDate = start;
         EndDate = end;
         Duration = duration;
-        NumberOfLines = lines;
+        LinesOfCode = lines;
         Comments = comments;
         WasTimerTracked = wasTimerTracked;
     }
-    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, bool wasTimerTracked = false)
+    public CodingSession(int key, string creation, string lastUpdate, string start, string end, string duration, int? lines, string? comments, string wasTimerTracked = "false")
     {
-        Key = key;
+        Id = key;
         CreationDate = creation;
         LastUpdateDate = lastUpdate;
         StartDate = start;
         EndDate = end;
         Duration = duration;
-        NumberOfLines = lines;
+        LinesOfCode = lines;
         Comments = comments;
         WasTimerTracked = wasTimerTracked;
     }
-    internal int Key { get; set;}
-    // AI generated
+    internal int Id { get; set; }
+    internal string CreationDate { get; set; }
+    internal string LastUpdateDate { get; set; }
+    internal string StartDate { get; set; }
+    internal string EndDate { get; set; }
+    internal string Duration { get; set; }
+    internal int? LinesOfCode { get; set; }
+    internal string? Comments { get; set; }
+    internal string WasTimerTracked { get; set; }
     internal static string[] ProgrammingComments { get; set; } = 
         {
             "Great job on that function!",
@@ -305,12 +313,4 @@ internal class CodingSession
             "This design is intuitive and easy to understand.",
             "The modular design here improves testability."
         };
-    internal string CreationDate { get; set; }
-    internal string LastUpdateDate { get; set; }
-    internal string StartDate { get; set; }
-    internal string EndDate { get; set; }
-    internal string Duration { get; set; }
-    internal int? NumberOfLines { get; set; }
-    internal string? Comments { get; set; }
-    internal bool WasTimerTracked { get; set; }
 }

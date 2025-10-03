@@ -1,10 +1,9 @@
-﻿using Console.CodingTracker.Controller.SQL;
+﻿using CodingTracker.Wolfieeex.Controller.SQL;
 using Spectre.Console;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Console.CodingTracker.Model;
 
-namespace Console.CodingTracker.View;
+namespace CodingTracker.Wolfieeex.View;
 
 public enum TextUIOptions
 {
@@ -336,8 +335,8 @@ internal class UserInterface
             .Title(title)
             .WrapAround(true)
             .HighlightStyle(new Style()
-                .Foreground(mainColor)
-                .Decoration(Decoration.RapidBlink))
+            .Foreground(mainColor)
+            .Decoration(Decoration.RapidBlink))
             .EnableSearch()
             .PageSize(15)
             .MoreChoicesText($"[#{mainColor.Blend(Color.Grey, 0.5f).ToHex()}]Move up and down to reveal more options[/]")

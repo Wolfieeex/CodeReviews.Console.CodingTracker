@@ -1,4 +1,4 @@
-namespace Console.CodingTracker.MenuSelections;
+namespace CodingTracker.Wolfieeex.MenuSelections;
 internal enum MainMenu
 {
     AddRecordManually,

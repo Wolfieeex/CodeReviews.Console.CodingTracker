@@ -1,24 +1,25 @@
 ﻿using CodingTracker.Wolfieeex.Controller;
 using CodingTracker.Wolfieeex.Model;
-using Console.CodingTracker.Controller;
-using Console.CodingTracker.Controller.ScreenMangers;
+using CodingTracker.Wolfieeex.Controller.ScreenMangers;
 
 try
 {
 	var dataAccess = new DataInitializer();
 
-	// Still working on that lol
+	// Filter should automatically, upon constructing, set itself to its default value!!!
 	TemporaryData.SetFilterSettingsToDefaultSettings();
-
-	(bool mainDb, bool goalDb) = ProgramSetup.InstantiateDatabase();
-	ProgramSetup.DisplayDevOptionSetting(mainDb, goalDb);
-	ProgramSetup.ConsoleSettings();
+	DataInitializer dataInitializer = new DataInitializer();
+	bool mainDbWasInitiated = dataInitializer.InstantiateMainDatabase();
+	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
+	dataInitializer.SetDefaultSettings(mainDbWasInitiated, goalDbWasInitiated);
+	
+	// In Progress
 	MainMenuScreenManager.S_Mainmenu();
 }
 catch (Exception ex)
 {
-	System.Console.Clear();
-	System.Console.WriteLine(ex.Message);
-	System.Console.WriteLine(ex.StackTrace);
+	Console.Clear();
+	Console.WriteLine(ex.Message);
+	Console.WriteLine(ex.StackTrace);
 }
 

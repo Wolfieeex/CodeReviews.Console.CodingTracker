@@ -1,10 +1,10 @@
-﻿using Console.CodingTracker.View;
-using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.View;
+using CodingTracker.Wolfieeex.Model;
 using System.Text.RegularExpressions;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
 
-namespace Console.CodingTracker.Controller.SQL;
+namespace CodingTracker.Wolfieeex.Controller.SQL;
 
 public enum MenuGoalType
 {

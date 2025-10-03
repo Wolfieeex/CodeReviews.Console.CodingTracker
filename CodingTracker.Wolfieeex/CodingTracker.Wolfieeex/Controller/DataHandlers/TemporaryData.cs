@@ -1,15 +1,15 @@
-﻿using static CodingTracker.Wolfieeex.Model.ReportingEnums;
+﻿
 
 namespace CodingTracker.Wolfieeex.Model;
 
 internal class TemporaryData
 {
     internal static FilterDetails LastFilter { get; set; }
-    // That's next :)
+    
     internal static ReportSettings ReportConfiguration { get; set; } = new ReportSettings()
     {
-        ReportOptions = new bool[] { true, false, false, false, false, false, false },
-        DataOptions = new bool[] { true, false }
+        ReportOptions = new ReportCalculationsToDisplay(new bool[] { true, false, false, false, false, false, false }),
+        DataOptions = new TypeOfDataChosenToCalculateReport(new bool[] { true, false })
     };
 
 	internal static void SetFilterSettingsToDefaultSettings()

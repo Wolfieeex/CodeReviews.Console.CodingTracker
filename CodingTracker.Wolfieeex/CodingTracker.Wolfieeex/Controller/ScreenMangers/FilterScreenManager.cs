@@ -1,9 +1,9 @@
-﻿using Console.CodingTracker.Controller.CRUD;
-using Console.CodingTracker.Model;
-using Console.CodingTracker.View;
+﻿using CodingTracker.Wolfieeex.Controller.CRUD;
+using CodingTracker.Wolfieeex.Model;
+using CodingTracker.Wolfieeex.View;
 using Spectre.Console;
 
-namespace Console.CodingTracker.Controller.ScreenMangers;
+namespace CodingTracker.Wolfieeex.Controller.ScreenMangers;
 
 internal enum TimerTracked
 {
@@ -30,7 +30,7 @@ internal class FilterScreenManager
                     filterDetails = new FilterDetails()
                     {
                         SortingDetails = new SortingDetails() { SortBy = null, SortOrder = null },
-                        ViewOptions = new bool[] { false, false, false, false, true, true, true, false },
+                        ViewOptions = new FieldsToViewOnDataTable(new[] { false, false, false, false, true, true, true, false }),
                         FromDate = null,
                         ToDate = null,
                         MinLines = null,
@@ -44,9 +44,9 @@ internal class FilterScreenManager
                 }
                 break;
             case 1:
-                bool[] tempViewOptions = filterDetails.ViewOptions;
+                bool[] tempViewOptions = filterDetails.ViewOptions.InfoToBoolArray();
                 UserInterface.DisplayMultiselectionUI($"Please [#{titleColor.ToHex()}]toggle select elements you want your datatable to include[/]:", typeof(MenuSelections.TableViewMenu), ref tempViewOptions, mainColor);
-                filterDetails.ViewOptions = tempViewOptions;
+                filterDetails.ViewOptions = new FieldsToViewOnDataTable(tempViewOptions);
                 break;
             case 2:
                 filterDetails.SortingDetails = FilterController.SortingMenu(sortingDetails, titleColor, mainColor, inputColor);
@@ -141,7 +141,7 @@ internal class FilterScreenManager
                     filterDetails = new FilterDetails()
                     {
                         SortingDetails = new SortingDetails() { SortBy = null, SortOrder = null },
-                        ViewOptions = new bool[] { false, false, false, false, true, true, true, false },
+                        ViewOptions = new FieldsToViewOnDataTable(new[] { false, false, false, false, true, true, true, false }),
                         FromDate = null,
                         ToDate = null,
                         MinLines = null,

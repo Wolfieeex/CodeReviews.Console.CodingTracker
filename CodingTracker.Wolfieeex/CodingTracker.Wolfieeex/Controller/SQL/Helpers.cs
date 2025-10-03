@@ -1,15 +1,12 @@
-﻿using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.Model;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Console.CodingTracker.Controller.SQL;
+namespace CodingTracker.Wolfieeex.Controller.SQL;
 
 internal static class Helpers
 {
-    public static TimeSpan CalculateDuration(string s, string e)
-    {
-        return DateTime.Parse(e) - DateTime.Parse(s);
-    }
+    
     internal static List<string> GetDurations(List<int> index)
     {
         List<string> durations = new();

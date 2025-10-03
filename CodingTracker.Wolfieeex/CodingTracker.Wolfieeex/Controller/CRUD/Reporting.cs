@@ -1,10 +1,11 @@
-﻿using Console.CodingTracker.Controller.ScreenMangers;
-using Console.CodingTracker.Model;
-using Console.CodingTracker.View;
+﻿using CodingTracker.Wolfieeex.Controller.ScreenMangers;
+using CodingTracker.Wolfieeex.Model;
+using CodingTracker.Wolfieeex.View;
 using Spectre.Console;
 using System.Text.RegularExpressions;
+using static CodingTracker.Wolfieeex.Model.ReportingEnums;
 
-namespace Console.CodingTracker.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.CRUD;
 
 internal class Reporting
 {
@@ -37,22 +38,13 @@ internal class Reporting
             }
             try
             {
-                if (Enum.GetNames(typeof(ReportOptions)).Length != reportSettings.ReportOptions.Length)
-                {
-                    throw new DataMisalignedException("ReportOptions Enum must have the same length as ReportConfiguration.ReportOptions array length.");
-                }
-                if (Enum.GetNames(typeof(SummationOptions)).Length != reportSettings.DataOptions.Length)
-                {
-                    throw new DataMisalignedException("SummationOptions Enum must have the same length as ReportConfiguration.DataOptions array length.");
-                }
-
-                if (reportSettings.ReportOptions != null)
+                if (reportSettings.ReportOptions.IsInitialized)
                 {
                     reportOptionsString = "";
                     int counter = 0;
                     foreach (string s in Enum.GetNames(typeof(ReportOptions)))
                     {
-                        if (reportSettings.ReportOptions[counter])
+                        if (reportSettings.ReportOptions.InfoToBoolArray()[counter])
                         {
                             reportOptionsString += Regex.Replace(s, @"(?<=[a-z])([A-Z]{1})", " $1");
                             reportOptionsString += ", ";
@@ -65,13 +57,13 @@ internal class Reporting
                 {
                     reportOptionsString = null;
                 }
-                if (reportSettings.DataOptions != null)
+                if (reportSettings.DataOptions.IsInitialized)
                 {
                     dataOptionsString = "";
                     int counter = 0;
                     foreach (string s in Enum.GetNames(typeof(SummationOptions)))
                     {
-                        if (reportSettings.DataOptions[counter])
+                        if (reportSettings.DataOptions.InfoToBoolArray()[counter])
                         {
                             dataOptionsString += Regex.Replace(s, @"(?<=[a-z])([A-Z]{1})", " $1");
                             dataOptionsString += ", ";
@@ -154,14 +146,14 @@ internal class Reporting
                     }
                     break;
                 case 1:
-                    tempOptions = reportSettings.ReportOptions;
+                    tempOptions = reportSettings.ReportOptions.InfoToBoolArray();
                     UserInterface.DisplayMultiselectionUI($"Select {titleColorHex}data to display for your report[/]:", typeof(ReportOptions), ref tempOptions, mainColor);
-                    reportSettings.ReportOptions = tempOptions;
+                    reportSettings.ReportOptions = new ReportCalculationsToDisplay(tempOptions);
                     break;
                 case 2:
-                    tempOptions = reportSettings.DataOptions;
+                    tempOptions = reportSettings.DataOptions.InfoToBoolArray();
                     UserInterface.DisplayMultiselectionUI($"Select {titleColorHex}variables by which your report will calculated[/]:", typeof(SummationOptions), ref tempOptions, mainColor );
-                    reportSettings.DataOptions = tempOptions;
+                    reportSettings.DataOptions = new TypeOfDataChosenToCalculateReport(tempOptions);
                     break;
                 case 3:
                     PeriodSelectionMenu(ref reportSettings);

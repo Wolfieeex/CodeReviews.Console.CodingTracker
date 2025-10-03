@@ -1,6 +1,6 @@
-﻿using Console.CodingTracker.Model;
+﻿using CodingTracker.Wolfieeex.Model;
 
-namespace Console.CodingTracker.Controller.SQL;
+namespace CodingTracker.Wolfieeex.Controller.SQL;
 internal class Filtering
 {
     internal static string AddQueryFilterParameters(FilterDetails filter, string whereInject, Dictionary<string, object> parameters)

@@ -26,19 +26,17 @@ internal class SeederSettings
 
         minYear = configuration.GetValue<int>("MockDatabaseOptions:BaseMinYear");
         numOfLines = configuration.GetValue<int>("MockDatabaseOptions:BaseNumberOfLines");
-
         minSessionTime = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:BaseMinTime").TotalSeconds;
         maxSessionTime = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:BaseMaxTime").TotalSeconds;
-
         minUpdateVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MinUpdateTimeVariation").TotalSeconds;
         maxUpdateVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MaxUpdateTimeVariation").TotalSeconds;
-
         minEndTimeVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MinEndTimeVariation").TotalSeconds;
         maxEndTimeVariation = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:MaxEndTimeVariation").TotalSeconds;
-
         chanceThatWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasUpdated");
         chanceThatWasCommented = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasCommented");
         chanceThatWasTimerTracked = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasTimerTracked");
         chanceThatLineWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatLineWasUpdated");
+
+        
     }
 }

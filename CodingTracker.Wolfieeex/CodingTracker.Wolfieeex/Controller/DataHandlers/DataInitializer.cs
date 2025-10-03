@@ -58,10 +58,10 @@ internal class DataInitializer : DbConnectionProvider
                         GoalType TEXT,
                         Status TEXT,
                         StartDate TEXT,
-                        EndDate TEXT,
+                        FinishingDate TEXT,
                         StartingGoal TEXT,
                         RemainingGoal TEXT,
-                        Deadline TEXT
+                        DeadlineDate TEXT
                         )";
         conn.Execute(command);
 

@@ -23,28 +23,17 @@ internal class DatatableSeeder
         {
             CodingSession session = new CodingSession();
             Random ran = new Random();
-            /*string CreationDate = "";
-            string LastUpdateDate = "";
-            string StartDate = "";
-            string EndDate = "";
-            string Duration = "";
-            int? NumberOfLines = null;
-            string Comments = "";
-            bool WasTimerTracked = false;*/
 
             long creationTick = RandomExponentialValueInRange(minYearTicks, maxYearTicks, 0.85);
-
             long duration = RandomExponentialValueInRange(seederSettings.minSessionTime, seederSettings.maxSessionTime, 1);
             TimeSpan timeSpanduration = new TimeSpan(0, 0, (int)duration);
 
             DateTime start = new DateTime(creationTick);
-            StartDate = start.ToString();
-
+            session.StartDate = start.ToString();
             DateTime end = start.Add(timeSpanduration);
             DateTime update = end;
-
             DateTime creation = end;
-            CreationDate = creation.ToString();
+            session.CreationDate = creation.ToString();
 
             // Decide, whether the session was updated by the user at the later time (the creation time and end time of the session will then differ).
             if (PercentageChanceGenerator(seederSettings.chanceThatWasUpdated))
@@ -79,26 +68,24 @@ internal class DatatableSeeder
                 }
                 update = end.Add(timeSpanUpdateVariation);
             }
-
-            LastUpdateDate = update.ToString();
-            EndDate = end.ToString();
-            Duration = CalculateDuration(StartDate, EndDate).ToString();
+            session.LastUpdateDate = update.ToString();
+            session.EndDate = end.ToString();
+            session.Duration = CalculateDuration(session.StartDate, session.EndDate).ToString();
 
             if (PercentageChanceGenerator(seederSettings.chanceThatLineWasUpdated))
-                NumberOfLines = (int)RandomExponentialValueInRange(0, seederSettings.numOfLines, 0.9);
+                session.LinesOfCode = (int)RandomExponentialValueInRange(0, seederSettings.numOfLines, 0.9);
 
             if (PercentageChanceGenerator(seederSettings.chanceThatWasCommented))
             {
                 int commentRoll = ran.Next(0, CodingSession.ProgrammingComments.Length);
-                Comments = CodingSession.ProgrammingComments[commentRoll];
+                session.Comments = CodingSession.ProgrammingComments[commentRoll];
             }
             double TimerRoll = ran.NextDouble();
-            WasTimerTracked = TimerRoll > seederSettings.chanceThatWasTimerTracked ? false : true;
+            session.WasTimerTracked = TimerRoll > seederSettings.chanceThatWasTimerTracked ? "false" : "true";
 
             //CodingSession session = new CodingSession(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines!, Comments, WasTimerTracked.ToString());
             codingSessions.Add(session);
         }
-
         DataWriter dataWriter = new DataWriter();
         dataWriter.InjectMultipleRecords(codingSessions);
     }
@@ -107,10 +94,15 @@ internal class DatatableSeeder
     {
         int numOfGoalLines = 30;
         int maxGoalLengthInDays = 180;
-        int maxGoalDistanceInThePast = 360;
+        int maxGoalDistanceInThePastInDays = 360;
         float chanceGoalInProgress = 0.8f;
         float chanceGoalFailedIfNotInProgress = 0.3f;
         float chanceForTaskBeingLines = 0.2f;
+
+        int minLinesGoal = 100;
+        int maxLinesGoal = 50000;
+        TimeSpan minTimeGoal = new TimeSpan(6, 0, 0);
+        TimeSpan maxTimeGoal = new TimeSpan(18, 0, 0, 0);
 
         Random random = new Random();
         UserGoal userGoal = new UserGoal();
@@ -120,7 +112,7 @@ internal class DatatableSeeder
             if (PercentageChanceGenerator(chanceGoalInProgress))
             {
                 userGoal.Status = "InProgress";
-                userGoal.EndDate = "N/A";
+                userGoal.FinishingDate = "N/A";
             }
             else if (PercentageChanceGenerator(chanceGoalFailedIfNotInProgress))
             {
@@ -128,7 +120,7 @@ internal class DatatableSeeder
             }
             else
             {
-                userGoal.Status = "Completede";
+                userGoal.Status = "Completed";
             }
 
             if (PercentageChanceGenerator(chanceForTaskBeingLines))
@@ -140,82 +132,48 @@ internal class DatatableSeeder
             TimeSpan goalTimeLength = new TimeSpan(random.Next(0, maxGoalLengthInDays + 1), 0, 0, 0);
             TimeSpan doneTimeSpan = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)goalTimeLength.TotalMilliseconds, 0.4f));
             TimeSpan leftTimeSpan = goalTimeLength - doneTimeSpan;
-            TimeSpan inThePastAmount = new TimeSpan(random.Next(0, maxGoalDistanceInThePast + 1), 0, 0, 0);
 
-           userGoal.StartDate = userGoal.Status switch
+            TimeSpan inThePastAmount = new TimeSpan(random.Next(0, maxGoalDistanceInThePastInDays + 1), 1, 0, 0);
+
+            int lineGoal;
+            TimeSpan timeGoal;
+
+            userGoal.StartDate = userGoal.Status switch
             {
                 "InProgress" => (DateTime.Now - doneTimeSpan).ToString(),
-                "Completed" or "Failed" => (DateTime.Now - inThePastAmount - goalTimeLength).ToString()
+                "Completed" => (DateTime.Now - inThePastAmount - goalTimeLength).ToString(),
+                "Failed" => (DateTime.Now - inThePastAmount - goalTimeLength).ToString()
             };
-
-            userGoal.EndDate = userGoal.Status switch
+            userGoal.DeadlineDate = userGoal.Status switch
             {
                 "InProgress" => (DateTime.Now + leftTimeSpan).ToString(),
-                "Completed" or "Failed" => (DateTime.Now - inThePastAmount).ToString()
+                "Completed" => (DateTime.Now - inThePastAmount).ToString(),
+                "Failed" => (DateTime.Now - inThePastAmount).ToString()
             };
-        }
-
-        for (int i = 0; i < 3 * numOfGoalLines; i++)
-        {
-            if (taskType == 0)
+            userGoal.StartingGoal = (userGoal.GoalType, userGoal.Status) switch
             {
-                // Goal: Lines
-
-                int totalGoal = random.Next(20, 101) * (goalTimeLength.Days < 1 ? 1 : goalTimeLength.Days);
-                GoalAmount = totalGoal.ToString();
-                GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / goalTimeLength.TotalSeconds))).ToString();
-            }
-            else
+                ("Lines", "InProgress") =>
+                ("Time", "InProgress") =>
+                ("Lines", "Completed") =>
+                ("Time", "Completed") =>
+                ("Lines", "Failed") =>
+                ("Time", "Failed") =>
+            };
+            userGoal.RemainingGoal = (userGoal.GoalType, userGoal.Status) switch
             {
-                // Goal: Time
-
-                TimeSpan totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (goalTimeLength.Days < 1 ? 1 : goalTimeLength.Days));
-                GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
-                GoalAmountLeft = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)leftTimeSpan1.TotalMilliseconds, 0.6f)).ToString();
-            }
-        }
-
-        for (int i = 0; i < 2 * numOfGoalLines; i++)
-        {
-            if (taskType == 0)
+                ("Lines", "InProgress") =>
+                ("Time", "InProgress") =>
+                ("Lines", "Completed") =>
+                ("Time", "Completed") =>
+                ("Lines", "Failed") =>
+                ("Time", "Failed") =>
+            };
+            userGoal.FinishingDate = userGoal.Status switch
             {
-                // Goal: Lines
-
-                int totalGoal = random.Next(10, 101) * (goalDuration.Days < 1 ? 1 : goalDuration.Days);
-                GoalAmount = totalGoal.ToString();
-
-                if (Status == "Failed")
-                {
-                    FinishingTime = "DDL";
-                    GoalAmountLeft = MathF.Ceiling((float)(totalGoal * (leftTimeSpan1.TotalSeconds / goalDuration.TotalSeconds / 2))).ToString();
-                }
-                else
-                {
-                    FinishingTime = (startDate + doneTimeSpan1).ToString();
-                    GoalAmountLeft = "0";
-                }
-            }
-            else
-            {
-                // Goal: Time
-
-                TimeSpan totalGoal;
-
-                if (Status == "Failed")
-                {
-                    totalGoal = TimeSpan.FromSeconds(RandomExponentialValueInRange(2, (long)goalDuration.TotalSeconds, 0.5f));
-                    FinishingTime = "DDL";
-                    GoalAmountLeft = TimeSpan.FromSeconds(MathF.Ceiling(RandomExponentialValueInRange(1, (long)totalGoal.TotalSeconds, 0.6f))).ToString();
-                }
-                else
-                {
-                    totalGoal = TimeSpan.FromDays(random.Next(1, 4) * (goalDuration.Days < 1 ? 1 : goalDuration.Days));
-                    GoalAmountLeft = "0";
-                    FinishingTime = (startDate + doneTimeSpan1).ToString();
-                }
-
-                GoalAmount = totalGoal.ToString(@"dd\.hh\:mm\:ss");
-            }
+                "InProgress" => "Still in progress",
+                "Completed" =>
+                "Failed" => (DateTime.Now - inThePastAmount).ToString()
+            };
         }
     }
 }

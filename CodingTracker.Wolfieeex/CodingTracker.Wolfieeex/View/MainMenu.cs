@@ -1,24 +1,24 @@
-﻿using CodingTracker.Wolfieeex.Controller.CRUD;
-using CodingTracker.Wolfieeex.Controller.SQL; 
-using CodingTracker.Wolfieeex.View;
+﻿using CodingTracker.Wolfieeex.Controller.Crud;
+using CodingTracker.Wolfieeex.Controller.SQL;
 using Spectre.Console;
 
-namespace CodingTracker.Wolfieeex.Controller.ScreenMangers;
+namespace CodingTracker.Wolfieeex.View;
 
-internal class MainMenuScreenManager
+internal class MainMenu : Menu
 {
-    internal static void S_Mainmenu()
+    public MainMenu(Color color) : base(color) {}
+    public override void DisplayMenu()
     {
-		bool menuLoop = true;
+        bool menuLoop = true;
         while (menuLoop)
         {
-            System.Console.Clear();
+            Console.Clear();
             AnsiConsole.Write(
                 new FigletText("Coding Tracker")
                     .Centered()
                     .Color(Color.Red));
 
-            int? userOption = UserInterface.DisplaySelectionUI("[red]Function[/] selection:", typeof(MenuSelections.MainMenu), Color.IndianRed1_1);
+            int? userOption = UserInterface.DisplaySelectionUI("[red]Function[/] selection:", typeof(MenuSelections.MainMenuEnums), Color.IndianRed1_1);
             switch (userOption)
             {
                 case 0:
@@ -34,7 +34,7 @@ internal class MainMenuScreenManager
                     CrudController.ViewPreviousSessions();
                     break;
                 case 4:
-                    CRUD.Reporting.GenerateReport();
+                    Controller.Crud.Reporting.GenerateReport();
                     break;
                 case 5:
                     CrudController.UpdateSessionDetails();

@@ -18,6 +18,7 @@ public struct MenuColors
 
 internal abstract class Menu
 {
+    protected string title;
     private Color _basicColor;
     public Color basicColor
     {
@@ -36,12 +37,18 @@ internal abstract class Menu
         }
     }
     public MenuColors menuColors;
+    protected Style style;
 
-    protected abstract void DisplayMenu();
+    public abstract void DisplayMenu();
 
-    public Menu(Color color)
+    public Menu(Color color, Style overrideStyle = null)
     {
         basicColor = color;
+
+        if (overrideStyle != null)
+            style = overrideStyle;
+        else
+            style = new Style(foreground: menuColors.selectionColor, decoration: Decoration.RapidBlink);
     }
 
     protected string ReadEnumName(Enum enumValue)

@@ -1,5 +1,7 @@
 ﻿using CodingTracker.Wolfieeex.Controller;
-using CodingTracker.Wolfieeex.Controller.ScreenMangers;
+using Spectre.Console;
+using CodingTracker.Wolfieeex.MenuSelections;
+using CodingTracker.Wolfieeex.View;
 
 try
 {
@@ -9,8 +11,9 @@ try
 	bool mainDbWasInitiated = dataInitializer.InstantiateMainDatabase();
 	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
 	dataInitializer.SetDefaultSettings(mainDbWasInitiated, goalDbWasInitiated);
-	
-	MainMenuScreenManager.S_Mainmenu();
+
+	MainMenu mainMenu = new MainMenu(Color.DeepPink4);
+	mainMenu.DisplayMenu();
 }
 catch (Exception ex)
 {

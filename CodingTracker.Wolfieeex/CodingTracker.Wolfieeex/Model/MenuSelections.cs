@@ -1,5 +1,5 @@
 namespace CodingTracker.Wolfieeex.MenuSelections;
-internal enum MainMenu
+internal enum MainMenuSelections
 {
     AddRecordManually,
     StartTrackingNewSession,

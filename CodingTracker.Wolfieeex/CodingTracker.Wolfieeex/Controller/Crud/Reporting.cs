@@ -5,7 +5,7 @@ using Spectre.Console;
 using System.Text.RegularExpressions;
 using static CodingTracker.Wolfieeex.Model.ReportingEnums;
 
-namespace CodingTracker.Wolfieeex.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.Crud;
 
 internal class Reporting
 {

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using CodingTracker.Wolfieeex.Controller.SQL;
 using System.Diagnostics;
 
-namespace CodingTracker.Wolfieeex.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.Crud;
 
 internal class CrudController
 {

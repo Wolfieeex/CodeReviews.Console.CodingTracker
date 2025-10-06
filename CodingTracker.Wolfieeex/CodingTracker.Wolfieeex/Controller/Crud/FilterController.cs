@@ -6,7 +6,7 @@ using Spectre.Console;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace CodingTracker.Wolfieeex.Controller.CRUD;
+namespace CodingTracker.Wolfieeex.Controller.Crud;
 internal class FilterController
 {
     internal static FilterDetails FilterRecords(string preTitle, ref bool returnToMenu, Color titleColor, Color mainColor, Color inputColor)

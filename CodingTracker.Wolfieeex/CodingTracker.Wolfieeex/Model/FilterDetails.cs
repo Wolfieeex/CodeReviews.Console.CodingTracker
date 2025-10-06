@@ -46,14 +46,33 @@ struct FieldsToViewOnDataTable
 
 internal class FilterDetails
 {
-    public SortingDetails SortingDetails { get; set; }
-    public FieldsToViewOnDataTable ViewOptions { get; set; }
-    public string? FromDate { get; set; }
-    public string? ToDate { get; set; }
-    public string? MinLines { get; set; }
-    public string? MaxLines { get; set; }
-    public string? Comment { get; set; }
-    public string? MinDuration { get; set; }
-    public string? MaxDuration { get; set; }
-    public string? WasTimerTracked { get; set; }
+	public SortingDetails SortingDetails { get; set; }
+	public FieldsToViewOnDataTable ViewOptions { get; set; }
+	public string? FromDate { get; set; }
+	public string? ToDate { get; set; }
+	public string? MinLines { get; set; }
+	public string? MaxLines { get; set; }
+	public string? Comment { get; set; }
+	public string? MinDuration { get; set; }
+	public string? MaxDuration { get; set; }
+	public string? WasTimerTracked { get; set; }
+
+	public FilterDetails()
+	{
+		ViewOptions = new FieldsToViewOnDataTable(new bool[] { false, false, false, false, true, true, true, false });
+		SortingDetails = new SortingDetails()
+		{
+			SortBy = null,
+			SortOrder = ReportingEnums.SortingOrder.Ascending
+		};
+		FromDate = null;
+		ToDate = null;
+		MinLines = null;
+		MaxLines = null;
+		Comment = null;
+		MinDuration = null;
+		MaxDuration = null;
+		WasTimerTracked = null;
+		
+	}
 }

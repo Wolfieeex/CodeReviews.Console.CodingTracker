@@ -1,35 +1,12 @@
-﻿
+﻿namespace CodingTracker.Wolfieeex.Model;
 
-namespace CodingTracker.Wolfieeex.Model;
-
-internal class TemporaryData
+internal static class TemporaryData
 {
-    internal static FilterDetails LastFilter { get; set; }
+	internal static FilterDetails LastFilter { get; set; } = new();
     
     internal static ReportSettings ReportConfiguration { get; set; } = new ReportSettings()
     {
         ReportOptions = new ReportCalculationsToDisplay(new bool[] { true, false, false, false, false, false, false }),
         DataOptions = new TypeOfDataChosenToCalculateReport(new bool[] { true, false })
     };
-
-	internal static void SetFilterSettingsToDefaultSettings()
-	{
-		LastFilter = new FilterDetails()
-		{
-			ViewOptions = new FieldsToViewOnDataTable(new bool[] { false, false, false, false, true, true, true, false }),
-			SortingDetails = new SortingDetails()
-			{
-				SortBy = null,
-				SortOrder = ReportingEnums.SortingOrder.Ascending
-			},
-			FromDate = null,
-			ToDate = null,
-			MinLines = null,
-			MaxLines = null,
-			Comment = null,
-			MinDuration = null,
-			MaxDuration = null,
-			WasTimerTracked = null
-		};
-	}
 }

@@ -10,12 +10,22 @@ internal enum MainMenuSelections
     [Display(Name = "Start tracking new session")]
     StartTrackingNewSession,
 
-
+    [Display(Name = "Set goals")]
     SetGoals,
+
+    [Display(Name = "View previous sessions")]
     ViewPreviousSessions,
+
+    [Display(Name = "Generate report")]
     GenerateReport,
+
+    [Display(Name = "Update session details")]
     UpdateSessionDetails,
+    
+    [Display(Name = "Delete session")]
     DeleteSession,
+
+    [Display(Name = "Exit application")]
     ExitApp
 }
 internal enum TrackNewSession

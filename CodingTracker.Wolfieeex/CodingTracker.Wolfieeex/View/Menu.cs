@@ -17,12 +17,23 @@ public struct MenuColors
     public Color selection2Color;
 }
 
+public struct MenuColorsHex
+{
+    public string mainColor;
+    public string titleColor;
+    public string titleHighlightColor;
+    public string titleWarningColor;
+    public string titlePositiveColor;
+    public string selectionColor;
+    public string selection2Color;
+}
+
 internal abstract class Menu
 {
-    protected string title;
-    protected Type selectionEnum;
+    protected abstract string title { get; }
+    protected abstract Type selectionEnum { get; }
     private Color _basicColor;
-    public Color basicColor
+    protected Color basicColor
     {
         get => _basicColor; set
         {
@@ -36,21 +47,29 @@ internal abstract class Menu
                 selectionColor = value.Blend(Color.Blue3_1, 0.4f),
                 selection2Color = value.Blend(Color.RosyBrown, 0.4f),
             };
+
+            menuColorsHex = new MenuColorsHex
+            {
+                mainColor = "[#" + value.ToHex() + "]",
+                titleColor = "[#" + value.Blend(Color.Yellow3_1, 0.4f).ToHex() + "]",
+                titleHighlightColor = "[#" + value.Blend(Color.BlueViolet, 0.4f).ToHex() + "]",
+                titleWarningColor = "[#" + value.Blend(Color.Red3_1, 0.4f).ToHex() + "]",
+                titlePositiveColor = "[#" + value.Blend(Color.GreenYellow, 0.4f).ToHex() + "]",
+                selectionColor = "[#" + value.Blend(Color.Blue3_1, 0.4f).ToHex() + "]",
+                selection2Color = "[#" + value.Blend(Color.RosyBrown, 0.4f).ToHex() + "]",
+            };
         }
     }
-    public MenuColors menuColors;
-    protected Style style;
+    protected MenuColors menuColors;
+    protected MenuColorsHex menuColorsHex;
+    protected Style style { get; }
 
     public abstract void DisplayMenu();
 
-    public Menu(Color color, Style overrideStyle = null)
+    public Menu(Color color)
     {
         basicColor = color;
-
-        if (overrideStyle != null)
-            style = overrideStyle;
-        else
-            style = new Style(foreground: menuColors.selectionColor, decoration: Decoration.RapidBlink);
+        style = new Style(foreground: menuColors.selectionColor, decoration: Decoration.RapidBlink);
     }
 
     protected string ReadEnumName(Enum enumValue)

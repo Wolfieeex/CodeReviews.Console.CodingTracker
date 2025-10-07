@@ -7,7 +7,10 @@ namespace CodingTracker.Wolfieeex.View;
 
 internal class MainMenu : Menu
 {
+    protected override string title => "Welcome to the Coding Tracker! Please select your option from the main menu: ";
+    protected override Type selectionEnum => typeof(MainMenuSelections);
     public MainMenu(Color color) : base(color) {}
+
     public override void DisplayMenu()
     {
         bool menuLoop = true;

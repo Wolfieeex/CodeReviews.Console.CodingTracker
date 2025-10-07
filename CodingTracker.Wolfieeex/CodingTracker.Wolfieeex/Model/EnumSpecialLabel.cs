@@ -9,7 +9,8 @@ public enum MultiInputLabel
     OneOfRequired
 }
 
-public class EnumSpecialLabel : Attribute
+[AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+public sealed class EnumSpecialLabel : Attribute
 {
     public MultiInputLabel multiInputLabel;
 

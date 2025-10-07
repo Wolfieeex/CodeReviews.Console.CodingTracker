@@ -1,5 +1,6 @@
 ﻿using CodingTracker.Wolfieeex.Controller.Crud;
 using CodingTracker.Wolfieeex.Controller.SQL;
+using CodingTracker.Wolfieeex.MenuSelections;
 using Spectre.Console;
 
 namespace CodingTracker.Wolfieeex.View;
@@ -18,32 +19,33 @@ internal class MainMenu : Menu
                     .Centered()
                     .Color(Color.Red));
 
-            int? userOption = UserInterface.DisplaySelectionUI("[red]Function[/] selection:", typeof(MenuSelections.MainMenuEnums), Color.IndianRed1_1);
+            var userOption = DisplayOptions();
+
             switch (userOption)
             {
-                case 0:
+                case MainMenuSelections.AddRecordManually:
                     CrudController.AddNewSessionManually();
                     break;
-                case 1:
+                case MainMenuSelections.StartTrackingNewSession:
                     CrudController.TrackNewSession();
                     break;
-                case 2:
+                case MainMenuSelections.SetGoals:
                     GoalSettings.GoalMenu();
                     break;
-                case 3:
+                case MainMenuSelections.ViewPreviousSessions:
                     CrudController.ViewPreviousSessions();
                     break;
-                case 4:
+                case MainMenuSelections.GenerateReport:
                     Controller.Crud.Reporting.GenerateReport();
                     break;
-                case 5:
+                case MainMenuSelections.UpdateSessionDetails:
                     CrudController.UpdateSessionDetails();
                     break;
-                case 6:
+                case MainMenuSelections.DeleteSession:
                     CrudController.DeleteSession();
                     break;
-                case 7:
-                    System.Console.Clear();
+                case MainMenuSelections.ExitApp:
+                    Console.Clear();
                     AnsiConsole.Write(new Markup("You have exited the app and you will return to the main desktop\n[lightGreen]See you soon![/]").Centered());
                     menuLoop = false;
                     break;

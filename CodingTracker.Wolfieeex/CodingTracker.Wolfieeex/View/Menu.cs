@@ -2,6 +2,7 @@
 using System.Reflection;
 using Spectre.Console;
 using CodingTracker.Wolfieeex.Model;
+using System.ComponentModel.DataAnnotations;
 
 namespace CodingTracker.Wolfieeex.View;
 
@@ -19,6 +20,7 @@ public struct MenuColors
 internal abstract class Menu
 {
     protected string title;
+    protected Type selectionEnum;
     private Color _basicColor;
     public Color basicColor
     {
@@ -53,12 +55,12 @@ internal abstract class Menu
 
     protected string ReadEnumName(Enum enumValue)
     {
-        FieldInfo? field = enumValue.GetType().GetField(enumValue.ToString());
-        if (field != null)
+        MemberInfo? memberInfo = enumValue.GetType().GetMember(enumValue.ToString()).FirstOrDefault();
+        if (memberInfo != null)
         {
-            var attribute = field.GetCustomAttribute<DisplayNameAttribute>();
-            if (attribute != null)
-                return attribute.DisplayName;
+            var attribute = memberInfo.GetCustomAttribute<DisplayAttribute>();
+            if (attribute != null && !string.IsNullOrWhiteSpace(attribute.Name))
+                return attribute.Name;
         }
         return enumValue.ToString();
     }
@@ -69,13 +71,13 @@ internal abstract class Menu
         if (field != null)
         {
             var attribute = field.GetCustomAttribute<DescriptionAttribute>();
-            if (attribute != null)
+            if (attribute != null && !string.IsNullOrWhiteSpace(attribute.Description))
                 return attribute.Description;
         }
         return enumValue.ToString();
     }
 
-    protected MultiInputLabel GetEnumSpecialLabel(Enum enumValue)
+    protected MultiInputLabel ReadEnumSpecialLabel(Enum enumValue)
     {
         FieldInfo? field = enumValue.GetType().GetField(enumValue.ToString());
         if (field != null)
@@ -85,5 +87,31 @@ internal abstract class Menu
                 return attribute.multiInputLabel;
         }
         return MultiInputLabel.Neutral;
+    }
+
+    protected Enum DisplayOptions()
+    {
+        try
+        {
+            if (!selectionEnum.IsEnum)
+                throw new ArgumentException("DisplayOptions method can only accept types of enum type. " +
+                "Make sure that selectionEnum variable is set to Enum in Menu abstract class.");
+
+            var enumValues = Enum.GetValues(selectionEnum).Cast<Enum>().ToList();
+
+            return AnsiConsole.Prompt(new SelectionPrompt<Enum>()
+            .Title(title)
+            .AddChoices(enumValues)
+            .UseConverter(s => ReadEnumName(s))
+            .HighlightStyle(style)
+            .WrapAround()
+            );
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        return null;
     }
 }

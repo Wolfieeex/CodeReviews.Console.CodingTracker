@@ -1,8 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CodingTracker.Wolfieeex.MenuSelections;
+
 internal enum MainMenuSelections
 {
+    [Display(Name = "Add record manually")]
     AddRecordManually,
+
+    [Display(Name = "Start tracking new session")]
     StartTrackingNewSession,
+
+
     SetGoals,
     ViewPreviousSessions,
     GenerateReport,
@@ -99,7 +107,7 @@ internal enum GoalSetterMenu
 {
     ReturnToMainMenu,
     SetNewGoal,
-    ViewPreviousGoals,  
+    ViewPreviousGoals,
     DeleteGoal
 }
 

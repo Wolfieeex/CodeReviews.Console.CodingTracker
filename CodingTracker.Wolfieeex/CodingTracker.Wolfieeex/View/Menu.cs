@@ -32,6 +32,7 @@ internal abstract class Menu
 {
     protected abstract string title { get; }
     protected abstract Type selectionEnum { get; }
+
     private Color _basicColor;
     protected Color basicColor
     {
@@ -62,6 +63,7 @@ internal abstract class Menu
     }
     protected MenuColors menuColors;
     protected MenuColorsHex menuColorsHex;
+
     protected Style style { get; }
 
     public abstract void DisplayMenu();
@@ -108,7 +110,7 @@ internal abstract class Menu
         return MultiInputLabel.Neutral;
     }
 
-    protected Enum DisplayOptions()
+    protected virtual Enum DisplayOptions()
     {
         try
         {
@@ -125,7 +127,6 @@ internal abstract class Menu
             .HighlightStyle(style)
             .WrapAround()
             );
-
         }
         catch (Exception ex)
         {

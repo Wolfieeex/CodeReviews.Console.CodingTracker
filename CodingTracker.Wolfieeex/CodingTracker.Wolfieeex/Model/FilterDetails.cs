@@ -73,6 +73,5 @@ internal class FilterDetails
 		MinDuration = null;
 		MaxDuration = null;
 		WasTimerTracked = null;
-		
 	}
 }

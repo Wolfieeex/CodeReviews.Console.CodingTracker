@@ -27,7 +27,8 @@ internal class MainMenu : Menu
             switch (userOption)
             {
                 case MainMenuSelections.AddRecordManually:
-                    CrudController.AddNewSessionManually();
+                    AddRecordMenuallyMenu addRecordMenuallyMenu = new AddRecordMenuallyMenu(Color.Plum1);
+                    addRecordMenuallyMenu.DisplayMenu();
                     break;
                 case MainMenuSelections.StartTrackingNewSession:
                     CrudController.TrackNewSession();

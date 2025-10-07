@@ -12,7 +12,7 @@ try
 	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
 	dataInitializer.SetDefaultSettings(mainDbWasInitiated, goalDbWasInitiated);
 
-	MainMenu mainMenu = new MainMenu(Color.DeepPink4);
+	MainMenu mainMenu = new MainMenu(Color.Aqua);
 	mainMenu.DisplayMenu();
 }
 catch (Exception ex)

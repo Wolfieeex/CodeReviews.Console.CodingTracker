@@ -12,13 +12,6 @@ internal class CrudController
 {
     internal static void AddNewSessionManually()
     {
-        Color titleColor = Color.Orange4_1;
-        Color mainColor = Color.Yellow4;
-        Color inputColor = Color.LightGoldenrod3;
-
-        string titleColorHex = $"[#{titleColor.ToHex()}]";
-        string inputColorHex = $"[#{inputColor.ToHex()}]";
-
         string? start = null;
         string? end = null;
         int? lines = null;

@@ -1,5 +1,4 @@
 using static CodingTracker.Wolfieeex.Controller.MathHelpers;
-using Microsoft.Extensions.Configuration;
 using CodingTracker.Wolfieeex.Model;
 using CodingTracker.Wolfieeex.Controller.DataHandlers;
 
@@ -7,10 +6,6 @@ namespace CodingTracker.Wolfieeex.Controller;
 
 internal class DatatableSeeder
 {
-    private IConfiguration configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .Build();
-
     internal void CreateMainMockTablebase()
     {
         SeederSettings seederSettings = new SeederSettings();

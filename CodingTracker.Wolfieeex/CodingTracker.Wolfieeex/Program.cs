@@ -1,6 +1,5 @@
 ﻿using CodingTracker.Wolfieeex.Controller;
 using Spectre.Console;
-using CodingTracker.Wolfieeex.MenuSelections;
 using CodingTracker.Wolfieeex.View;
 
 try

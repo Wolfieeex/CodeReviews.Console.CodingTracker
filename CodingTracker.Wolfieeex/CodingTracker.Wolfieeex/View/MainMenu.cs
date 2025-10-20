@@ -26,6 +26,7 @@ internal class MainMenu : Menu
 
             switch (userOption)
             {
+                // I'm here now! :D
                 case MainMenuSelections.AddRecordManually:
                     AddRecordMenuallyMenu addRecordMenuallyMenu = new AddRecordMenuallyMenu(Color.Plum1);
                     addRecordMenuallyMenu.DisplayMenu();

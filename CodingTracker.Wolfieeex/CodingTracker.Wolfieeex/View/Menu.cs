@@ -74,7 +74,7 @@ internal abstract class Menu
         style = new Style(foreground: menuColors.selectionColor, decoration: Decoration.RapidBlink);
     }
 
-    protected string ReadEnumName(Enum enumValue)
+    protected virtual string ReadEnumName(Enum enumValue)
     {
         MemberInfo? memberInfo = enumValue.GetType().GetMember(enumValue.ToString()).FirstOrDefault();
         if (memberInfo != null)

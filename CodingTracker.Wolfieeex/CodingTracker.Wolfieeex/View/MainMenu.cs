@@ -1,6 +1,6 @@
 ﻿using CodingTracker.Wolfieeex.Controller.Crud;
 using CodingTracker.Wolfieeex.Controller.SQL;
-using CodingTracker.Wolfieeex.MenuSelections;
+using CodingTracker.Wolfieeex.Model;
 using Spectre.Console;
 
 namespace CodingTracker.Wolfieeex.View;

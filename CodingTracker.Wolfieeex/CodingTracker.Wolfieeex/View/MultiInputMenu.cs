@@ -9,21 +9,48 @@ internal abstract class MultiInputMenu : Menu
 {
     public MultiInputMenu(Color color) : base(color) { }
     protected Dictionary<Enum, string> OptionKeys = new();
-    protected string[] reasonCodes;
+    protected List<string> reasonCodes;
+    protected string titleWithReasons => title;
     protected virtual bool CheckInputConditions()
     {
-        // Special conditions, such as From date not being after To date.
+        bool checkPassed = true;
+        List<string> requiredFields = new();
+        List<string> oneOfRequiredFields = new();
+
+        List<Enum> keys = OptionKeys.Keys.ToList();
+        List<Enum> selectionEnumOptions = Enum.GetValues(selectionEnum).Cast<Enum>().ToList();
+        Dictionary<Enum, MultiInputLabel> selectionSettings = new();
+
+        bool oneOfExists = false;
+        foreach (Enum en in selectionEnumOptions)
+        {
+            if (ReadEnumSpecialLabel(en) == MultiInputLabel.OneOfRequired)
+            {
+                oneOfExists = true;
+                break;
+            }
+        }
+
+        // Check for every required label and if not present in keys, add it to required fields query string.
+        // Check for at least one OneOf required label and if none present in keys, add them all to the query string.
+        
+        // Method can be overriten by calling out base + additional checks if needed.
+
         return false;
     }
     protected override Enum DisplayOptions()
     {
         try
         {
+            if (!selectionEnum.IsEnum)
+                throw new ArgumentException("DisplayOptions method can only accept types of enum type. " +
+                "Make sure that selectionEnum variable is set to Enum in Menu abstract class.");
+
             // Do the actual display function from Ansi Console and return the selection
             List<Enum> options = GenerateOptions();
 
             return AnsiConsole.Prompt(new SelectionPrompt<Enum>()
-            .Title(title)
+            .Title(titleWithReasons)
             .AddChoices(options)
             .UseConverter(s => ReadEnumName(s))
             .HighlightStyle(style)
@@ -40,41 +67,15 @@ internal abstract class MultiInputMenu : Menu
     {
         List<Enum> allEnums = Enum.GetValues(selectionEnum).Cast<Enum>().ToList();
 
-        bool conditionsPassed = CheckInputConditions();
-        bool checkPassed = true;
+        bool didConditionsPass = CheckInputConditions();
 
-        if (conditionsPassed)
-        {
-            bool oneOfPresent = false;
-            bool oneOfSatisfied = false;
-
-            foreach (Enum en in allEnums)
-            {
-                MultiInputLabel label = ReadEnumSpecialLabel(en);
-                if (label == MultiInputLabel.Required && !OptionKeys.ContainsKey(en))
-                {
-                    checkPassed = false;
-                    break;
-                }
-                if (label == MultiInputLabel.OneOfRequired)
-                {
-                    oneOfPresent = true;
-                    if (OptionKeys.ContainsKey(en))
-                    {
-                        oneOfSatisfied = true;
-                    }
-                }
-            }
-            if (oneOfPresent && !oneOfSatisfied)
-                checkPassed = false;
-        }
+        // Generate the title.
 
         foreach (Enum en in allEnums)
         {
-            MultiInputLabel label = ReadEnumSpecialLabel(en);
-            if (label == MultiInputLabel.Confirm && checkPassed && conditionsPassed)
+            if (ReadEnumSpecialLabel(en) == MultiInputLabel.Confirm && didConditionsPass)
                 allEnums.Add(en);
-            else if (label != MultiInputLabel.Confirm)
+            else if (ReadEnumSpecialLabel(en) != MultiInputLabel.Confirm)
                 allEnums.Add(en);
         }
         return allEnums;
@@ -106,7 +107,7 @@ internal abstract class MultiInputMenu : Menu
             }
         }
     }
-    
+
     protected override string ReadEnumName(Enum enumValue)
     {
         MemberInfo? memberInfo = enumValue.GetType().GetMember(enumValue.ToString()).FirstOrDefault();
@@ -120,6 +121,20 @@ internal abstract class MultiInputMenu : Menu
                 else
                     return attribute.Name;
             }
+        }
+        return enumValue.ToString();
+    }
+
+    protected string ReadEnumShortName(Enum enumValue)
+    {
+        var fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
+        if (fieldInfo != null)
+        {
+            var attribute = fieldInfo.GetCustomAttribute<EnumSpecialLabel>();
+            string shortName = attribute.shortName;
+
+            if (!string.IsNullOrEmpty(shortName))
+                return shortName;
         }
         return enumValue.ToString();
     }

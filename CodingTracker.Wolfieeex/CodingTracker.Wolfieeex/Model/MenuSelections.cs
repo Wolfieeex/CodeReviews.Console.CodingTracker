@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CodingTracker.Wolfieeex.MenuSelections;
+
+namespace CodingTracker.Wolfieeex.Model;
 
 internal enum MainMenuSelections
 {
@@ -30,10 +31,28 @@ internal enum MainMenuSelections
 }
 internal enum TrackNewSession
 {
+    [Display(Name = "Add a new session with below details")]
+    [EnumSpecialLabel(label: MultiInputLabel.Confirm)]
+    Confirm,
+
+    [Display(Name = "Choose the start date of the session")]
+    [EnumSpecialLabel(label: MultiInputLabel.Required, shortName: "Session Start")]
     AddSessionStart,
+
+    [Display(Name = "Choose the end date of the session")]
+    [EnumSpecialLabel(label: MultiInputLabel.Required, shortName: "Session End")]
     AddSessionEnd,
-    OptionalAddSessionNumberOfLines,
-    OptionalAddSessionComments,
+
+    [Display(Name = "Enter the approximate number of lines you changed in your program")]
+    [EnumSpecialLabel(label: MultiInputLabel.Neutral, shortName: "Lines Changed")]
+    AddSessionNumberOfLines,
+
+    [Display(Name = "Add any comments to your session")]
+    [EnumSpecialLabel(label: MultiInputLabel.Neutral, shortName: "Comments")]
+    AddSessionComments,
+
+    [Display(Name = "Return to previous menu")]
+    [EnumSpecialLabel(label: MultiInputLabel.Quit)]
     ReturnToMainMenu
 }
 internal enum FilterRecords

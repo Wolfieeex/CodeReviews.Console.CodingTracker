@@ -13,9 +13,11 @@ public enum MultiInputLabel
 public sealed class EnumSpecialLabel : Attribute
 {
     public MultiInputLabel multiInputLabel;
+    public string shortName;
 
-    public EnumSpecialLabel(MultiInputLabel label)
+    public EnumSpecialLabel(MultiInputLabel label, string shortName = "")
     {
         multiInputLabel = label;
+        this.shortName = shortName;
     }
 }

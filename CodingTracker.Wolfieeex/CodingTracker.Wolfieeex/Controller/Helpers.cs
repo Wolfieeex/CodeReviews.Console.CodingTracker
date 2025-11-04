@@ -6,7 +6,6 @@ namespace CodingTracker.Wolfieeex.Controller.SQL;
 
 internal static class Helpers
 {
-    
     internal static List<string> GetDurations(List<int> index)
     {
         List<string> durations = new();

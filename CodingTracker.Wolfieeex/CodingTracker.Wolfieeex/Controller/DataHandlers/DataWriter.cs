@@ -13,7 +13,7 @@ internal class DataWriter : DbConnectionProvider
 
 		string commString = @$"INSERT INTO {mainTableName} 
 							(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
-							VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments, @Timer)";
+							VALUES (@CreationDate, @LastUpdateDate, @StartDate, @EndDate, @Duration, @LinesOfCode, @Comments, @WasTimerTracked)";
 		conn.Execute(commString, session);
 		return session.Duration;
 	}
@@ -25,8 +25,8 @@ internal class DataWriter : DbConnectionProvider
 		using var transaction = conn.BeginTransaction();
 
 		string commString = @$"INSERT INTO {mainTableName} 
-			(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
-			VALUES (@CreationDate, @LastUpdateDate, @StartDate, @EndDate, @Duration, @LinesOfCode, @Comments, @WasTimerTracked)";
+							(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
+							VALUES (@CreationDate, @LastUpdateDate, @StartDate, @EndDate, @Duration, @LinesOfCode, @Comments, @WasTimerTracked)";
 		try
 		{
 			conn.Execute(commString, sessions, transaction: transaction);

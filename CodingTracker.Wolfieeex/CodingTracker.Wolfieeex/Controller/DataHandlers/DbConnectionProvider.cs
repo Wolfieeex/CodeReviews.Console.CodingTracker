@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.Extensions.Configuration;
-using SQLitePCL;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace CodingTracker.Wolfieeex.Controller;
 

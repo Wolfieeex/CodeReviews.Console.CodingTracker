@@ -1,6 +1,6 @@
 using Spectre.Console;
 using CodingTracker.Wolfieeex.Model;
-
+using CodingTracker.Wolfieeex.Controller.DataHandlers;
 namespace CodingTracker.Wolfieeex.View;
 
 internal class AddRecordMenuallyMenu : MultiInputMenu
@@ -11,6 +11,8 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
     protected override Type selectionEnum => typeof(TrackNewSession);
 
     public AddRecordMenuallyMenu(Color color) : base(color) { }
+
+    private CodingSession codingSession = new();
     public override void DisplayMenu()
     {
         Enum userInput = DisplayOptions();
@@ -18,10 +20,11 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
         switch (userInput)
         {
             case TrackNewSession.Confirm:
-
+                DataWriter dataWriter = new();
+                dataWriter.InjectRecord(codingSession);
                 break;
             case TrackNewSession.AddSessionStart:
-
+                
                 break;
             case TrackNewSession.AddSessionEnd:
 

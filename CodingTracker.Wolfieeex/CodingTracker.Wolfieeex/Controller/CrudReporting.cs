@@ -18,8 +18,8 @@ internal class Reporting
         string titleColorHex = "[#" + titleColor.ToHex() + "]";
         string inputColorHex = "[#" + inputColor.ToHex() + "]";
 
-		ReportSettings reportSettings = TemporaryData.ReportConfiguration;
-        FilterDetails filterDetails = TemporaryData.LastFilter;
+		ReportSettings reportSettings = PreviousSettingsData.ReportConfiguration;
+        FilterDetails filterDetails = PreviousSettingsData.LastFilter;
         reportSettings.FilterDetails = filterDetails;
 
         string? reportOptionsString = null;
@@ -111,8 +111,8 @@ internal class Reporting
             {
                 case -1:
                     reportSettings.FilterDetails = filterDetails;
-                    TemporaryData.ReportConfiguration = reportSettings;
-                    TemporaryData.LastFilter = filterDetails;
+                    PreviousSettingsData.ReportConfiguration = reportSettings;
+                    PreviousSettingsData.LastFilter = filterDetails;
 
                     Dictionary<string, List<string>> DurationTable = new Dictionary<string, List<string>>();
                     Dictionary<string, List<string>> LinesTable = new Dictionary<string, List<string>>();
@@ -160,8 +160,8 @@ internal class Reporting
                     break;
                 case 4:
                     loopReportMenu = false;
-                    TemporaryData.ReportConfiguration = reportSettings;
-                    TemporaryData.LastFilter = filterDetails;
+                    PreviousSettingsData.ReportConfiguration = reportSettings;
+                    PreviousSettingsData.LastFilter = filterDetails;
                     break;
             }
         }

@@ -24,6 +24,8 @@ internal class MainMenu : Menu
 
             var userOption = DisplayOptions();
 
+            // Exit - complete.
+            // AddRecordManually - in progress.
             switch (userOption)
             {
                 case MainMenuSelections.AddRecordManually:

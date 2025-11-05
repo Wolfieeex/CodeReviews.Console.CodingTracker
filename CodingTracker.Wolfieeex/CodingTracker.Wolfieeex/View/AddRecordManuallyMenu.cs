@@ -24,7 +24,7 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
                 dataWriter.InjectRecord(codingSession);
                 break;
             case TrackNewSession.AddSessionStart:
-                
+
                 break;
             case TrackNewSession.AddSessionEnd:
 
@@ -41,5 +41,12 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
             default:
                 throw new ArgumentOutOfRangeException("Unkwon enum value detected in AddRecordManuallyMenu.");
         }
+    }
+
+    protected override bool CheckInputConditions()
+    {
+        bool baseConditionsPassed = base.CheckInputConditions();
+
+        
     }
 }

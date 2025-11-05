@@ -1,6 +1,6 @@
 ﻿namespace CodingTracker.Wolfieeex.Model;
 
-internal static class TemporaryData
+internal static class PreviousSettingsData
 {
 	internal static FilterDetails LastFilter { get; set; } = new();
     

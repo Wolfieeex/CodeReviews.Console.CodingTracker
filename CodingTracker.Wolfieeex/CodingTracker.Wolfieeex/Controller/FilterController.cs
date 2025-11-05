@@ -13,18 +13,18 @@ internal class FilterController
     {
         FilterDetails filterDetails = new FilterDetails()
         {
-            SortingDetails = TemporaryData.LastFilter.SortingDetails,
-            ViewOptions = TemporaryData.LastFilter.ViewOptions,
-            FromDate = TemporaryData.LastFilter.FromDate,
-            ToDate = TemporaryData.LastFilter.ToDate,
-            MinLines = TemporaryData.LastFilter.MinLines,
-            MaxLines = TemporaryData.LastFilter.MaxLines,
-            Comment = TemporaryData.LastFilter.Comment,
-            MinDuration = TemporaryData.LastFilter.MinDuration,
-            MaxDuration = TemporaryData.LastFilter.MaxDuration,
-            WasTimerTracked = TemporaryData.LastFilter.WasTimerTracked
+            SortingDetails = PreviousSettingsData.LastFilter.SortingDetails,
+            ViewOptions = PreviousSettingsData.LastFilter.ViewOptions,
+            FromDate = PreviousSettingsData.LastFilter.FromDate,
+            ToDate = PreviousSettingsData.LastFilter.ToDate,
+            MinLines = PreviousSettingsData.LastFilter.MinLines,
+            MaxLines = PreviousSettingsData.LastFilter.MaxLines,
+            Comment = PreviousSettingsData.LastFilter.Comment,
+            MinDuration = PreviousSettingsData.LastFilter.MinDuration,
+            MaxDuration = PreviousSettingsData.LastFilter.MaxDuration,
+            WasTimerTracked = PreviousSettingsData.LastFilter.WasTimerTracked
         };
-        SortingDetails sortingDetails = TemporaryData.LastFilter.SortingDetails;
+        SortingDetails sortingDetails = PreviousSettingsData.LastFilter.SortingDetails;
 
         bool runFilterMenuLoop = true;
         while (runFilterMenuLoop)
@@ -56,7 +56,7 @@ internal class FilterController
     internal static SortingDetails SortingMenu(SortingDetails previousDetails, Color titleColor, Color mainColor, Color inputColor)
     {
         bool inSortingMenu = true;
-        SortingDetails sortingDetails = TemporaryData.LastFilter.SortingDetails;
+        SortingDetails sortingDetails = PreviousSettingsData.LastFilter.SortingDetails;
 
         while (inSortingMenu)
         {
@@ -70,7 +70,7 @@ internal class FilterController
             switch (userSelection)
             {
                 case -1:
-                    TemporaryData.LastFilter.SortingDetails = sortingDetails;
+                    PreviousSettingsData.LastFilter.SortingDetails = sortingDetails;
                     return sortingDetails;
                 case 0:
                     sortingDetails.SortBy = null;

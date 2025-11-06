@@ -10,7 +10,10 @@ internal abstract class MultiInputMenu : Menu
     public MultiInputMenu(Color color) : base(color) { }
     protected Dictionary<Enum, string> OptionKeys = new();
     protected List<string> reasonCodes;
-    protected string titleWithReasons => title + "\n\n" + string.Join("\n", reasonCodes);
+    protected string titleWithReasons => reasonCodes.Count() > 0 ?
+                                         title + $"{menuColorsHex.titleWarningColor}Attention![/] To continue, you need to resolve below issues:\n" + 
+                                         "\n" + string.Join("\n\t", reasonCodes)
+                                         : title;
 
     protected virtual bool CheckInputConditions()
     {
@@ -46,13 +49,11 @@ internal abstract class MultiInputMenu : Menu
         reasonCodes.Clear();
 
         if (requiredFields.Count() != 0)
-            reasonCodes.Add($"{menuColorsHex.titleWarningColor}Attention![/] To continue, you need to "
-            + $"{menuColorsHex.titleHighlightColor}fill all of[/] required fields: "
+            reasonCodes.Add($"{menuColorsHex.titleHighlightColor}All required fields must be filled in[/]: "
             + $"{menuColorsHex.titleHighlightColor}{string.Join(", ", requiredFields)}.[/]");
 
         if (!oneOfRequirement)
-            reasonCodes.Add($"{menuColorsHex.titleWarningColor}Attention![/] To continue, you need to "
-            + $"{menuColors.titleHighlightColor}fill one of[/] these fields: "
+            reasonCodes.Add($"{menuColors.titleHighlightColor}You need to fill in at least one of required fields[/]: "
             + $"{menuColorsHex.titleHighlightColor}{string.Join(", ", oneOfRequiredFields)}.[/]");
 
         // Method can be overriten by calling out base + additional checks if needed and return combined bool result in "&&" form;

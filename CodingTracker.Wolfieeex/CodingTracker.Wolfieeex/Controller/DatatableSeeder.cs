@@ -1,6 +1,6 @@
 using static CodingTracker.Wolfieeex.Controller.MathHelpers;
 using CodingTracker.Wolfieeex.Model;
-using CodingTracker.Wolfieeex.Controller.DataHandlers;
+using CodingTracker.Wolfieeex.Controller;
 
 namespace CodingTracker.Wolfieeex.Controller;
 
@@ -150,14 +150,10 @@ internal class DatatableSeeder
                 "Completed" => (DateTime.Now - inThePastAmount).ToString(),
                 "Failed" => (DateTime.Now - inThePastAmount).ToString()
             };
-            userGoal.StartingGoal = (userGoal.GoalType, userGoal.Status) switch
+            userGoal.StartingGoal = (userGoal.GoalType) switch
             {
-                ("Lines", "InProgress") => linesGoal.ToString(),
-                ("Time", "InProgress") => timeGoal.ToString(),
-				("Lines", "Completed") => linesGoal.ToString(),
-				("Time", "Completed") => timeGoal.ToString(),
-				("Lines", "Failed") => linesGoal.ToString(),
-				("Time", "Failed") => timeGoal.ToString()
+                "Lines" => linesGoal.ToString(),
+                "Time" => timeGoal.ToString(),
 			};
             userGoal.RemainingGoal = (userGoal.GoalType, userGoal.Status) switch
             {

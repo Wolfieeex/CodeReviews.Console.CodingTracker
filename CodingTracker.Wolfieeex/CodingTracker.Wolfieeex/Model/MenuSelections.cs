@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 
@@ -36,18 +37,22 @@ internal enum TrackNewSession
     Confirm,
 
     [Display(Name = "Choose the start date of the session")]
+    [Description("Insert the start date and time of your session (it must be in format DD/MM/YY HH:MM): ")]
     [EnumSpecialLabel(label: MultiInputLabel.Required, shortName: "Session Start")]
     AddSessionStart,
 
     [Display(Name = "Choose the end date of the session")]
+    [Description("Insert the end date and time of your session (it must be in format DD/MM/YY HH:MM): ")]
     [EnumSpecialLabel(label: MultiInputLabel.Required, shortName: "Session End")]
     AddSessionEnd,
 
-    [Display(Name = "Enter the approximate number of lines you changed in your program")]
+    [Display(Name = "Number of lines you changed in your program")]
+    [Description("Insert the number of lines you changed during your session: ")]
     [EnumSpecialLabel(label: MultiInputLabel.Neutral, shortName: "Lines Changed")]
     AddSessionNumberOfLines,
 
-    [Display(Name = "Add any comments to your session")]
+    [Display(Name = "Comments attached")]
+    [Description("Attach any comments for your session: ")]
     [EnumSpecialLabel(label: MultiInputLabel.Neutral, shortName: "Comments")]
     AddSessionComments,
 

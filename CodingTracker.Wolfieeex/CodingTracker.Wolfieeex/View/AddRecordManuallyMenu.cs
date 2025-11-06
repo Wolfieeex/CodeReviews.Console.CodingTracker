@@ -29,24 +29,26 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
             switch (userInput)
             {
                 case TrackNewSession.Confirm:
+                    codingSession.CreationDate = codingSession.LastUpdateDate =  DateTime.Now.ToString("dd/MM/yy HH/mm");
+                    codingSession.Duration = MathHelpers.CalculateDuration(codingSession.StartDate, codingSession.EndDate);
                     DataWriter dataWriter = new();
                     dataWriter.InjectRecord(codingSession);
                     break;
                 case TrackNewSession.AddSessionStart:
                     codingSession.StartDate = AlterKey(userInput,
-                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Datetime));
+                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Datetime, menuColors));
                     break;
                 case TrackNewSession.AddSessionEnd:
                     codingSession.EndDate = AlterKey(userInput,
-                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Datetime));
+                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Datetime, menuColors));
                     break;
                 case TrackNewSession.AddSessionNumberOfLines:
                     codingSession.LinesOfCode = Int32.Parse(AlterKey(userInput,
-                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Number)));
+                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Number, menuColors)));
                     break;
                 case TrackNewSession.AddSessionComments:
                     codingSession.Comments = AlterKey(userInput,
-                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Text));
+                    InputValidator.ValidateInput(ReadEnumDescription(userInput), ValidatorType.Text, menuColors));
                     break;
                 case TrackNewSession.ReturnToMainMenu:
                     return;
@@ -66,15 +68,11 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
             DateTime startDate = DateTime.Parse(codingSession.StartDate);
             DateTime endDate = DateTime.Parse(codingSession.EndDate);
 
-            // Only text validation is working now. Add for dateTime and number.
-            // Correct it so the condition part (Attention) appears only once, when there is at least one reason.
             // Make sure that timeSpan is calculated, creation and lastly updated date matching the end date.
             if (startDate > endDate)
             {
                 dateValidityCondition = false;
-                reasonCodes.Add($"{menuColorsHex.titleWarningColor}Attention![/] To continue, you need to "
-            + $"{menuColorsHex.titleHighlightColor}fill all of[/] required fields: "
-            + $"{menuColorsHex.titleHighlightColor}{string.Join(", ", requiredFields)}.[/]");
+                reasonCodes.Add($"{menuColorsHex.titleWarningColor}Starting date of your session cannot be later than the end of it.[/]");
             }
         }
         return baseConditionsPassed && dateValidityCondition;

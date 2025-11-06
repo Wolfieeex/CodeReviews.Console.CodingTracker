@@ -16,17 +16,10 @@ internal static class InputValidator
     {
         DisplayExitInputs();
 
-        string? input = AnsiConsole.Prompt(new TextPrompt<string?>(title)
-        .AllowEmpty()
-        .Validate((s) => s.ToLower() switch
-        {
-            string when Regex.IsMatch(s, @"[^a-zA-Z0-9\-\.;,]") => ValidationResult.Error(
-                "Your text contains special characters that cannot be used in your input. " +
-                "You can only use commas, semicolons, hyphens, white spaces and full stops."),
-            _ => ValidationResult.Success()
-        }
-        ));
-
+        TextPrompt<string?> prompt = new TextPrompt<string?>(title);
+        AssignValidation(ref prompt, validator);
+        string? input = AnsiConsole.Prompt(prompt);
+        
         if (String.IsNullOrEmpty(input))
             return null;
         else if (input.ToLower() == "e")
@@ -35,9 +28,20 @@ internal static class InputValidator
             return input;
     }
 
-    internal static void ValidateIntInput(ref TextPrompt<string> prompt, ValidatorType validator)
+    internal static void AssignValidation(ref TextPrompt<string?> prompt, ValidatorType validator)
     {
-        
+        switch (validator)
+        {
+            case ValidatorType.Text:
+                prompt.Validate((s) => s.ToLower() switch
+                {
+                    string when Regex.IsMatch(s, @"[^a-zA-Z0-9\-\.;,]") => ValidationResult.Error(
+                        "Your text contains special characters that cannot be used in your input. " +
+                        "You can only use commas, semicolons, hyphens, white spaces and full stops."),
+                    _ => ValidationResult.Success()
+                });
+                break;
+        }
     }
 
     private static void DisplayExitInputs()
@@ -46,6 +50,6 @@ internal static class InputValidator
                         "\nPress \"e\" to return to menu without changing the input.",
                         style: new Style(decoration: Decoration.RapidBlink)).Justify(Justify.Right));
 
-        Console.SetCursorPosition(0, 1);
+        Console.SetCursorPosition(0, 2);
     }
 }

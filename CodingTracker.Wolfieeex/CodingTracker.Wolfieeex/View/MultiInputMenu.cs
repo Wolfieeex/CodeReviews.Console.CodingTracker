@@ -98,7 +98,7 @@ internal abstract class MultiInputMenu : Menu
         return allEnums;
     }
 
-    protected void AlterKey(Enum key, string? value)
+    protected string AlterKey(Enum key, string? value)
     {
         // If 'optionKey' exists, change. If not, add. If null, remove. If empty, don't change.
         if (OptionKeys.ContainsKey(key))
@@ -113,6 +113,7 @@ internal abstract class MultiInputMenu : Menu
             if (value != null && value != "")
                 OptionKeys.Add(key, value);
         }
+        return value == null ? "" : value;
     }
 
     protected override string ReadEnumName(Enum enumValue)

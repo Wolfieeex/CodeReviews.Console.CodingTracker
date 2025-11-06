@@ -2,7 +2,7 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-namespace CodingTracker.Wolfieeex.Controller.DataHandlers;
+namespace CodingTracker.Wolfieeex.Controller;
 
 internal class DataWriter : DbConnectionProvider
 {

@@ -20,10 +20,10 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
 
     public override void DisplayMenu()
     {
-
         bool menuLoop = true;
         while (menuLoop)
         {
+            Console.Clear();
             Enum userInput = DisplayOptions();
 
             switch (userInput)
@@ -32,7 +32,7 @@ internal class AddRecordMenuallyMenu : MultiInputMenu
                     codingSession.CreationDate = codingSession.LastUpdateDate =  DateTime.Now.ToString("dd/MM/yy HH/mm");
                     codingSession.Duration = MathHelpers.CalculateDuration(codingSession.StartDate, codingSession.EndDate);
                     DataWriter dataWriter = new();
-                    dataWriter.InjectRecord(codingSession);
+                    dataWriter.InjectCodingSession(codingSession);
                     break;
                 case TrackNewSession.AddSessionStart:
                     codingSession.StartDate = AlterKey(userInput,

@@ -1,6 +1,4 @@
-﻿using CodingTracker.Wolfieeex.Controller.Crud;
-using CodingTracker.Wolfieeex.Controller.SQL;
-using CodingTracker.Wolfieeex.Model;
+﻿using CodingTracker.Wolfieeex.Model;
 using Spectre.Console;
 
 namespace CodingTracker.Wolfieeex.View;
@@ -25,7 +23,8 @@ internal class MainMenu : Menu
             var userOption = DisplayOptions();
 
             // Exit - complete.
-            // AddRecordManually - in progress.
+            // AddRecordManually - complete.
+            // StartTrackingNewSession - in progress. - !!! Add Color settings to Json!
             switch (userOption)
             {
                 case MainMenuSelections.AddRecordManually:
@@ -33,7 +32,8 @@ internal class MainMenu : Menu
                     addRecordMenuallyMenu.DisplayMenu();
                     break;
                 case MainMenuSelections.StartTrackingNewSession:
-                    CrudController.TrackNewSession();
+                    TrackingNewSessionMenu trackingNewSessionMenu = new TrackingNewSessionMenu(Color.Aqua);
+                    trackingNewSessionMenu.DisplayMenu();
                     break;
                 case MainMenuSelections.SetGoals:
                     GoalSettings.GoalMenu();

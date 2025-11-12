@@ -4,7 +4,6 @@ namespace CodingTracker.Wolfieeex.Controller;
 
 public abstract class DbConnectionProvider
 {
-	protected static string ConnectionString = "Data Source=CodingTracker.db";
 	protected string connectionString { get; init; }
 	protected string mainTableName { get; init; }
 	protected string goalTableName { get; init; }

@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-
 namespace CodingTracker.Wolfieeex.Model;
 
+// Done
 internal enum MainMenuSelections
 {
     [Display(Name = "Add record manually")]
@@ -23,7 +23,7 @@ internal enum MainMenuSelections
 
     [Display(Name = "Update session details")]
     UpdateSessionDetails,
-    
+
     [Display(Name = "Delete session")]
     DeleteSession,
 
@@ -60,6 +60,26 @@ internal enum TrackNewSession
     [EnumSpecialLabel(label: MultiInputLabel.Quit)]
     ReturnToMainMenu
 }
+internal enum RecordSessionStartMenu
+{
+    [Display(Name = "Start the timer")]
+    StartTrackingNow,
+    [Display(Name = "Do it later")]
+    ReturnToMainMenu
+}
+internal enum RecordSessionRecording
+{
+    Pause,
+    Discard,
+    Finish
+}
+internal enum RecordSessionPause
+{
+    Unpause,
+    Discard,
+    Finish
+}
+// Not done
 internal enum FilterRecords
 {
     ClearFilters,
@@ -86,23 +106,6 @@ internal enum FilterRecordsForReport
     OptionalMinimalDuration,
     OptionalMaximalDuration,
     OptionalWasTimerTracked,
-}
-internal enum RecordSessionStartMenu
-{
-    StartTrackingNow,
-    ReturnToMainMenu
-}
-internal enum RecordSessionRecording
-{
-    Pause,
-    Discard,
-    Finish
-}
-internal enum RecordSessionPause
-{
-    Unpause,
-    Discard,
-    Finish
 }
 internal enum UpdateMenu
 {
@@ -144,7 +147,6 @@ internal enum GoalSetterMenu
     ViewPreviousGoals,
     DeleteGoal
 }
-
 internal enum GoalViewerMenu
 {
     ReturnToPreviousMenu,

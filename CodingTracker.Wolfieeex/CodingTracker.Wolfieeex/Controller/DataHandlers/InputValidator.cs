@@ -16,12 +16,14 @@ internal static class InputValidator
 {
     internal static string? ValidateInput(string title, ValidatorType validator = ValidatorType.Text, MenuColors colors)
     {
+        Console.Clear();
         DisplayExitInputs();
 
         TextPrompt<string?> prompt = new TextPrompt<string?>(title);
         AssignValidation(ref prompt, validator, colors);
         string? input = AnsiConsole.Prompt(prompt);
-        
+
+        Console.Clear();
         if (String.IsNullOrEmpty(input))
             return null;
         else if (input.ToLower() == "e")

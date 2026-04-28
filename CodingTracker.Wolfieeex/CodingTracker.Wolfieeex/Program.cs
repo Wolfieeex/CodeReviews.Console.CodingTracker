@@ -1,20 +1,18 @@
 ﻿using CodingTracker.Wolfieeex.Controller;
-using CodingTracker.Wolfieeex.Model;
-using CodingTracker.Wolfieeex.Controller.ScreenMangers;
+using Spectre.Console;
+using CodingTracker.Wolfieeex.View;
 
 try
 {
 	var dataAccess = new DataInitializer();
 
-	// Filter should automatically, upon constructing, set itself to its default value!!!
-	TemporaryData.SetFilterSettingsToDefaultSettings();
 	DataInitializer dataInitializer = new DataInitializer();
 	bool mainDbWasInitiated = dataInitializer.InstantiateMainDatabase();
 	bool goalDbWasInitiated = dataInitializer.InstantiateGoalDatabase();
 	dataInitializer.SetDefaultSettings(mainDbWasInitiated, goalDbWasInitiated);
-	
-	// In Progress
-	MainMenuScreenManager.S_Mainmenu();
+
+	MainMenu mainMenu = new MainMenu(Color.Aqua);
+	mainMenu.DisplayMenu();
 }
 catch (Exception ex)
 {

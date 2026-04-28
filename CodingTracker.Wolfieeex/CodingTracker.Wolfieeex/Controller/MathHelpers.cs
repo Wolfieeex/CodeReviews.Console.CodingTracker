@@ -25,8 +25,9 @@ internal class MathHelpers()
         return num >= roll ? true : false;
     }
 
-    public static TimeSpan CalculateDuration(string s, string e)
+    public static string CalculateDuration(string start, string end)
     {
-        return DateTime.Parse(e) - DateTime.Parse(s);
+        TimeSpan duration = DateTime.Parse(end) - DateTime.Parse(start);
+        return duration.ToString(@"d\.hh\:mm");
     }
 }

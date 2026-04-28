@@ -5,6 +5,7 @@ namespace CodingTracker.Wolfieeex.Model;
 
 internal class SeederSettings
 {
+    //Coding session seeding settings
     private IConfiguration configuration { get; init; }
     public int minYear { get; set; }
     public int numOfLines { get; set; }
@@ -20,12 +21,25 @@ internal class SeederSettings
     public double chanceThatLineWasUpdated { get; set; }
     public string[] programmingComments { get; set; }
 
+    // User goal seeding settings
+    public int numOfGoalLines { get; set; }
+    public int maxGoalLengthInDays { get; set; }
+    public int maxGoalDistanceInThePastInDays { get; set; }
+    public float chanceGoalInProgress { get; set; }
+    public float chanceGoalFailedIfNotInProgress { get; set; }
+    public float chanceForTaskBeingLines { get; set; }
+    public int minLinesGoal { get; set; }
+    public int maxLinesGoal { get; set; }
+    public TimeSpan minTimeGoal { get; set; }
+    public TimeSpan maxTimeGoal { get; set; }
+
     public SeederSettings()
     {
         configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .Build();
 
+        // Coding session seeding settings
         minYear = configuration.GetValue<int>("MockDatabaseOptions:BaseMinYear");
         numOfLines = configuration.GetValue<int>("MockDatabaseOptions:BaseNumberOfLines");
         minSessionTime = (int)configuration.GetValue<TimeSpan>("MockDatabaseOptions:BaseMinTime").TotalSeconds;
@@ -38,6 +52,18 @@ internal class SeederSettings
         chanceThatWasCommented = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasCommented");
         chanceThatWasTimerTracked = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatWasTimerTracked");
         chanceThatLineWasUpdated = configuration.GetValue<double>("MockDatabaseOptions:ChanceThatLineWasUpdated");
+
+        // User goals seeding settings
+        numOfGoalLines = configuration.GetValue<int>("MockDatabaseOptions:NumOfGoalLines");
+        maxGoalLengthInDays = configuration.GetValue<int>("MockDatabaseOptions:MaxGoalLengthInDays");
+        maxGoalDistanceInThePastInDays = configuration.GetValue<int>("MockDatabaseOptions:MaxGoalDistanceInThePastInDays");
+        chanceGoalInProgress = configuration.GetValue<float>("MockDatabaseOptions:ChanceGoalInProgress");
+        chanceGoalFailedIfNotInProgress = configuration.GetValue<float>("MockDatabaseOptions:ChanceGoalFailedIfNotInProgress");
+        chanceForTaskBeingLines = configuration.GetValue<float>("MockDatabaseOptions:ChanceForTaskBeingLines");
+        minLinesGoal = configuration.GetValue<int>("MockDatabaseOptions:MinLinesGoal");
+        maxLinesGoal = configuration.GetValue<int>("MockDatabaseOptions:MaxLinesGoal");
+        minTimeGoal = TimeSpan.Parse(configuration.GetValue<string>("MockDatabaseOptions:MinTimeGoal"));
+        maxTimeGoal = TimeSpan.Parse(configuration.GetValue<string>("MockDatabaseOptions:MaxTimeGoal"));
 
         string json = File.ReadAllText("comments.json");
         programmingComments = JsonSerializer.Deserialize<string[]>(json);

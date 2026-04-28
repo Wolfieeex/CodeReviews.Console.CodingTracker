@@ -1,16 +1,10 @@
 using static CodingTracker.Wolfieeex.Controller.MathHelpers;
-using Microsoft.Extensions.Configuration;
 using CodingTracker.Wolfieeex.Model;
-using CodingTracker.Wolfieeex.Controller.DataHandlers;
 
 namespace CodingTracker.Wolfieeex.Controller;
 
 internal class DatatableSeeder
 {
-    private IConfiguration configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .Build();
-
     internal void CreateMainMockTablebase()
     {
         SeederSettings seederSettings = new SeederSettings();
@@ -70,7 +64,7 @@ internal class DatatableSeeder
             }
             session.LastUpdateDate = update.ToString();
             session.EndDate = end.ToString();
-            session.Duration = CalculateDuration(session.StartDate, session.EndDate).ToString();
+            session.Duration = CalculateDuration(session.StartDate, session.EndDate);
 
             if (PercentageChanceGenerator(seederSettings.chanceThatLineWasUpdated))
                 session.LinesOfCode = (int)RandomExponentialValueInRange(0, seederSettings.numOfLines, 0.9);
@@ -86,34 +80,26 @@ internal class DatatableSeeder
             codingSessions.Add(session);
         }
         DataWriter dataWriter = new DataWriter();
-        dataWriter.InjectMultipleRecords(codingSessions);
+        dataWriter.InjectMultipleCodingSessions(codingSessions);
     }
 
     internal void CreateGoalMockTablebase()
     {
-        int numOfGoalLines = 30;
-        int maxGoalLengthInDays = 180;
-        int maxGoalDistanceInThePastInDays = 360;
-        float chanceGoalInProgress = 0.8f;
-        float chanceGoalFailedIfNotInProgress = 0.3f;
-        float chanceForTaskBeingLines = 0.2f;
-
-        int minLinesGoal = 100;
-        int maxLinesGoal = 50000;
-        TimeSpan minTimeGoal = new TimeSpan(6, 0, 0);
-        TimeSpan maxTimeGoal = new TimeSpan(18, 0, 0, 0);
+        SeederSettings seederSettings = new SeederSettings();
 
         Random random = new Random();
-        UserGoal userGoal = new UserGoal();
+        List<UserGoal> userGoals = new();
 
-        for (int i = 0; i < numOfGoalLines; i++)
+        for (int i = 0; i < seederSettings.numOfGoalLines; i++)
         {
-            if (PercentageChanceGenerator(chanceGoalInProgress))
+            UserGoal userGoal = new();
+
+            if (PercentageChanceGenerator(seederSettings.chanceGoalInProgress))
             {
                 userGoal.Status = "InProgress";
                 userGoal.FinishingDate = "N/A";
             }
-            else if (PercentageChanceGenerator(chanceGoalFailedIfNotInProgress))
+            else if (PercentageChanceGenerator(seederSettings.chanceGoalFailedIfNotInProgress))
             {
                 userGoal.Status = "Failed";
             }
@@ -122,28 +108,28 @@ internal class DatatableSeeder
                 userGoal.Status = "Completed";
             }
 
-            if (PercentageChanceGenerator(chanceForTaskBeingLines))
+            if (PercentageChanceGenerator(seederSettings.chanceForTaskBeingLines))
                 userGoal.GoalType = "Lines";
             else
                 userGoal.GoalType = "Time";
 
             // Data for In Progress goals:
-            TimeSpan goalTimeLength = new TimeSpan(random.Next(0, maxGoalLengthInDays + 1), 0, 0, 0);
+            TimeSpan goalTimeLength = new TimeSpan(random.Next(0, seederSettings.maxGoalLengthInDays + 1), 0, 0, 0);
             TimeSpan doneTimeSpan = TimeSpan.FromMilliseconds(RandomExponentialValueInRange(1, (long)goalTimeLength.TotalMilliseconds, 0.4f));
             TimeSpan leftTimeSpan = goalTimeLength - doneTimeSpan;
 
-            TimeSpan inThePastAmount = new TimeSpan(random.Next(0, maxGoalDistanceInThePastInDays + 1), 1, 0, 0);
+            TimeSpan inThePastAmount = new TimeSpan(random.Next(0, seederSettings.maxGoalDistanceInThePastInDays + 1), 1, 0, 0);
 
-            int linesGoal = random.Next(minLinesGoal, maxLinesGoal);
-            TimeSpan timeGoal = TimeSpan.FromMinutes(random.Next((int)minTimeGoal.TotalMinutes, (int)maxTimeGoal.TotalMinutes));
+            int linesGoal = random.Next(seederSettings.minLinesGoal, seederSettings.maxLinesGoal);
+            TimeSpan timeGoal = TimeSpan.FromMinutes(random.Next((int)seederSettings.minTimeGoal.TotalMinutes, (int)seederSettings.maxTimeGoal.TotalMinutes));
             int remainingGoalLines = random.Next(0, linesGoal);
             TimeSpan remainingGoalTime = TimeSpan.FromMinutes(random.Next(1, (int)timeGoal.TotalMinutes));
 
-			TimeSpan maxTimeOfCompletion = ((DateTime.Parse(userGoal.StartDate) + goalTimeLength) - (DateTime.Parse(userGoal.StartDate) + timeGoal));
-			TimeSpan minTimeOfCompletion = maxTimeOfCompletion / 2;
+            TimeSpan maxTimeOfCompletion = ((DateTime.Parse(userGoal.StartDate) + goalTimeLength) - (DateTime.Parse(userGoal.StartDate) + timeGoal));
+            TimeSpan minTimeOfCompletion = maxTimeOfCompletion / 2;
             TimeSpan timeOfCompletion = TimeSpan.FromMinutes(random.Next((int)minTimeOfCompletion.TotalMinutes, (int)maxTimeOfCompletion.TotalMinutes));
 
-			userGoal.StartDate = userGoal.Status switch
+            userGoal.StartDate = userGoal.Status switch
             {
                 "InProgress" => (DateTime.Now - doneTimeSpan).ToString(),
                 "Completed" => (DateTime.Now - inThePastAmount - goalTimeLength).ToString(),
@@ -155,30 +141,29 @@ internal class DatatableSeeder
                 "Completed" => (DateTime.Now - inThePastAmount).ToString(),
                 "Failed" => (DateTime.Now - inThePastAmount).ToString()
             };
-            userGoal.StartingGoal = (userGoal.GoalType, userGoal.Status) switch
+            userGoal.StartingGoal = (userGoal.GoalType) switch
             {
-                ("Lines", "InProgress") => linesGoal.ToString(),
-                ("Time", "InProgress") => timeGoal.ToString(),
-				("Lines", "Completed") => linesGoal.ToString(),
-				("Time", "Completed") => timeGoal.ToString(),
-				("Lines", "Failed") => linesGoal.ToString(),
-				("Time", "Failed") => timeGoal.ToString()
-			};
+                "Lines" => linesGoal.ToString(),
+                "Time" => timeGoal.ToString(@"d\.hh\:mm"),
+            };
             userGoal.RemainingGoal = (userGoal.GoalType, userGoal.Status) switch
             {
                 ("Lines", "InProgress") => remainingGoalLines.ToString(),
-				("Time", "InProgress") => remainingGoalTime.ToString(),
-				("Lines", "Completed") => "Goal achiveved!",
+                ("Time", "InProgress") => remainingGoalTime.ToString(@"d\.hh\:mm"),
+                ("Lines", "Completed") => "Goal achiveved!",
                 ("Time", "Completed") => "Goal achiveved!",
-				("Lines", "Failed") => remainingGoalLines.ToString(),
-				("Time", "Failed") => remainingGoalTime.ToString()
-			};
+                ("Lines", "Failed") => remainingGoalLines.ToString(),
+                ("Time", "Failed") => remainingGoalTime.ToString(@"d\.hh\:mm")
+            };
             userGoal.FinishingDate = userGoal.Status switch
             {
                 "InProgress" => "Still in progress",
                 "Completed" => (DateTime.Parse(userGoal.StartDate) + timeGoal + timeOfCompletion).ToString(),
                 "Failed" => (DateTime.Now - inThePastAmount).ToString()
             };
+            userGoals.Add(userGoal);
         }
+        DataWriter dataWriter = new();
+        dataWriter.InjectMultipleUserGoals(userGoals);
     }
 }

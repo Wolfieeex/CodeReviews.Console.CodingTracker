@@ -1,32 +1,33 @@
 ﻿using CodingTracker.Wolfieeex.Model;
 using Microsoft.Data.Sqlite;
 using Dapper;
+using System.Data.SqlClient;
 
-namespace CodingTracker.Wolfieeex.Controller.DataHandlers;
+namespace CodingTracker.Wolfieeex.Controller;
 
 internal class DataWriter : DbConnectionProvider
 {
-	internal string InjectRecord(CodingSession session)
+	internal string InjectCodingSession(CodingSession session)
 	{
-		using SqliteConnection conn = new SqliteConnection(ConnectionString);
+		using SqliteConnection conn = new SqliteConnection(connectionString);
 		conn.Open();
 
 		string commString = @$"INSERT INTO {mainTableName} 
 							(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
-							VALUES (@Creation, @Update, @Start, @End, @Duration, @Lines, @Comments, @Timer)";
+							VALUES (@CreationDate, @LastUpdateDate, @StartDate, @EndDate, @Duration, @LinesOfCode, @Comments, @WasTimerTracked)";
 		conn.Execute(commString, session);
 		return session.Duration;
 	}
 
-	internal void InjectMultipleRecords(List<CodingSession> sessions)
+	internal void InjectMultipleCodingSessions(List<CodingSession> sessions)
 	{
 		using var conn = new SqliteConnection(connectionString);
 		conn.Open();
 		using var transaction = conn.BeginTransaction();
 
 		string commString = @$"INSERT INTO {mainTableName} 
-			(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
-			VALUES (@CreationDate, @LastUpdateDate, @StartDate, @EndDate, @Duration, @LinesOfCode, @Comments, @WasTimerTracked)";
+							(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
+							VALUES (@CreationDate, @LastUpdateDate, @StartDate, @EndDate, @Duration, @LinesOfCode, @Comments, @WasTimerTracked)";
 		try
 		{
 			conn.Execute(commString, sessions, transaction: transaction);
@@ -38,5 +39,37 @@ internal class DataWriter : DbConnectionProvider
 			Console.WriteLine($"There was an error while multi-inserting sessions into the database: {ex.Message}");
 		}
 	}
+
+	internal void InjectUserGoal(UserGoal goal)
+	{
+		using SqlConnection connection = new SqlConnection(connectionString);
+		connection.Open();
+
+		string sqlCommand = @"INSERT INTO {goalTableName}
+							(GoalType, Status, StartDate, FinishingDate, StartingGoal, RemainingGoal, DeadlineDate)
+							VALUES (@GoalType, @Status, @StartDate, @FinishingDate, @StartingGoal, @RemainingGoal, @DeadlineDate)";
+		connection.Execute(sqlCommand, goal);
+	}
+	
+	internal void InjectMultipleUserGoals(List<UserGoal> goals)
+    {
+        using SqlConnection connection = new SqlConnection(connectionString);
+		SqlTransaction transaction = connection.BeginTransaction();
+
+		string sqlCommand = @"INSERT INTO {goalTableName}
+							(GoalType, Status, StartDate, FinishingDate, StartingGoal, RemainingGoal, DeadlineDate)
+							VALUES (@GoalType, @Status, @StartDate, @FinishingDate, @StartingGoal, @RemainingGoal, @DeadlineDate)";
+
+		try
+		{
+			connection.Execute(sqlCommand, goals, transaction: transaction);
+			transaction.Commit();
+		}
+		catch(Exception ex)
+        {
+			transaction.Rollback();
+			Console.WriteLine($"There was a problem while inserting multiple goals into the database: {ex.Message}");
+        }
+    }
 }
 

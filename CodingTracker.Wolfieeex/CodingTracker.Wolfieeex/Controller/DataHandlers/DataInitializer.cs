@@ -20,7 +20,7 @@ internal class DataInitializer : DbConnectionProvider
     {
         bool createdMainDb = false;
 
-        using SqliteConnection conn = new SqliteConnection(ConnectionString);
+        using SqliteConnection conn = new SqliteConnection(connectionString);
         conn.Open();
         string commandText = $@"CREATE TABLE IF NOT EXISTS '{mainTableName}' (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +51,7 @@ internal class DataInitializer : DbConnectionProvider
     {
         bool createdGoalMockDb = false;
 
-        using SqliteConnection conn = new SqliteConnection(ConnectionString);
+        using SqliteConnection conn = new SqliteConnection(connectionString);
         conn.Open();
         string command = @$"CREATE TABLE IF NOT EXISTS {goalTableName} (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,

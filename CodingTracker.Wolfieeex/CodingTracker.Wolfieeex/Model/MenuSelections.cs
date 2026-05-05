@@ -30,6 +30,7 @@ internal enum MainMenuSelections
     [Display(Name = "Exit application")]
     ExitApp
 }
+
 internal enum TrackNewSession
 {
     [Display(Name = "Add a new session with below details")]
@@ -60,6 +61,7 @@ internal enum TrackNewSession
     [EnumSpecialLabel(label: MultiInputLabel.Quit)]
     ReturnToMainMenu
 }
+
 internal enum RecordSessionStartMenu
 {
     [Display(Name = "Start the timer")]
@@ -67,18 +69,21 @@ internal enum RecordSessionStartMenu
     [Display(Name = "Do it later")]
     ReturnToMainMenu
 }
+
 internal enum RecordSessionRecording
 {
     Pause,
     Discard,
     Finish
 }
+
 internal enum RecordSessionPause
 {
     Unpause,
     Discard,
     Finish
 }
+
 // Not done
 internal enum FilterRecords
 {
@@ -95,6 +100,7 @@ internal enum FilterRecords
     OptionalWasTimerTracked,
     ReturnToMainMenu
 }
+
 internal enum FilterRecordsForReport
 {
     ClearFilters,
@@ -107,6 +113,7 @@ internal enum FilterRecordsForReport
     OptionalMaximalDuration,
     OptionalWasTimerTracked,
 }
+
 internal enum UpdateMenu
 {
     UpdateStartDate,
@@ -116,12 +123,14 @@ internal enum UpdateMenu
     BackToFilterMenu,
     BackToMainMenu,
 }
+
 internal enum DeletionMenu
 {
     Delete,
     BackToFileterMenu,
     BackToMainMenu
 }
+
 internal enum TableViewMenu
 {
     DisplayCreationDate,
@@ -133,6 +142,7 @@ internal enum TableViewMenu
     DisplayComments,
     DisplayIfWasTimerTracked
 }
+
 internal enum SortingMenu
 {
     Clear,
@@ -140,6 +150,7 @@ internal enum SortingMenu
     SortingBy,
     Cancel
 }
+
 internal enum GoalSetterMenu
 {
     ReturnToMainMenu,
@@ -147,6 +158,7 @@ internal enum GoalSetterMenu
     ViewPreviousGoals,
     DeleteGoal
 }
+
 internal enum GoalViewerMenu
 {
     ReturnToPreviousMenu,

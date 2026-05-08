@@ -4,6 +4,7 @@ using CodingTracker.Wolfieeex.Model;
 using Spectre.Console;
 using System.Text;
 using Dapper;
+using System.Data.SqlClient;
 
 namespace CodingTracker.Wolfieeex.Controller;
 

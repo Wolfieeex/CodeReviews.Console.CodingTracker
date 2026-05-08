@@ -76,7 +76,6 @@ internal class DatatableSeeder
             double TimerRoll = ran.NextDouble();
             session.WasTimerTracked = TimerRoll > seederSettings.chanceThatWasTimerTracked ? "false" : "true";
 
-            //CodingSession session = new CodingSession(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, NumberOfLines!, Comments, WasTimerTracked.ToString());
             codingSessions.Add(session);
         }
         DataWriter dataWriter = new DataWriter();

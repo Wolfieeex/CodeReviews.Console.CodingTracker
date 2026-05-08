@@ -38,6 +38,7 @@ internal abstract class Menu
     {
         get => _basicColor; set
         {
+            _basicColor = value;
             menuColors = new MenuColors
             {
                 mainColor = value,
@@ -48,7 +49,6 @@ internal abstract class Menu
                 selectionColor = value.Blend(Color.Blue3_1, 0.4f),
                 selection2Color = value.Blend(Color.RosyBrown, 0.4f),
             };
-
             menuColorsHex = new MenuColorsHex
             {
                 mainColor = "[#" + value.ToHex() + "]",

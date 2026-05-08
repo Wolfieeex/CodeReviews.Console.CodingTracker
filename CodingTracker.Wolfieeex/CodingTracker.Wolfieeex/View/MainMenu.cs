@@ -24,7 +24,8 @@ internal class MainMenu : Menu
 
             // Exit - complete.
             // AddRecordManually - complete.
-            // StartTrackingNewSession - in progress. - !!! Add Color settings to Json!
+            // StartTrackingNewSession - in progress.
+            // Add Color settings to Json for all menus.
             switch (userOption)
             {
                 case MainMenuSelections.AddRecordManually:

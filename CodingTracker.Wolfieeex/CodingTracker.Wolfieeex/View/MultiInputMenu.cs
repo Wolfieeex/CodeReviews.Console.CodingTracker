@@ -23,6 +23,9 @@ internal abstract class MultiInputMenu : Menu
 
         List<Enum> selectionEnumOptions = Enum.GetValues(selectionEnum).Cast<Enum>().ToList();
 
+        // Esentially, if one of the inputs has to be there, but then the rest is optional, do the check 
+        // if either was selected. Also, of course, do a check for all fields marked as "required".
+
         bool oneOfRequirement = true;
         foreach (Enum en in selectionEnumOptions)
         {

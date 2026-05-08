@@ -23,7 +23,7 @@ internal class DataWriter : DbConnectionProvider
 	{
 		using var conn = new SqliteConnection(connectionString);
 		conn.Open();
-		using var transaction = conn.BeginTransaction();
+		using SqliteTransaction transaction = conn.BeginTransaction();
 
 		string commString = @$"INSERT INTO {mainTableName} 
 							(CreationDate, LastUpdateDate, StartDate, EndDate, Duration, LinesOfCode, Comments, WasTimerTracked)
@@ -42,10 +42,10 @@ internal class DataWriter : DbConnectionProvider
 
 	internal void InjectUserGoal(UserGoal goal)
 	{
-		using SqlConnection connection = new SqlConnection(connectionString);
+		using SqliteConnection connection = new SqliteConnection(connectionString);
 		connection.Open();
 
-		string sqlCommand = @"INSERT INTO {goalTableName}
+		string sqlCommand = @$"INSERT INTO {goalTableName}
 							(GoalType, Status, StartDate, FinishingDate, StartingGoal, RemainingGoal, DeadlineDate)
 							VALUES (@GoalType, @Status, @StartDate, @FinishingDate, @StartingGoal, @RemainingGoal, @DeadlineDate)";
 		connection.Execute(sqlCommand, goal);
@@ -53,10 +53,10 @@ internal class DataWriter : DbConnectionProvider
 	
 	internal void InjectMultipleUserGoals(List<UserGoal> goals)
     {
-        using SqlConnection connection = new SqlConnection(connectionString);
-		SqlTransaction transaction = connection.BeginTransaction();
+        using SqliteConnection connection = new SqliteConnection(connectionString);
+		SqliteTransaction transaction = connection.BeginTransaction();
 
-		string sqlCommand = @"INSERT INTO {goalTableName}
+		string sqlCommand = @$"INSERT INTO {goalTableName}
 							(GoalType, Status, StartDate, FinishingDate, StartingGoal, RemainingGoal, DeadlineDate)
 							VALUES (@GoalType, @Status, @StartDate, @FinishingDate, @StartingGoal, @RemainingGoal, @DeadlineDate)";
 

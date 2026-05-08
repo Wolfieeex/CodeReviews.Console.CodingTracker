@@ -1,6 +1,8 @@
 using Spectre.Console;
 using CodingTracker.Wolfieeex.Model;
 using System.Diagnostics;
+using System.Timers;
+using System.Text.RegularExpressions;
 
 namespace CodingTracker.Wolfieeex.View;
 
@@ -16,6 +18,7 @@ internal class TrackingNewSessionMenu : Menu
         bool trackNewSessionLoop = true;
         while (trackNewSessionLoop)
         {
+            // Initial menu
             Console.Clear();
             RecordSessionStartMenu userInput = (RecordSessionStartMenu)DisplayOptions();
             Console.Clear();
@@ -23,6 +26,7 @@ internal class TrackingNewSessionMenu : Menu
             if (userInput == RecordSessionStartMenu.ReturnToMainMenu)
                 return;
 
+            //Set the timer and stopwatch
             Stopwatch stopwatch = new Stopwatch();
             System.Timers.Timer timer = new System.Timers.Timer(100);
 
@@ -43,7 +47,7 @@ internal class TrackingNewSessionMenu : Menu
                 bool sessionDiscarded = false;
                 userInput = UserInterface.DisplaySelectionUI(timer.Enabled ? $"{titleColorHex}Your session is in progress:[/]" : $"{titleColorHex}Your session is[/] {inputColorHex}paused:[/]", timer.Enabled ? typeof(MenuSelections.RecordSessionRecording) : typeof(MenuSelections.RecordSessionPause), mainColor);
 
-                switch (userInput)
+                switch ((int)userInput)
                 {
                     case 0:
                         TimerPauseStart();
